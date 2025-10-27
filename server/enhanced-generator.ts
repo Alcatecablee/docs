@@ -668,25 +668,19 @@ export async function generateEnhancedDocumentation(
   abortSignal?: AbortSignal,
   deliveryOption: 'standard' | 'rush' | 'same-day' = 'standard'
 ) {
-  // Configure AI provider based on delivery option
-  let providerOrder: string[];
+  // Initialize Delivery Routing Service
+  const { DeliveryRoutingService } = await import('./services/delivery-routing-service');
+  const freeProvider = createAIProvider(['deepseek', 'google', 'together', 'openrouter', 'groq', 'hyperbolic']);
+  const openaiProvider = createAIProvider(['openai']);
+  const deliveryRouter = new DeliveryRoutingService(freeProvider, openaiProvider);
   
-  if (deliveryOption === 'rush' || deliveryOption === 'same-day') {
-    // Premium delivery: OpenAI GPT-4 ONLY for speed and quality
-    providerOrder = ['openai'];
-    console.log(`\n${'='.repeat(60)}`);
-    console.log(`🚀 RUSH DELIVERY MODE - Using OpenAI GPT-4 exclusively`);
-    console.log(`${'='.repeat(60)}\n`);
-  } else {
-    // Standard delivery: Free APIs first, with GPT-4 validation at the end
-    providerOrder = ['deepseek', 'google', 'together', 'openrouter', 'groq', 'hyperbolic', 'openai'];
-    console.log(`\n${'='.repeat(60)}`);
-    console.log(`⏱️  STANDARD DELIVERY MODE - Using free APIs + GPT-4 validation`);
-    console.log(`${'='.repeat(60)}\n`);
-  }
+  // Get delivery configuration and log routing decision
+  const deliveryConfig = deliveryRouter.getDeliveryConfig(deliveryOption);
+  deliveryRouter.logRoutingDecision(deliveryOption, url);
   
-  const aiProvider = createAIProvider(providerOrder);
-  // Provider configured based on delivery option
+  // Get the appropriate AI provider based on delivery option
+  const providers = deliveryRouter.getGenerationProviders(deliveryConfig);
+  const aiProvider = providers.primary!;
 
   console.log('Stage 1: Discovering site structure...');
   const pmId = sessionId || `sess_${Math.random().toString(36).slice(2)}`;
@@ -1194,45 +1188,37 @@ Return JSON: {metadata: {title, description, keywords}, searchability: {primary_
     });
   }
   
-  // QUALITY VALIDATION FOR STANDARD DELIVERY
+  // QUALITY VALIDATION USING DELIVERY ROUTER
   let qualityValidation: any = null;
   
-  if (deliveryOption === 'standard') {
-    console.log('\n' + '='.repeat(60));
-    console.log('🔍 QUALITY VALIDATION - GPT-4 Analysis');
-    console.log('='.repeat(60));
+  try {
+    // Build sources summary for validation
+    const sourcesSummary = [
+      `Site pages: ${extractedContent.length}`,
+      `Stack Overflow: ${externalResearch.stackoverflow_answers?.length || 0} questions`,
+      `GitHub: ${externalResearch.github_issues?.length || 0} issues`,
+      `YouTube: ${externalResearch.youtube_videos?.length || 0} videos`,
+      `Reddit: ${externalResearch.reddit_posts?.length || 0} discussions`,
+      `Total sources: ${externalResearch.total_sources || 0}`
+    ].join(', ');
     
-    try {
-      // Create OpenAI provider for validation
-      const { QualityValidationService } = await import('./services/quality-validation-service');
-      const openaiProvider = createAIProvider(['openai']);
-      const validationService = new QualityValidationService(openaiProvider);
-      
-      // Build sources summary for validation
-      const sourcesSummary = [
-        `Site pages: ${extractedContent.length}`,
-        `Stack Overflow: ${externalResearch.stackoverflow_answers?.length || 0} questions`,
-        `GitHub: ${externalResearch.github_issues?.length || 0} issues`,
-        `YouTube: ${externalResearch.youtube_videos?.length || 0} videos`,
-        `Reddit: ${externalResearch.reddit_posts?.length || 0} discussions`,
-        `Total sources: ${externalResearch.total_sources || 0}`
-      ].join(', ');
-      
-      const validationResult = await validationService.validateDocumentation(
-        siteStructure.productName,
-        JSON.stringify(finalDoc),
-        sourcesSummary,
-        url
-      );
-      
+    const validationResult = await deliveryRouter.validateQuality(
+      siteStructure.productName,
+      JSON.stringify(finalDoc),
+      sourcesSummary,
+      url,
+      deliveryConfig
+    );
+    
+    if (validationResult) {
       qualityValidation = validationResult;
       
       console.log(`\n✅ Quality Validation Complete:`);
       console.log(`   Overall Score: ${validationResult.score.overall}/100`);
-      console.log(`   Status: ${validationResult.passed ? 'PASSED ✓' : 'NEEDS IMPROVEMENT'}`);
+      console.log(`   Status: ${validationResult.passed ? 'PASSED ✓' : 'ACCEPTABLE'}`);
       
       if (!validationResult.passed) {
-        console.log(`\n⚠️  Quality Validation Issues:`);
+        console.log(`\n⚠️  Quality Issues:`);
         validationResult.weaknesses.forEach((w, i) => console.log(`   ${i + 1}. ${w}`));
         console.log(`\n💡 Suggested Improvements:`);
         validationResult.improvements.forEach((imp, i) => console.log(`   ${i + 1}. ${imp}`));
@@ -1244,21 +1230,17 @@ Return JSON: {metadata: {title, description, keywords}, searchability: {primary_
           type: validationResult.passed ? 'success' : 'info'
         }, 7, 'Quality Validation');
       }
-      
-    } catch (validationError) {
-      console.error('Quality validation failed:', validationError);
-      // Don't block delivery on validation failure
-      if (sessionId) {
-        progressTracker.emitActivity(sessionId, {
-          message: `⚠️ Quality validation unavailable - proceeding with delivery`,
-          type: 'warning'
-        }, 7, 'Quality Validation');
-      }
     }
     
-    console.log('='.repeat(60) + '\n');
-  } else {
-    console.log(`\n⏭️  Quality validation skipped for ${deliveryOption} delivery (GPT-4 already ensures quality)\n`);
+  } catch (validationError) {
+    console.error('Quality validation failed:', validationError);
+    // Don't block delivery on validation failure
+    if (sessionId) {
+      progressTracker.emitActivity(sessionId, {
+        message: `⚠️ Quality validation unavailable - proceeding with delivery`,
+        type: 'warning'
+      }, 7, 'Quality Validation');
+    }
   }
   
   // Return documentation data (will be saved in transaction by caller)
