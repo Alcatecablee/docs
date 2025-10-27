@@ -114,7 +114,7 @@ export class SubdomainHostingService {
   /**
    * Check if subdomain is available
    */
-  private async isSubdomainAvailable(subdomain: string): boolean {
+  private async isSubdomainAvailable(subdomain: string): Promise<boolean> {
     try {
       const mappingFile = join(this.hostingDir, 'subdomain-mapping.json');
       try {
