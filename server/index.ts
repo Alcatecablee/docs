@@ -5,7 +5,20 @@ import { setupVite } from "./vite";
 
 const app = express();
 const port = process.env.PORT || 5000;
-console.log('ENV: DATABASE_URL set:', !!process.env.DATABASE_URL, ' SUPABASE_URL set:', !!process.env.SUPABASE_URL, ' DEEPSEEK_API_KEY set:', !!process.env.DEEPSEEK_API_KEY, ' OPENAI_API_KEY set:', !!process.env.OPENAI_API_KEY, ' GROQ_API_KEY set:', !!process.env.GROQ_API_KEY);
+// Log configured providers on startup
+const configuredProviders: string[] = [];
+if (process.env.GOOGLE_API_KEY) configuredProviders.push('Google AI (Gemini)');
+if (process.env.TOGETHER_API_KEY) configuredProviders.push('Together AI');
+if (process.env.OPENROUTER_API_KEY) configuredProviders.push('OpenRouter');
+if (process.env.GROQ_API_KEY) configuredProviders.push('Groq');
+if (process.env.HYPERBOLIC_API_KEY) configuredProviders.push('Hyperbolic');
+if (process.env.DEEPSEEK_API_KEY) configuredProviders.push('DeepSeek');
+if (process.env.OPENAI_API_KEY) configuredProviders.push('OpenAI');
+
+console.log('🚀 ViberDoc Multi-Provider LLM System');
+console.log('📊 Configured AI Providers:', configuredProviders.length > 0 ? configuredProviders.join(', ') : 'NONE - Please add API keys!');
+console.log('🗄️  Database:', process.env.DATABASE_URL ? 'Connected' : 'Not configured');
+console.log('🔐 Supabase:', process.env.SUPABASE_URL ? 'Connected' : 'Not configured');
 
 // Log incoming HTTP requests for debugging
 app.use((req, res, next) => {

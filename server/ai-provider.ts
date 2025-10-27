@@ -9,17 +9,21 @@ export interface AIMessage {
 
 export interface AIResponse {
   content: string;
-  provider: 'deepseek' | 'openai' | 'groq' | 'ollama';
+  provider: 'google' | 'together' | 'openrouter' | 'hyperbolic' | 'groq' | 'openai' | 'deepseek' | 'ollama';
   model: string;
 }
 
 interface AIProviderConfig {
+  googleApiKey?: string;
+  togetherApiKey?: string;
+  openrouterApiKey?: string;
+  hyperbolicApiKey?: string;
   deepseekApiKey?: string;
   openaiApiKey?: string;
   groqApiKey?: string;
   ollamaBaseUrl?: string;
   ollamaModel?: string;
-  providerOrder?: string[]; // e.g. ['openai','groq','deepseek','ollama']
+  providerOrder?: string[]; // e.g. ['google','together','openrouter','groq','hyperbolic','deepseek','openai','ollama']
 }
 
 export class AIProvider {
@@ -39,14 +43,46 @@ export class AIProvider {
   ): Promise<AIResponse> {
     const { jsonMode = false, maxRetries = 3, timeoutMs = 60000 } = options;
 
-    // Build provider order from config with sensible default
+    // Build provider order from config with free-first priority
     const order = (this.config.providerOrder && this.config.providerOrder.length > 0)
       ? this.config.providerOrder
-      : ['groq', 'openai', 'deepseek', 'ollama'];
+      : ['google', 'together', 'openrouter', 'groq', 'hyperbolic', 'deepseek', 'openai', 'ollama'];
 
     const providers: Array<() => Promise<AIResponse>> = [];
 
     for (const p of order) {
+      if (p === 'google' && this.config.googleApiKey) {
+        providers.push(() => 
+          withCircuitBreaker(
+            'ai-provider-google',
+            () => withTimeout(this.callGoogle(messages, jsonMode), timeoutMs, 'google timed out')
+          )
+        );
+      }
+      if (p === 'together' && this.config.togetherApiKey) {
+        providers.push(() => 
+          withCircuitBreaker(
+            'ai-provider-together',
+            () => withTimeout(this.callTogether(messages, jsonMode), timeoutMs, 'together timed out')
+          )
+        );
+      }
+      if (p === 'openrouter' && this.config.openrouterApiKey) {
+        providers.push(() => 
+          withCircuitBreaker(
+            'ai-provider-openrouter',
+            () => withTimeout(this.callOpenRouter(messages, jsonMode), timeoutMs, 'openrouter timed out')
+          )
+        );
+      }
+      if (p === 'hyperbolic' && this.config.hyperbolicApiKey) {
+        providers.push(() => 
+          withCircuitBreaker(
+            'ai-provider-hyperbolic',
+            () => withTimeout(this.callHyperbolic(messages, jsonMode), timeoutMs, 'hyperbolic timed out')
+          )
+        );
+      }
       if (p === 'groq' && this.config.groqApiKey) {
         providers.push(() => 
           withCircuitBreaker(
@@ -82,7 +118,7 @@ export class AIProvider {
     }
 
     if (providers.length === 0) {
-      throw new Error('No AI providers configured. Set at least one of GROQ_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY, or OLLAMA_BASE_URL');
+      throw new Error('No AI providers configured. Set at least one API key: GOOGLE_API_KEY, TOGETHER_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY, HYPERBOLIC_API_KEY, OPENAI_API_KEY, or DEEPSEEK_API_KEY');
     }
 
     const result = await retryWithFallback<AIResponse>(providers, {
@@ -92,6 +128,124 @@ export class AIProvider {
     });
 
     return result.data;
+  }
+
+  private async callGoogle(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.config.googleApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gemini-2.0-flash-exp',
+        messages,
+        ...(jsonMode && { response_format: { type: 'json_object' } }),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Google AI API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json() as any;
+    const content = data.choices?.[0]?.message?.content || '';
+
+    return {
+      content,
+      provider: 'google',
+      model: 'gemini-2.0-flash-exp',
+    };
+  }
+
+  private async callTogether(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
+    const response = await fetch('https://api.together.xyz/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.config.togetherApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
+        messages,
+        ...(jsonMode && { response_format: { type: 'json_object' } }),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Together AI API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json() as any;
+    const content = data.choices?.[0]?.message?.content || '';
+
+    return {
+      content,
+      provider: 'together',
+      model: 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
+    };
+  }
+
+  private async callOpenRouter(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.config.openrouterApiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://viberdoc.com',
+        'X-Title': 'ViberDoc',
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.1-70b-instruct:free',
+        messages,
+        ...(jsonMode && { response_format: { type: 'json_object' } }),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenRouter API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json() as any;
+    const content = data.choices?.[0]?.message?.content || '';
+
+    return {
+      content,
+      provider: 'openrouter',
+      model: 'meta-llama/llama-3.1-70b-instruct:free',
+    };
+  }
+
+  private async callHyperbolic(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
+    const response = await fetch('https://api.hyperbolic.xyz/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.config.hyperbolicApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/Meta-Llama-3.1-405B-Instruct',
+        messages,
+        ...(jsonMode && { response_format: { type: 'json_object' } }),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Hyperbolic API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json() as any;
+    const content = data.choices?.[0]?.message?.content || '';
+
+    return {
+      content,
+      provider: 'hyperbolic',
+      model: 'meta-llama/Meta-Llama-3.1-405B-Instruct',
+    };
   }
 
   private async callDeepSeek(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
@@ -241,6 +395,10 @@ export class AIProvider {
 
 export function createAIProvider(): AIProvider {
   return new AIProvider({
+    googleApiKey: process.env.GOOGLE_API_KEY,
+    togetherApiKey: process.env.TOGETHER_API_KEY,
+    openrouterApiKey: process.env.OPENROUTER_API_KEY,
+    hyperbolicApiKey: process.env.HYPERBOLIC_API_KEY,
     deepseekApiKey: process.env.DEEPSEEK_API_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
     groqApiKey: process.env.GROQ_API_KEY,
