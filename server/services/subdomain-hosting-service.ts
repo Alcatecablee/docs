@@ -3,6 +3,8 @@ import { join } from 'path';
 import { db } from '../db';
 import { documentations } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { TemplateRenderer } from '../utils/template-renderer';
+import { DocumentationParser } from '../utils/documentation-parser';
 
 export interface SubdomainConfig {
   subdomain: string;
@@ -71,7 +73,7 @@ export class SubdomainHostingService {
       await mkdir(subdomainPath, { recursive: true });
 
       // Generate static HTML
-      const html = this.generateStaticHTML(doc, config);
+      const html = await this.generateStaticHTML(doc, config);
       await writeFile(join(subdomainPath, 'index.html'), html);
 
       // Generate assets
@@ -155,9 +157,61 @@ export class SubdomainHostingService {
   }
 
   /**
-   * Generate static HTML for documentation
+   * Generate static HTML for documentation using enterprise template
    */
-  private generateStaticHTML(doc: any, config: SubdomainConfig): string {
+  private async generateStaticHTML(doc: any, config: SubdomainConfig): Promise<string> {
+    try {
+      // Load templates
+      const templatePath = join(process.cwd(), 'server', 'templates', 'documentation-template.html');
+      const cssPath = join(process.cwd(), 'server', 'templates', 'documentation-styles.css');
+      const jsPath = join(process.cwd(), 'server', 'templates', 'documentation-scripts.js');
+      
+      const [template, css, js] = await Promise.all([
+        readFile(templatePath, 'utf-8'),
+        readFile(cssPath, 'utf-8'),
+        readFile(jsPath, 'utf-8')
+      ]);
+      
+      // Parse documentation sections
+      const sections = DocumentationParser.parseSections(doc.content);
+      const contentHTML = DocumentationParser.sectionsToHTML(sections);
+      
+      // Get description from doc
+      let description = '';
+      try {
+        const docData = typeof doc.content === 'string' ? JSON.parse(doc.content) : doc.content;
+        description = docData.description || doc.description || '';
+      } catch {
+        description = doc.description || '';
+      }
+      
+      // Prepare template data
+      const templateData = {
+        title: doc.title || 'Documentation',
+        description: description,
+        sections: sections,
+        content: contentHTML,
+        customCSS: css,
+        customJS: js,
+        baseUrl: this.baseUrl,
+        theme: 'light'
+      };
+      
+      // Render template
+      const html = TemplateRenderer.render(template, templateData);
+      
+      return html;
+    } catch (error) {
+      console.error('Error generating enterprise HTML:', error);
+      // Fallback to basic HTML if templates fail
+      return this.generateFallbackHTML(doc);
+    }
+  }
+  
+  /**
+   * Fallback HTML generation if enterprise templates fail
+   */
+  private generateFallbackHTML(doc: any): string {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -165,36 +219,11 @@ export class SubdomainHostingService {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${doc.title || 'Documentation'}</title>
   <meta name="description" content="${doc.description || 'Generated documentation'}">
-  <link rel="stylesheet" href="/styles.css">
-  <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      line-height: 1.6;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-      color: #1a202c;
-    }
-    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-    h2 { font-size: 2rem; margin-top: 2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
-    h3 { font-size: 1.5rem; margin-top: 1.5rem; }
-    code { background: #f7fafc; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'Fira Code', monospace; }
-    pre { background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow-x: auto; }
-    a { color: #3182ce; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
 </head>
 <body>
-  <header>
-    <h1>${doc.title || 'Documentation'}</h1>
-    <p style="color: #718096;">${doc.description || ''}</p>
-  </header>
-  <main>
-    ${doc.content || ''}
-  </main>
-  <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; color: #718096;">
-    <p>Generated with Viberdoc &bull; <a href="https://${this.baseUrl}">Create your own documentation</a></p>
-  </footer>
+  <h1>${doc.title || 'Documentation'}</h1>
+  <p>${doc.description || ''}</p>
+  <main>${doc.content || ''}</main>
 </body>
 </html>`;
   }
