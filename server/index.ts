@@ -2,9 +2,12 @@ import express from "express";
 import { createServer } from "http";
 import routes from "./routes";
 import { setupVite } from "./vite";
+import { initializeRateLimits } from "./rate-limiter";
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+initializeRateLimits();
 // Log configured providers on startup
 const configuredProviders: string[] = [];
 if (process.env.GOOGLE_API_KEY) configuredProviders.push('Google AI (Gemini)');

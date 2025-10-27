@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { withTimeout, retryWithFallback } from './utils/retry-with-fallback';
 import { withCircuitBreaker } from './utils/circuit-breaker';
+import { rateLimiter } from './rate-limiter';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -33,6 +34,20 @@ export class AIProvider {
     this.config = config;
   }
 
+  private async withRateLimit<T>(
+    provider: string,
+    estimatedTokens: number,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    const canProceed = await rateLimiter.waitForToken(provider, estimatedTokens, 5000);
+    
+    if (!canProceed) {
+      throw new Error(`Rate limit exceeded for ${provider}, trying next provider`);
+    }
+    
+    return fn();
+  }
+
   async generateCompletion(
     messages: AIMessage[],
     options: {
@@ -42,6 +57,8 @@ export class AIProvider {
     } = {}
   ): Promise<AIResponse> {
     const { jsonMode = false, maxRetries = 3, timeoutMs = 60000 } = options;
+
+    const estimatedTokens = Math.ceil(messages.reduce((sum, msg) => sum + msg.content.length, 0) / 4);
 
     // Build provider order from config with free-first priority
     const order = (this.config.providerOrder && this.config.providerOrder.length > 0)
@@ -53,57 +70,71 @@ export class AIProvider {
     for (const p of order) {
       if (p === 'google' && this.config.googleApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-google',
-            () => withTimeout(this.callGoogle(messages, jsonMode), timeoutMs, 'google timed out')
+          this.withRateLimit('google', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-google',
+              () => withTimeout(this.callGoogle(messages, jsonMode), timeoutMs, 'google timed out')
+            )
           )
         );
       }
       if (p === 'together' && this.config.togetherApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-together',
-            () => withTimeout(this.callTogether(messages, jsonMode), timeoutMs, 'together timed out')
+          this.withRateLimit('together', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-together',
+              () => withTimeout(this.callTogether(messages, jsonMode), timeoutMs, 'together timed out')
+            )
           )
         );
       }
       if (p === 'openrouter' && this.config.openrouterApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-openrouter',
-            () => withTimeout(this.callOpenRouter(messages, jsonMode), timeoutMs, 'openrouter timed out')
+          this.withRateLimit('openrouter', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-openrouter',
+              () => withTimeout(this.callOpenRouter(messages, jsonMode), timeoutMs, 'openrouter timed out')
+            )
           )
         );
       }
       if (p === 'hyperbolic' && this.config.hyperbolicApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-hyperbolic',
-            () => withTimeout(this.callHyperbolic(messages, jsonMode), timeoutMs, 'hyperbolic timed out')
+          this.withRateLimit('hyperbolic', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-hyperbolic',
+              () => withTimeout(this.callHyperbolic(messages, jsonMode), timeoutMs, 'hyperbolic timed out')
+            )
           )
         );
       }
       if (p === 'groq' && this.config.groqApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-groq',
-            () => withTimeout(this.callGroq(messages, jsonMode), timeoutMs, 'groq timed out')
+          this.withRateLimit('groq', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-groq',
+              () => withTimeout(this.callGroq(messages, jsonMode), timeoutMs, 'groq timed out')
+            )
           )
         );
       }
       if (p === 'openai' && this.config.openaiApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-openai',
-            () => withTimeout(this.callOpenAI(messages, jsonMode), timeoutMs, 'openai timed out')
+          this.withRateLimit('openai', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-openai',
+              () => withTimeout(this.callOpenAI(messages, jsonMode), timeoutMs, 'openai timed out')
+            )
           )
         );
       }
       if (p === 'deepseek' && this.config.deepseekApiKey) {
         providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-deepseek',
-            () => withTimeout(this.callDeepSeek(messages, jsonMode), timeoutMs, 'deepseek timed out')
+          this.withRateLimit('deepseek', estimatedTokens, () =>
+            withCircuitBreaker(
+              'ai-provider-deepseek',
+              () => withTimeout(this.callDeepSeek(messages, jsonMode), timeoutMs, 'deepseek timed out')
+            )
           )
         );
       }
