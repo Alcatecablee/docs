@@ -1,0 +1,180 @@
+{
+  "examples": [
+    {
+      "name": "API-Heavy Documentation (like Stripe)",
+      "structure": {
+        "sections": [
+          {
+            "title": "Introduction",
+            "content": [
+              { "type": "paragraph", "text": "Welcome to our API documentation." }
+            ]
+          },
+          {
+            "title": "Authentication",
+            "content": [
+              { "type": "paragraph", "text": "How to authenticate with our API." }
+            ]
+          },
+          {
+            "title": "API Reference",
+            "content": [
+              { "type": "heading", "level": 3, "text": "GET /users" },
+              { "type": "code", "language": "bash", "code": "curl https://api.example.com/users" }
+            ]
+          },
+          {
+            "title": "Rate Limits",
+            "content": [
+              { "type": "paragraph", "text": "API rate limiting information." }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tutorial-Based Documentation (like React)",
+      "structure": {
+        "sections": [
+          {
+            "title": "Getting Started",
+            "content": [
+              { "type": "paragraph", "text": "Build your first app in 5 minutes." }
+            ]
+          },
+          {
+            "title": "Core Concepts",
+            "content": [
+              { "type": "paragraph", "text": "Learn the fundamental concepts." }
+            ]
+          },
+          {
+            "title": "Tutorials",
+            "content": [
+              { "type": "heading", "level": 3, "text": "Tutorial 1: Hello World" },
+              { "type": "heading", "level": 3, "text": "Tutorial 2: Building Components" }
+            ]
+          },
+          {
+            "title": "Best Practices",
+            "content": [
+              { "type": "paragraph", "text": "Tips for writing better code." }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Product Documentation (like Notion)",
+      "structure": {
+        "sections": [
+          {
+            "title": "What is ProductName?",
+            "content": [
+              { "type": "paragraph", "text": "An overview of our product." }
+            ]
+          },
+          {
+            "title": "Features",
+            "content": [
+              { "type": "list", "items": ["Feature 1", "Feature 2", "Feature 3"] }
+            ]
+          },
+          {
+            "title": "Use Cases",
+            "content": [
+              { "type": "paragraph", "text": "How customers use our product." }
+            ]
+          },
+          {
+            "title": "Pricing",
+            "content": [
+              { "type": "paragraph", "text": "Choose the right plan for you." }
+            ]
+          },
+          {
+            "title": "FAQ",
+            "content": [
+              { "type": "paragraph", "text": "Frequently asked questions." }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Developer Guide (like Next.js)",
+      "structure": {
+        "sections": [
+          {
+            "title": "Installation",
+            "content": [
+              { "type": "code", "language": "bash", "code": "npm install next" }
+            ]
+          },
+          {
+            "title": "Basic Features",
+            "content": [
+              { "type": "paragraph", "text": "Core features overview." }
+            ]
+          },
+          {
+            "title": "Advanced Features",
+            "content": [
+              { "type": "paragraph", "text": "Advanced capabilities." }
+            ]
+          },
+          {
+            "title": "Deployment",
+            "content": [
+              { "type": "paragraph", "text": "Deploy your app to production." }
+            ]
+          },
+          {
+            "title": "Examples",
+            "content": [
+              { "type": "paragraph", "text": "Real-world examples." }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Simple One-Page Docs",
+      "structure": {
+        "sections": [
+          {
+            "title": "Overview",
+            "content": [
+              { "type": "paragraph", "text": "Everything you need to know on one page." }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Complex Multi-Section Docs",
+      "structure": {
+        "sections": [
+          { "title": "Introduction" },
+          { "title": "Architecture" },
+          { "title": "Getting Started" },
+          { "title": "Configuration" },
+          { "title": "CLI Reference" },
+          { "title": "API Reference" },
+          { "title": "Hooks API" },
+          { "title": "Components" },
+          { "title": "Styling" },
+          { "title": "Routing" },
+          { "title": "Data Fetching" },
+          { "title": "Authentication" },
+          { "title": "Deployment" },
+          { "title": "Performance" },
+          { "title": "Security" },
+          { "title": "Examples" },
+          { "title": "FAQ" },
+          { "title": "Troubleshooting" }
+        ]
+      }
+    }
+  ]
+}

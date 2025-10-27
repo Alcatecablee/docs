@@ -26,6 +26,10 @@ export interface ContentBlock {
 export class DocumentationParser {
   /**
    * Parse documentation JSON to structured sections
+   * FLEXIBLE: Supports any section structure - no enforced sections
+   * - Pass custom icons directly: { "icon": "🎨", "title": "Design" }
+   * - Or auto-detect from title: { "title": "API Reference" } → 🔌
+   * - Supports 1 section or 100+ sections
    */
   static parseSections(content: string | object): Section[] {
     try {
@@ -38,7 +42,7 @@ export class DocumentationParser {
       return data.sections.map((section: any, index: number) => ({
         id: this.generateId(section.title || `section-${index}`),
         title: section.title || `Section ${index + 1}`,
-        icon: this.getIcon(section.icon || section.title),
+        icon: section.icon || this.getIcon(section.title),
         content: section.content || []
       }));
     } catch (error) {
@@ -139,9 +143,13 @@ export class DocumentationParser {
   }
 
   /**
-   * Get emoji icon based on title
+   * Get emoji icon based on title (keyword matching)
+   * Falls back to generic document icon if no match
+   * FLEXIBLE: Add your own keywords or use custom icons in JSON
    */
   private static getIcon(text: string): string {
+    if (!text) return '📄';
+    
     const iconMap: { [key: string]: string } = {
       'getting started': '🚀',
       'quick start': '⚡',
@@ -159,7 +167,20 @@ export class DocumentationParser {
       'authentication': '🔐',
       'deployment': '🚀',
       'features': '✨',
-      'pricing': '💰'
+      'pricing': '💰',
+      'overview': '👁️',
+      'introduction': '👋',
+      'concepts': '💭',
+      'architecture': '🏗️',
+      'performance': '⚡',
+      'testing': '🧪',
+      'changelog': '📝',
+      'migration': '🔄',
+      'plugins': '🔌',
+      'integrations': '🔗',
+      'community': '👥',
+      'support': '💬',
+      'resources': '📚'
     };
 
     const lowerText = text.toLowerCase();
