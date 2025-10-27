@@ -3,6 +3,19 @@
 ## Overview
 Viberdoc is an AI-powered documentation intelligence platform designed for Developer Relations teams at established companies with vibrant ecosystems (Stripe, Supabase, Next.js, etc.). The platform aggregates scattered community knowledge from 10+ sources (Stack Overflow, GitHub, YouTube, Reddit, DEV.to, etc.) and generates professional, Apple-style documentation. The system employs a 3-stage AI pipeline to analyze websites, research community sources, and produce enterprise-quality documentation in various formats (PDF, DOCX, web).
 
+## Recent Changes (October 27, 2025)
+**Multi-Provider LLM Integration (Phase 1 Complete)**: Transformed Viberdoc to support 7 AI providers with intelligent free-first routing for cost-effective, high-quality documentation generation:
+- ✅ **4 New Free Providers Added**: Google AI (Gemini 2.0 Flash - 1M tokens/min), Together AI (Llama 3.1 70B/405B - $25 credits), OpenRouter (Llama 70B:free - unlimited), Hyperbolic (Llama 405B - 200 RPM)
+- ✅ **Smart Provider Priority**: Auto-routes requests through free providers first (Google → Together → OpenRouter → Groq → Hyperbolic → DeepSeek → OpenAI)
+- ✅ **Extended AIProvider Class**: Added 4 new provider methods following existing OpenAI-compatible patterns
+- ✅ **Comprehensive Documentation**: Created MULTI_PROVIDER_API_KEYS_GUIDE.md with step-by-step setup for all providers
+- ✅ **Updated Environment Config**: Enhanced .env.example with all provider keys and documentation
+- ✅ **Enhanced Startup Logging**: Server now displays configured AI providers on startup for easy verification
+- ✅ **Free Tier Capacity**: Combined free tiers provide 100M+ tokens/month (enough for hundreds of comprehensive docs)
+- ✅ **Zero LSP Errors**: All code type-checked and validated
+- **Next Steps**: Phase 2 - Rate limiting, quota management, and intelligent request queuing
+- See MULTI_PROVIDER_LLM_ROADMAP.md for complete implementation plan
+
 ## Recent Changes (October 25, 2025)
 **Removed Legacy Custom Projects Page**: Cleaned up outdated multi-step wizard system from subscription era:
 - ✅ **Deleted /custom-projects Route**: Removed CustomProjects.tsx page and all references
@@ -90,7 +103,14 @@ The project uses PostgreSQL via Supabase, managed with Drizzle ORM for type-safe
 ## External Dependencies
 
 ### Core Services
-*   **Groq API**: AI model access.
+*   **Multi-Provider LLM System** (Free-First Priority):
+    *   **Google AI (Gemini)**: 1M tokens/min free tier - Primary provider
+    *   **Together AI**: $25 free credits, Llama 3.1 70B/405B access
+    *   **OpenRouter**: Completely free Llama 70B, unlimited usage
+    *   **Groq**: 6K tokens/min free, ultra-fast inference
+    *   **Hyperbolic**: 200 RPM free, Llama 405B access
+    *   **DeepSeek**: Very cheap fallback ($0.27 per 1M tokens)
+    *   **OpenAI**: Last resort paid fallback
 *   **Supabase**: PostgreSQL database hosting and user authentication.
 *   **PayPal**: Recurring subscription billing.
 *   **BullMQ**: Job queue system.
