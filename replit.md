@@ -4,6 +4,17 @@
 Viberdoc is an AI-powered documentation intelligence platform designed for Developer Relations teams at established companies with vibrant ecosystems (Stripe, Supabase, Next.js, etc.). The platform aggregates scattered community knowledge from 10+ sources (Stack Overflow, GitHub, YouTube, Reddit, DEV.to, etc.) and generates professional, Apple-style documentation. The system employs a 3-stage AI pipeline to analyze websites, research community sources, and produce enterprise-quality documentation in various formats (PDF, DOCX, web).
 
 ## Recent Changes (October 27, 2025)
+**Documentation Layout Enhancement - Phase 2 Complete**: Implemented enterprise-quality search integration for hosted documentation, matching Supabase/Stripe/Next.js documentation standards:
+- ✅ **Full-Text Search**: PostgreSQL tsvector-based search with ranked results and highlighting
+- ✅ **Search Modal UI**: Professional search interface with keyboard shortcuts (Cmd+K/Ctrl+K)
+- ✅ **Real-Time Search**: Debounced search (300ms) with instant results as users type
+- ✅ **Keyboard Navigation**: Arrow keys to navigate results, Enter to select, ESC to close
+- ✅ **UX States**: Loading, empty, and no-results states for comprehensive user experience
+- ✅ **Accessibility**: ARIA labels, screen reader support, and keyboard-only navigation
+- ✅ **Mobile Responsive**: Touch-friendly interface adapts to all screen sizes
+- ✅ **Search Highlighting**: Query terms highlighted in results with visual emphasis
+- See DOCUMENTATION_LAYOUT_ENHANCEMENT_PLAN.md for complete implementation details
+
 **Multi-Provider LLM Integration (Phases 1 & 2 Complete)**: Transformed Viberdoc to support 7 AI providers with intelligent free-first routing, rate limiting, and quota management:
 
 **Phase 1 - Multi-Provider Infrastructure:**
