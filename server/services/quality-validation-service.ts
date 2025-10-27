@@ -5,7 +5,7 @@
  * Provides comprehensive quality scoring and improvement suggestions.
  */
 
-import type { AIProvider } from '../ai-provider-interface';
+import type { AIProvider } from '../ai-provider';
 
 export interface QualityScore {
   comprehensiveness: number; // 0-100: Are all major features covered?
@@ -78,7 +78,6 @@ export class QualityValidationService {
         [{ role: 'user', content: prompt }],
         { 
           jsonMode: true,
-          temperature: 0.3, // Lower temperature for more consistent analysis
         }
       );
 

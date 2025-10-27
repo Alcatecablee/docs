@@ -9,7 +9,7 @@
  * - SAME-DAY (12h): OpenAI GPT-4 only for everything
  */
 
-import type { AIProvider } from '../ai-provider-interface';
+import type { AIProvider } from '../ai-provider';
 import { QualityValidationService, type QualityValidationResult } from './quality-validation-service';
 
 export type DeliveryOption = 'standard' | 'rush' | 'same-day';

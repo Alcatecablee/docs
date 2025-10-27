@@ -665,10 +665,28 @@ export async function generateEnhancedDocumentation(
   userId: string | null, 
   sessionId?: string,
   userPlan: string = 'free',
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
+  deliveryOption: 'standard' | 'rush' | 'same-day' = 'standard'
 ) {
-  const aiProvider = createAIProvider();
-  // Allow any configured provider via provider rotation
+  // Configure AI provider based on delivery option
+  let providerOrder: string[];
+  
+  if (deliveryOption === 'rush' || deliveryOption === 'same-day') {
+    // Premium delivery: OpenAI GPT-4 ONLY for speed and quality
+    providerOrder = ['openai'];
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`🚀 RUSH DELIVERY MODE - Using OpenAI GPT-4 exclusively`);
+    console.log(`${'='.repeat(60)}\n`);
+  } else {
+    // Standard delivery: Free APIs first, with GPT-4 validation at the end
+    providerOrder = ['deepseek', 'google', 'together', 'openrouter', 'groq', 'hyperbolic', 'openai'];
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`⏱️  STANDARD DELIVERY MODE - Using free APIs + GPT-4 validation`);
+    console.log(`${'='.repeat(60)}\n`);
+  }
+  
+  const aiProvider = createAIProvider(providerOrder);
+  // Provider configured based on delivery option
 
   console.log('Stage 1: Discovering site structure...');
   const pmId = sessionId || `sess_${Math.random().toString(36).slice(2)}`;
@@ -1176,6 +1194,73 @@ Return JSON: {metadata: {title, description, keywords}, searchability: {primary_
     });
   }
   
+  // QUALITY VALIDATION FOR STANDARD DELIVERY
+  let qualityValidation: any = null;
+  
+  if (deliveryOption === 'standard') {
+    console.log('\n' + '='.repeat(60));
+    console.log('🔍 QUALITY VALIDATION - GPT-4 Analysis');
+    console.log('='.repeat(60));
+    
+    try {
+      // Create OpenAI provider for validation
+      const { QualityValidationService } = await import('./services/quality-validation-service');
+      const openaiProvider = createAIProvider(['openai']);
+      const validationService = new QualityValidationService(openaiProvider);
+      
+      // Build sources summary for validation
+      const sourcesSummary = [
+        `Site pages: ${extractedContent.length}`,
+        `Stack Overflow: ${externalResearch.stackoverflow_answers?.length || 0} questions`,
+        `GitHub: ${externalResearch.github_issues?.length || 0} issues`,
+        `YouTube: ${externalResearch.youtube_videos?.length || 0} videos`,
+        `Reddit: ${externalResearch.reddit_posts?.length || 0} discussions`,
+        `Total sources: ${externalResearch.total_sources || 0}`
+      ].join(', ');
+      
+      const validationResult = await validationService.validateDocumentation(
+        siteStructure.productName,
+        JSON.stringify(finalDoc),
+        sourcesSummary,
+        url
+      );
+      
+      qualityValidation = validationResult;
+      
+      console.log(`\n✅ Quality Validation Complete:`);
+      console.log(`   Overall Score: ${validationResult.score.overall}/100`);
+      console.log(`   Status: ${validationResult.passed ? 'PASSED ✓' : 'NEEDS IMPROVEMENT'}`);
+      
+      if (!validationResult.passed) {
+        console.log(`\n⚠️  Quality Validation Issues:`);
+        validationResult.weaknesses.forEach((w, i) => console.log(`   ${i + 1}. ${w}`));
+        console.log(`\n💡 Suggested Improvements:`);
+        validationResult.improvements.forEach((imp, i) => console.log(`   ${i + 1}. ${imp}`));
+      }
+      
+      if (sessionId) {
+        progressTracker.emitActivity(sessionId, {
+          message: `✅ Quality Score: ${validationResult.score.overall}/100 - ${validationResult.passed ? 'Passed' : 'Acceptable'}`,
+          type: validationResult.passed ? 'success' : 'info'
+        }, 7, 'Quality Validation');
+      }
+      
+    } catch (validationError) {
+      console.error('Quality validation failed:', validationError);
+      // Don't block delivery on validation failure
+      if (sessionId) {
+        progressTracker.emitActivity(sessionId, {
+          message: `⚠️ Quality validation unavailable - proceeding with delivery`,
+          type: 'warning'
+        }, 7, 'Quality Validation');
+      }
+    }
+    
+    console.log('='.repeat(60) + '\n');
+  } else {
+    console.log(`\n⏭️  Quality validation skipped for ${deliveryOption} delivery (GPT-4 already ensures quality)\n`);
+  }
+  
   // Return documentation data (will be saved in transaction by caller)
   if (sessionId) {
     progressTracker.emitProgress(sessionId, {
@@ -1198,7 +1283,8 @@ Return JSON: {metadata: {title, description, keywords}, searchability: {primary_
     finalDoc,
     seoMetadata,
     schemaMarkup,
-    sitemapEntries
+    sitemapEntries,
+    qualityValidation // Include validation results if available
   };
 }
 

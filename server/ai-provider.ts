@@ -424,7 +424,9 @@ export class AIProvider {
   }
 }
 
-export function createAIProvider(): AIProvider {
+export function createAIProvider(customProviderOrder?: string[]): AIProvider {
+  const envProviderOrder = (process.env.AI_PROVIDER_ORDER || '').split(',').map(s => s.trim()).filter(Boolean);
+  
   return new AIProvider({
     googleApiKey: process.env.GOOGLE_API_KEY,
     togetherApiKey: process.env.TOGETHER_API_KEY,
@@ -435,6 +437,6 @@ export function createAIProvider(): AIProvider {
     groqApiKey: process.env.GROQ_API_KEY,
     ollamaBaseUrl: process.env.OLLAMA_BASE_URL,
     ollamaModel: process.env.OLLAMA_MODEL,
-    providerOrder: (process.env.AI_PROVIDER_ORDER || '').split(',').map(s => s.trim()).filter(Boolean),
+    providerOrder: customProviderOrder || envProviderOrder,
   });
 }
