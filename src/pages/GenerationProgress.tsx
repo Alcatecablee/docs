@@ -36,6 +36,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { EditableDocViewer } from "@/components/EditableDocViewer";
 import { useDocEditor } from "@/hooks/use-doc-editor";
 import type { Documentation } from "../../shared/doc-editor-types";
+import { parsePreviewToDocumentation } from "@/lib/doc-preview-parser";
 
 interface Stage {
   id: number;
@@ -323,6 +324,15 @@ export default function GenerationProgress() {
 
         if (progressData.previewContent) {
           setPreviewContent(progressData.previewContent);
+          // Parse HTML preview into Documentation structure for EditableDocViewer
+          const parsedDoc = parsePreviewToDocumentation(
+            progressData.previewContent, 
+            targetUrl || 'Documentation'
+          );
+          if (parsedDoc) {
+            setPreviewDocumentation(parsedDoc);
+            docEditor.loadDocumentation(parsedDoc);
+          }
         }
 
         if (progressData.metrics) {
