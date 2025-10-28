@@ -3,6 +3,20 @@
 ## Overview
 Viberdoc is an AI-powered documentation intelligence platform designed for Developer Relations teams at established companies with vibrant ecosystems (Stripe, Supabase, Next.js, etc.). The platform aggregates scattered community knowledge from 10+ sources (Stack Overflow, GitHub, YouTube, Reddit, DEV.to, etc.) and generates professional, Apple-style documentation. The system employs a 3-stage AI pipeline to analyze websites, research community sources, and produce enterprise-quality documentation in various formats (PDF, DOCX, web).
 
+## Recent Changes (October 28, 2025)
+**Block-Level Editing System - Phase 2 Complete**: Implemented real-time inline editing capabilities for generated documentation with professional rich text and code editing:
+- ✅ **Rich Text Editor**: Tiptap integration for paragraph editing with bold, italic, links, and inline code formatting
+- ✅ **Heading Editor**: Inline heading editing with level selector (H2-H6) and visual controls
+- ✅ **List Management**: Dynamic list editing with add/remove items and ordered/unordered conversion
+- ✅ **Code Block Editor**: CodeMirror 6 integration with syntax highlighting for 20+ languages and language selector
+- ✅ **Callout Editor**: Inline callout editing with type selector (info, warning, success, error)
+- ✅ **Image Manager**: Upload, URL editing, alt text, and caption management for documentation images
+- ✅ **Edit Indicators**: Visual feedback with hover effects, edited block highlighting, and unsaved changes badge
+- ✅ **State Management**: Centralized state handling in useDocEditor hook with immutable updates and real-time UI sync
+- ✅ **Edit Mode Toggle**: One-click toggle between read-only preview and editing mode
+- ✅ **Architect Verified**: All components tested and verified by architect, state wiring confirmed functional
+- **Next Steps**: Phase 3 - Save/publish edited documentation and undo/redo functionality
+
 ## Recent Changes (October 27, 2025)
 **Documentation Layout Enhancement - Phase 2 Complete**: Implemented enterprise-quality search integration for hosted documentation, matching Supabase/Stripe/Next.js documentation standards:
 - ✅ **Full-Text Search**: PostgreSQL tsvector-based search with ranked results and highlighting
