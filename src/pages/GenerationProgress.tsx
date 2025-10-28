@@ -35,6 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EditableDocViewer } from "@/components/EditableDocViewer";
 import { useDocEditor } from "@/hooks/use-doc-editor";
+import { useAutoSave } from "@/hooks/use-auto-save";
 import type { Documentation } from "../../shared/doc-editor-types";
 import { parsePreviewToDocumentation } from "@/lib/doc-preview-parser";
 
@@ -131,6 +132,20 @@ export default function GenerationProgress() {
   
   // Doc editor hook for managing editable preview
   const docEditor = useDocEditor();
+  
+  // Phase 3: Auto-save functionality
+  const autoSave = useAutoSave({
+    documentation: docEditor.documentation,
+    isDirty: docEditor.isDirty,
+    documentationId: parseInt(documentationId) || 0,
+    onSave: async (doc) => {
+      if (documentationId) {
+        await docEditor.saveDraft(parseInt(documentationId));
+      }
+    },
+    interval: 30000, // 30 seconds
+  });
+  
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     connected: false,
     reconnecting: false,
@@ -1117,8 +1132,41 @@ export default function GenerationProgress() {
                   <EditableDocViewer
                     documentation={docEditor.documentation}
                     isEditing={docEditor.isEditing}
+                    isDirty={docEditor.isDirty}
+                    canUndo={docEditor.canUndo}
+                    canRedo={docEditor.canRedo}
+                    isSaving={autoSave.isSaving}
+                    lastSaved={autoSave.lastSaved}
                     onEditModeToggle={docEditor.toggleEditMode}
                     onBlockUpdate={docEditor.updateBlock}
+                    onSave={async () => {
+                      if (documentationId) {
+                        await docEditor.saveDraft(parseInt(documentationId));
+                        toast({
+                          title: "Saved!",
+                          description: "Your documentation draft has been saved.",
+                        });
+                      }
+                    }}
+                    onPublish={async () => {
+                      if (documentationId) {
+                        try {
+                          await docEditor.publish(parseInt(documentationId));
+                          toast({
+                            title: "Published!",
+                            description: "Your documentation has been published successfully.",
+                          });
+                        } catch (error: any) {
+                          toast({
+                            title: "Error",
+                            description: error.message,
+                            variant: "destructive",
+                          });
+                        }
+                      }
+                    }}
+                    onUndo={docEditor.undo}
+                    onRedo={docEditor.redo}
                     isLoading={!isComplete && progress < 100}
                   />
                 ) : targetUrl ? (

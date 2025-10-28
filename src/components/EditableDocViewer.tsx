@@ -1,6 +1,6 @@
 /**
  * EditableDocViewer Component
- * Phase 2: Block-level editing with rich text, code, and image editing
+ * Phase 3: Real-time editing with Save/Publish and Auto-save
  */
 
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,10 @@ import {
   EyeIcon,
   PencilIcon,
   ArrowPathIcon,
+  CloudArrowUpIcon,
+  CheckCircleIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
 } from '@heroicons/react/24/outline';
 import type { Documentation, Section, ContentBlock } from '../../shared/doc-editor-types';
 import { EditableParagraph } from './doc-editor/EditableParagraph';
@@ -17,24 +21,77 @@ import { EditableList } from './doc-editor/EditableList';
 import { EditableCodeBlock } from './doc-editor/EditableCodeBlock';
 import { EditableCallout } from './doc-editor/EditableCallout';
 import { EditableImage } from './doc-editor/EditableImage';
+import { useEffect } from 'react';
 
 export interface EditableDocViewerProps {
   documentation: Documentation | null;
   isEditing: boolean;
+  isDirty?: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  isSaving?: boolean;
+  lastSaved?: Date | null;
   onEditModeToggle?: () => void;
   onDocumentChange?: (doc: Documentation) => void;
   onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
+  onSave?: () => Promise<void>;
+  onPublish?: () => Promise<void>;
+  onUndo?: () => void;
+  onRedo?: () => void;
   isLoading?: boolean;
 }
 
 export function EditableDocViewer({
   documentation,
   isEditing,
+  isDirty = false,
+  canUndo = false,
+  canRedo = false,
+  isSaving = false,
+  lastSaved = null,
   onEditModeToggle,
   onDocumentChange,
   onBlockUpdate,
+  onSave,
+  onPublish,
+  onUndo,
+  onRedo,
   isLoading = false,
 }: EditableDocViewerProps) {
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+S or Ctrl+S to save
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (isDirty && onSave) {
+          onSave();
+        }
+      }
+      
+      // Cmd+Z or Ctrl+Z to undo
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo && onUndo) {
+          onUndo();
+        }
+      }
+      
+      // Cmd+Shift+Z or Ctrl+Shift+Z to redo
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        if (canRedo && onRedo) {
+          onRedo();
+        }
+      }
+    };
+
+    if (isEditing) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isEditing, isDirty, canUndo, canRedo, onSave, onUndo, onRedo]);
 
   if (isLoading) {
     return (
@@ -71,17 +128,94 @@ export function EditableDocViewer({
               <><EyeIcon className="h-3 w-3 mr-1 inline" />Preview</>
             )}
           </Badge>
+          
+          {/* Save Status */}
+          {isEditing && (
+            <>
+              {isSaving ? (
+                <Badge variant="outline" className="text-xs">
+                  <CloudArrowUpIcon className="h-3 w-3 mr-1 inline animate-pulse" />
+                  Saving...
+                </Badge>
+              ) : isDirty ? (
+                <Badge variant="outline" className="text-xs text-amber-600">
+                  Unsaved changes
+                </Badge>
+              ) : lastSaved ? (
+                <Badge variant="outline" className="text-xs text-green-600">
+                  <CheckCircleIcon className="h-3 w-3 mr-1 inline" />
+                  Saved {formatTimeAgo(lastSaved)}
+                </Badge>
+              ) : null}
+            </>
+          )}
         </div>
         
-        {/* Edit Mode Toggle */}
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onEditModeToggle}
-          className="text-xs"
-        >
-          {isEditing ? 'Exit Edit Mode' : 'Edit Documentation'}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {isEditing && (
+            <>
+              {/* Undo/Redo */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onUndo}
+                disabled={!canUndo}
+                title="Undo (Cmd+Z)"
+                className="text-xs"
+              >
+                <ArrowUturnLeftIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onRedo}
+                disabled={!canRedo}
+                title="Redo (Cmd+Shift+Z)"
+                className="text-xs"
+              >
+                <ArrowUturnRightIcon className="h-4 w-4" />
+              </Button>
+              
+              <div className="w-px h-6 bg-gray-300" />
+              
+              {/* Save Button */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onSave}
+                disabled={!isDirty || isSaving}
+                title="Save (Cmd+S)"
+                className="text-xs"
+              >
+                <CloudArrowUpIcon className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+              
+              {/* Publish Button */}
+              <Button
+                size="sm"
+                variant="default"
+                onClick={onPublish}
+                disabled={isDirty}
+                title="Publish changes"
+                className="text-xs"
+              >
+                Publish
+              </Button>
+            </>
+          )}
+          
+          {/* Edit Mode Toggle */}
+          <Button
+            size="sm"
+            variant={isEditing ? "secondary" : "outline"}
+            onClick={onEditModeToggle}
+            className="text-xs"
+          >
+            {isEditing ? 'Exit Edit Mode' : 'Edit Documentation'}
+          </Button>
+        </div>
       </div>
 
       {/* Document Content */}
@@ -242,4 +376,21 @@ function ContentBlockRenderer({ block, sectionId, isEditing, onBlockUpdate }: Co
     default:
       return null;
   }
+}
+
+// Helper function to format time ago
+function formatTimeAgo(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 10) return 'just now';
+  if (seconds < 60) return `${seconds}s ago`;
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }

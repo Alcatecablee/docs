@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - Documentation</title>
+  <meta name="description" content="{{description}}">
+  
+  <!-- SEO Meta Tags -->
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:type" content="website">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary-color: {{primaryColor}};
+      --secondary-color: {{secondaryColor}};
+      --accent-color: {{accentColor}};
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --border-color: #e5e7eb;
+      --sidebar-width: 280px;
+      --toc-width: 240px;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #111827;
+        --bg-secondary: #1f2937;
+        --text-primary: #f9fafb;
+        --text-secondary: #9ca3af;
+        --border-color: #374151;
+      }
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+    
+    /* Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .search-box {
+      position: relative;
+      max-width: 400px;
+      flex: 1;
+      margin: 0 2rem;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+    
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
+      min-height: calc(100vh - 65px);
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-color);
+      padding: 1.5rem;
+      overflow-y: auto;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+    }
+    
+    .sidebar-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .sidebar-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      transition: all 0.15s;
+    }
+    
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: var(--bg-secondary);
+      color: var(--primary-color);
+    }
+    
+    .sidebar-link-icon {
+      margin-right: 0.5rem;
+      font-size: 1.25rem;
+    }
+    
+    /* Main Content */
+    .main-content {
+      max-width: 800px;
+      padding: 2rem 3rem;
+      background: var(--bg-primary);
+    }
+    
+    .content h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+    
+    .content h2 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin: 2.5rem 0 1rem;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+    
+    .content h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 2rem 0 0.75rem;
+      color: var(--text-primary);
+    }
+    
+    .content p {
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+    
+    .content ul, .content ol {
+      margin: 1rem 0 1rem 1.5rem;
+      color: var(--text-secondary);
+    }
+    
+    .content li {
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Code Blocks */
+    .content pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+    
+    .content code {
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 0.875rem;
+    }
+    
+    .content :not(pre) > code {
+      background: var(--bg-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      color: var(--accent-color);
+    }
+    
+    .copy-button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.375rem;
+      color: #e2e8f0;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Callouts */
+    .callout {
+      padding: 1rem 1.25rem;
+      border-left: 4px solid;
+      border-radius: 0.375rem;
+      margin: 1.5rem 0;
+    }
+    
+    .callout-info {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+    
+    .callout-warning {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+    
+    .callout-error {
+      background: #fef2f2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+    
+    .callout-success {
+      background: #f0fdf4;
+      border-color: #10b981;
+      color: #065f46;
+    }
+    
+    /* Table of Contents */
+    .toc {
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+    
+    .toc-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+    
+    .toc-link {
+      display: block;
+      padding: 0.375rem 0;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.15s;
+      border-left: 2px solid transparent;
+      padding-left: 0.75rem;
+    }
+    
+    .toc-link:hover,
+    .toc-link.active {
+      color: var(--primary-color);
+      border-left-color: var(--primary-color);
+    }
+    
+    .toc-link-h3 {
+      padding-left: 1.5rem;
+      font-size: 0.8125rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1280px) {
+      .layout {
+        grid-template-columns: var(--sidebar-width) 1fr;
+      }
+      .toc {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
+      }
+      .main-content {
+        padding: 1.5rem;
+      }
+      .search-box {
+        margin: 0 1rem;
+      }
+    }
+    
+    /* Mobile Menu Toggle */
+    .mobile-menu-btn {
+      display: none;
+      padding: 0.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: block;
+      }
+    }
+    
+    /* Scroll Spy Animation */
+    .toc-link.active {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    <div class="header-title">{{title}}</div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search documentation... (Cmd+K)"
+        id="searchInput"
+        onkeyup="handleSearch(event)"
+      >
+    </div>
+    <div></div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Contents</div>
+        {{#sections}}
+        <a href="#{{id}}" class="sidebar-link">
+          <span class="sidebar-link-icon">{{icon}}</span>
+          {{title}}
+        </a>
+        {{/sections}}
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <article class="content">
+        <h1>{{title}}</h1>
+        <p class="text-lg">{{description}}</p>
+        
+        {{#sections}}
+        <section id="{{id}}">
+          <h2>{{icon}} {{title}}</h2>
+          {{{content}}}
+        </section>
+        {{/sections}}
+      </article>
+    </main>
+
+    <!-- Table of Contents -->
+    <aside class="toc" id="toc">
+      <div class="toc-title">On This Page</div>
+      <nav id="tocNav">
+        <!-- Generated dynamically by JavaScript -->
+      </nav>
+    </aside>
+  </div>
+
+  <script>
+    // Generate Table of Contents
+    function generateTOC() {
+      const content = document.querySelector('.content');
+      const headings = content.querySelectorAll('h2, h3');
+      const tocNav = document.getElementById('tocNav');
+      
+      headings.forEach(heading => {
+        const id = heading.id || heading.textContent.toLowerCase().replace(/\s+/g, '-');
+        heading.id = id;
+        
+        const link = document.createElement('a');
+        link.href = `#${id}`;
+        link.textContent = heading.textContent;
+        link.className = `toc-link ${heading.tagName === 'H3' ? 'toc-link-h3' : ''}`;
+        link.onclick = (e) => {
+          e.preventDefault();
+          document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        tocNav.appendChild(link);
+      });
+    }
+    
+    // Scroll Spy for TOC
+    function scrollSpy() {
+      const tocLinks = document.querySelectorAll('.toc-link');
+      const headings = document.querySelectorAll('.content h2, .content h3');
+      
+      let current = '';
+      
+      headings.forEach(heading => {
+        const rect = heading.getBoundingClientRect();
+        if (rect.top <= 100) {
+          current = heading.id;
+        }
+      });
+      
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+    
+    // Search Functionality
+    function handleSearch(event) {
+      const query = event.target.value.toLowerCase();
+      const sections = document.querySelectorAll('.content section');
+      
+      if (!query) {
+        sections.forEach(section => section.style.display = 'block');
+        return;
+      }
+      
+      sections.forEach(section => {
+        const text = section.textContent.toLowerCase();
+        section.style.display = text.includes(query) ? 'block' : 'none';
+      });
+    }
+    
+    // Keyboard shortcut for search
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+    
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.textContent = 'Copy';
+      button.onclick = () => {
+        const code = pre.querySelector('code').textContent;
+        navigator.clipboard.writeText(code);
+        button.textContent = 'Copied!';
+        setTimeout(() => button.textContent = 'Copy', 2000);
+      };
+      pre.appendChild(button);
+    });
+    
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    }
+    
+    // Initialize
+    generateTOC();
+    window.addEventListener('scroll', scrollSpy);
+    scrollSpy();
+  </script>
+</body>
+</html>

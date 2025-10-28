@@ -29,6 +29,11 @@ export interface UseDocEditorResult {
   addSection: (section: any, index?: number) => void;
   deleteSection: (sectionId: string) => void;
   updateBlock: (sectionId: string, blockId: string, updates: any) => void;
+  
+  // Phase 3: Save/Publish
+  saveDraft: (documentationId: number) => Promise<void>;
+  publish: (documentationId: number) => Promise<void>;
+  markClean: () => void;
 }
 
 export function useDocEditor(): UseDocEditorResult {
@@ -271,6 +276,71 @@ export function useDocEditor(): UseDocEditorResult {
   const canUndo = state.historyIndex >= 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
+  // ========================================
+  // PHASE 3: Save/Publish Actions
+  // ========================================
+
+  const saveDraft = useCallback(async (documentationId: number) => {
+    if (!state.documentation) {
+      throw new Error('No documentation to save');
+    }
+
+    const response = await fetch(`/api/documentations/${documentationId}/draft`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        content: state.documentation,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to save draft');
+    }
+
+    // Mark as clean after successful save
+    setState(prev => ({
+      ...prev,
+      isDirty: false,
+    }));
+  }, [state.documentation]);
+
+  const publish = useCallback(async (documentationId: number) => {
+    if (!state.documentation) {
+      throw new Error('No documentation to publish');
+    }
+
+    if (state.isDirty) {
+      throw new Error('Please save your changes before publishing');
+    }
+
+    const response = await fetch(`/api/documentations/${documentationId}/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to publish');
+    }
+
+    // Update original doc after publishing
+    setOriginalDoc(state.documentation);
+  }, [state.documentation, state.isDirty]);
+
+  const markClean = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      isDirty: false,
+    }));
+  }, []);
+
   return {
     documentation: state.documentation,
     isEditing: state.isEditing,
@@ -286,5 +356,8 @@ export function useDocEditor(): UseDocEditorResult {
     addSection,
     deleteSection,
     updateBlock,
+    saveDraft,
+    publish,
+    markClean,
   };
 }
