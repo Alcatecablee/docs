@@ -1,25 +1,30 @@
 /**
  * useDocEditor Hook
  * State management for the real-time documentation editor
- * Phase 1: Basic state management (read-only)
- * Future: Undo/redo, edit tracking, auto-save
+ * Phase 3: Undo/redo, edit tracking, auto-save
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Documentation, EditorState, EditorAction } from '../../shared/doc-editor-types';
+
+const MAX_HISTORY_SIZE = 50; // Maximum number of undo/redo steps
 
 export interface UseDocEditorResult {
   // State
   documentation: Documentation | null;
   isEditing: boolean;
   isDirty: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
   
   // Actions
   loadDocumentation: (doc: Documentation) => void;
   toggleEditMode: () => void;
   resetToOriginal: () => void;
+  undo: () => void;
+  redo: () => void;
   
-  // Future: Phase 2-4 actions
+  // Edit actions
   updateSection: (sectionId: string, updates: any) => void;
   addSection: (section: any, index?: number) => void;
   deleteSection: (sectionId: string) => void;
@@ -40,17 +45,29 @@ export function useDocEditor(): UseDocEditorResult {
   });
   
   const [originalDoc, setOriginalDoc] = useState<Documentation | null>(null);
+  
+  // Track if we're in an undo/redo operation to prevent adding to history
+  const isUndoRedoOperation = useRef(false);
 
   // ========================================
   // PHASE 1: Basic State Management
   // ========================================
 
   const loadDocumentation = useCallback((doc: Documentation) => {
+    // Seed history with initial state
+    const initialHistory = [{
+      documentation: JSON.parse(JSON.stringify(doc)),
+      timestamp: Date.now(),
+      action: 'Load documentation',
+    }];
+    
     setState(prev => ({
       ...prev,
       documentation: doc,
       isDirty: false,
       isEditing: false,
+      history: initialHistory,
+      historyIndex: 0,
     }));
     setOriginalDoc(doc); // Save original for reset
   }, []);
@@ -73,26 +90,152 @@ export function useDocEditor(): UseDocEditorResult {
   }, [originalDoc]);
 
   // ========================================
-  // PHASE 2-4: Edit Actions (Placeholders)
+  // PHASE 3: History Management
+  // ========================================
+
+  const addToHistory = useCallback((documentation: Documentation, actionDescription: string) => {
+    if (isUndoRedoOperation.current) return;
+    
+    setState(prev => {
+      // Remove any history after current index (when editing after undo)
+      const newHistory = prev.history.slice(0, prev.historyIndex + 1);
+      
+      // Add new history entry
+      newHistory.push({
+        documentation: JSON.parse(JSON.stringify(documentation)), // Deep copy
+        timestamp: Date.now(),
+        action: actionDescription,
+      });
+      
+      // Trim history if it exceeds max size
+      if (newHistory.length > MAX_HISTORY_SIZE) {
+        newHistory.shift();
+      }
+      
+      return {
+        ...prev,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+      };
+    });
+  }, []);
+
+  const undo = useCallback(() => {
+    setState(prev => {
+      if (prev.historyIndex <= 0) return prev;
+      
+      isUndoRedoOperation.current = true;
+      
+      // Go back one step in history
+      const previousEntry = prev.history[prev.historyIndex - 1];
+      
+      setTimeout(() => {
+        isUndoRedoOperation.current = false;
+      }, 0);
+      
+      return {
+        ...prev,
+        documentation: previousEntry.documentation,
+        historyIndex: prev.historyIndex - 1,
+        isDirty: true,
+      };
+    });
+  }, []);
+
+  const redo = useCallback(() => {
+    setState(prev => {
+      if (prev.historyIndex >= prev.history.length - 1) return prev;
+      
+      isUndoRedoOperation.current = true;
+      
+      // Move forward one step in history
+      const nextEntry = prev.history[prev.historyIndex + 1];
+      
+      setTimeout(() => {
+        isUndoRedoOperation.current = false;
+      }, 0);
+      
+      return {
+        ...prev,
+        documentation: nextEntry.documentation,
+        historyIndex: prev.historyIndex + 1,
+        isDirty: true,
+      };
+    });
+  }, []);
+
+  // ========================================
+  // PHASE 3: Edit Actions with History
   // ========================================
 
   const updateSection = useCallback((sectionId: string, updates: any) => {
-    // TODO: Phase 3 - Implement section updates
-    console.log('updateSection (Phase 3):', sectionId, updates);
-  }, []);
+    setState(prev => {
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, 'Update section');
+      
+      const newDoc = { ...prev.documentation };
+      const sectionIndex = newDoc.sections.findIndex(s => s.id === sectionId);
+      
+      if (sectionIndex === -1) return prev;
+      
+      const oldSection = newDoc.sections[sectionIndex];
+      newDoc.sections = [...newDoc.sections];
+      newDoc.sections[sectionIndex] = { ...oldSection, ...updates };
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true,
+      };
+    });
+  }, [addToHistory]);
 
   const addSection = useCallback((section: any, index?: number) => {
-    // TODO: Phase 3 - Implement add section
-    console.log('addSection (Phase 3):', section, index);
-  }, []);
+    setState(prev => {
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, `Add section: ${section.title}`);
+      
+      const newDoc = { ...prev.documentation };
+      const insertIndex = index !== undefined ? index : newDoc.sections.length;
+      
+      newDoc.sections = [...newDoc.sections];
+      newDoc.sections.splice(insertIndex, 0, section);
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true,
+      };
+    });
+  }, [addToHistory]);
 
   const deleteSection = useCallback((sectionId: string) => {
-    // TODO: Phase 3 - Implement delete section
-    console.log('deleteSection (Phase 3):', sectionId);
-  }, []);
+    setState(prev => {
+      const deletedSection = prev.documentation.sections.find(s => s.id === sectionId);
+      
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, `Delete section: ${deletedSection?.title || 'Unknown'}`);
+      
+      const newDoc = { ...prev.documentation };
+      newDoc.sections = newDoc.sections.filter(s => s.id !== sectionId);
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true,
+      };
+    });
+  }, [addToHistory]);
 
   const updateBlock = useCallback((sectionId: string, blockId: string, updates: any) => {
     setState(prev => {
+      // Find the block to get its type for the history message
+      const section = prev.documentation.sections.find(s => s.id === sectionId);
+      const block = section?.content.find(b => b.id === blockId);
+      
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, `Edit ${block?.type || 'block'}`);
+      
       const newDoc = { ...prev.documentation };
       
       // Find the section
@@ -100,21 +243,21 @@ export function useDocEditor(): UseDocEditorResult {
       if (sectionIndex === -1) return prev;
       
       // Clone the section
-      const section = { ...newDoc.sections[sectionIndex] };
+      const newSection = { ...newDoc.sections[sectionIndex] };
       
       // Find and update the block
-      const blockIndex = section.content.findIndex(b => b.id === blockId);
+      const blockIndex = newSection.content.findIndex(b => b.id === blockId);
       if (blockIndex === -1) return prev;
       
-      section.content = [...section.content];
-      section.content[blockIndex] = {
-        ...section.content[blockIndex],
+      newSection.content = [...newSection.content];
+      newSection.content[blockIndex] = {
+        ...newSection.content[blockIndex],
         ...updates
       };
       
       // Update the section in the document
       newDoc.sections = [...newDoc.sections];
-      newDoc.sections[sectionIndex] = section;
+      newDoc.sections[sectionIndex] = newSection;
       
       return {
         ...prev,
@@ -122,15 +265,23 @@ export function useDocEditor(): UseDocEditorResult {
         isDirty: true
       };
     });
-  }, []);
+  }, [addToHistory]);
+
+  // Compute derived state
+  const canUndo = state.historyIndex >= 0;
+  const canRedo = state.historyIndex < state.history.length - 1;
 
   return {
     documentation: state.documentation,
     isEditing: state.isEditing,
     isDirty: state.isDirty,
+    canUndo,
+    canRedo,
     loadDocumentation,
     toggleEditMode,
     resetToOriginal,
+    undo,
+    redo,
     updateSection,
     addSection,
     deleteSection,

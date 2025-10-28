@@ -211,6 +211,7 @@ export const documentationsRelations = relations(documentations, ({ one, many })
     references: [themes.id],
   }),
   versions: many(documentationVersions),
+  drafts: many(documentationDrafts),
 }));
 
 export const documentationVersionsRelations = relations(documentationVersions, ({ one }) => ({
@@ -422,6 +423,35 @@ export const analyticsSummary = pgTable("analytics_summary", {
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
+// PHASE 3: Documentation drafts for real-time editing
+export const documentationDrafts = pgTable("documentation_drafts", {
+  id: serial("id").primaryKey(),
+  documentation_id: integer("documentation_id").notNull(),
+  user_id: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  sections: jsonb("sections").notNull(), // Structured JSON with sections and content blocks
+  metadata: jsonb("metadata"), // Additional draft metadata
+  is_published: boolean("is_published").notNull().default(false),
+  last_saved_at: timestamp("last_saved_at").notNull().defaultNow(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// PHASE 3: Edit history for undo/redo functionality
+export const documentationEditHistory = pgTable("documentation_edit_history", {
+  id: serial("id").primaryKey(),
+  draft_id: integer("draft_id").notNull(),
+  user_id: integer("user_id").notNull(),
+  action_type: text("action_type").notNull(), // 'update_block', 'add_section', 'delete_section', 'update_section', etc.
+  target_type: text("target_type").notNull(), // 'section', 'block', 'document'
+  target_id: text("target_id"), // ID of the section or block being edited
+  previous_state: jsonb("previous_state"), // Previous state for undo
+  new_state: jsonb("new_state"), // New state for redo
+  change_description: text("change_description"), // Human-readable description
+  created_at: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Relations for new tables
 export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   user: one(users, {
@@ -530,6 +560,29 @@ export const analyticsSummaryRelations = relations(analyticsSummary, ({ one }) =
   documentation: one(documentations, {
     fields: [analyticsSummary.documentation_id],
     references: [documentations.id],
+  }),
+}));
+
+export const documentationDraftsRelations = relations(documentationDrafts, ({ one, many }) => ({
+  documentation: one(documentations, {
+    fields: [documentationDrafts.documentation_id],
+    references: [documentations.id],
+  }),
+  user: one(users, {
+    fields: [documentationDrafts.user_id],
+    references: [users.id],
+  }),
+  editHistory: many(documentationEditHistory),
+}));
+
+export const documentationEditHistoryRelations = relations(documentationEditHistory, ({ one }) => ({
+  draft: one(documentationDrafts, {
+    fields: [documentationEditHistory.draft_id],
+    references: [documentationDrafts.id],
+  }),
+  user: one(users, {
+    fields: [documentationEditHistory.user_id],
+    references: [users.id],
   }),
 }));
 

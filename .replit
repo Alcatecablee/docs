@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "bun", "postgresql-16"]
+modules = ["nodejs-20", "web", "postgresql-16"]
 [agent]
 expertMode = true
 integrations = ["javascript_database:1.0.0"]
@@ -33,7 +33,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bun --bun server/index.ts"
+args = "npm run dev"
 waitForPort = 5000
 
 [[ports]]
@@ -43,10 +43,6 @@ externalPort = 3003
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 34447
-externalPort = 6000
 
 [[ports]]
 localPort = 34887

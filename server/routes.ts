@@ -26,6 +26,7 @@ import auditRouter from './routes/audit';
 import dashboardRouter from './routes/dashboard';
 import validationRouter from './routes/validation';
 import adminRouter from './routes/admin';
+import draftsRouter from './routes/drafts';
 import { fetchImagesForExport, limitImagesForExport } from './image-utils';
 import { db } from './db';
 import { users } from '../shared/schema';
@@ -2132,6 +2133,9 @@ router.use('/api/health', healthRouter);
 
 // Mount version management router
 router.use(versionsRouter);
+
+// Mount documentation drafts router (Phase 3: Real-time editing)
+router.use(draftsRouter);
 
 // TIER 3: Competitive Features
 // Mount incremental updates router (3.2)
