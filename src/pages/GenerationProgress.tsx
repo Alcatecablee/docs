@@ -1115,10 +1115,10 @@ export default function GenerationProgress() {
               <div className="flex-1 relative bg-white overflow-hidden">
                 {previewDocumentation || previewContent ? (
                   <EditableDocViewer
-                    documentation={previewDocumentation}
+                    documentation={docEditor.documentation}
                     isEditing={docEditor.isEditing}
                     onEditModeToggle={docEditor.toggleEditMode}
-                    onDocumentChange={(doc) => setPreviewDocumentation(doc)}
+                    onBlockUpdate={docEditor.updateBlock}
                     isLoading={!isComplete && progress < 100}
                   />
                 ) : targetUrl ? (

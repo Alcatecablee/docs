@@ -92,8 +92,36 @@ export function useDocEditor(): UseDocEditorResult {
   }, []);
 
   const updateBlock = useCallback((sectionId: string, blockId: string, updates: any) => {
-    // TODO: Phase 2 - Implement block updates
-    console.log('updateBlock (Phase 2):', sectionId, blockId, updates);
+    setState(prev => {
+      const newDoc = { ...prev.documentation };
+      
+      // Find the section
+      const sectionIndex = newDoc.sections.findIndex(s => s.id === sectionId);
+      if (sectionIndex === -1) return prev;
+      
+      // Clone the section
+      const section = { ...newDoc.sections[sectionIndex] };
+      
+      // Find and update the block
+      const blockIndex = section.content.findIndex(b => b.id === blockId);
+      if (blockIndex === -1) return prev;
+      
+      section.content = [...section.content];
+      section.content[blockIndex] = {
+        ...section.content[blockIndex],
+        ...updates
+      };
+      
+      // Update the section in the document
+      newDoc.sections = [...newDoc.sections];
+      newDoc.sections[sectionIndex] = section;
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true
+      };
+    });
   }, []);
 
   return {

@@ -1,7 +1,6 @@
 /**
  * EditableDocViewer Component
- * Phase 1: Read-only preview with proper formatting
- * Future: Inline editing, drag-and-drop, block management
+ * Phase 2: Block-level editing with rich text, code, and image editing
  */
 
 import { Button } from '@/components/ui/button';
@@ -12,12 +11,19 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import type { Documentation, Section, ContentBlock } from '../../shared/doc-editor-types';
+import { EditableParagraph } from './doc-editor/EditableParagraph';
+import { EditableHeading } from './doc-editor/EditableHeading';
+import { EditableList } from './doc-editor/EditableList';
+import { EditableCodeBlock } from './doc-editor/EditableCodeBlock';
+import { EditableCallout } from './doc-editor/EditableCallout';
+import { EditableImage } from './doc-editor/EditableImage';
 
 export interface EditableDocViewerProps {
   documentation: Documentation | null;
   isEditing: boolean;
   onEditModeToggle?: () => void;
   onDocumentChange?: (doc: Documentation) => void;
+  onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
   isLoading?: boolean;
 }
 
@@ -26,10 +32,9 @@ export function EditableDocViewer({
   isEditing,
   onEditModeToggle,
   onDocumentChange,
+  onBlockUpdate,
   isLoading = false,
 }: EditableDocViewerProps) {
-  
-  // TODO Phase 2: Add syntax highlighting with Prism.js or similar
 
   if (isLoading) {
     return (
@@ -68,12 +73,11 @@ export function EditableDocViewer({
           </Badge>
         </div>
         
-        {/* Edit Mode Toggle (Phase 2) */}
+        {/* Edit Mode Toggle */}
         <Button
           size="sm"
           variant="outline"
           onClick={onEditModeToggle}
-          disabled={true} // Phase 1: Disabled until Phase 2
           className="text-xs"
         >
           {isEditing ? 'Exit Edit Mode' : 'Edit Documentation'}
@@ -101,6 +105,7 @@ export function EditableDocViewer({
               key={section.id || index}
               section={section}
               isEditing={isEditing}
+              onBlockUpdate={onBlockUpdate}
             />
           ))}
         </article>
@@ -116,9 +121,10 @@ export function EditableDocViewer({
 interface SectionRendererProps {
   section: Section;
   isEditing: boolean;
+  onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
 }
 
-function SectionRenderer({ section, isEditing }: SectionRendererProps) {
+function SectionRenderer({ section, isEditing, onBlockUpdate }: SectionRendererProps) {
   return (
     <section className="space-y-4 scroll-mt-20" id={section.id}>
       {/* Section Header */}
@@ -135,7 +141,9 @@ function SectionRenderer({ section, isEditing }: SectionRendererProps) {
           <ContentBlockRenderer
             key={block.id || index}
             block={block}
+            sectionId={section.id}
             isEditing={isEditing}
+            onBlockUpdate={onBlockUpdate}
           />
         ))}
       </div>
@@ -149,107 +157,86 @@ function SectionRenderer({ section, isEditing }: SectionRendererProps) {
 
 interface ContentBlockRendererProps {
   block: ContentBlock;
+  sectionId: string;
   isEditing: boolean;
+  onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
 }
 
-function ContentBlockRenderer({ block, isEditing }: ContentBlockRendererProps) {
+function ContentBlockRenderer({ block, sectionId, isEditing, onBlockUpdate }: ContentBlockRendererProps) {
+  const handleUpdate = (updates: Partial<ContentBlock>) => {
+    if (onBlockUpdate) {
+      onBlockUpdate(sectionId, block.id, updates);
+    }
+  };
   switch (block.type) {
     case 'paragraph':
       return (
-        <p className="text-gray-700 leading-relaxed">
-          {block.text}
-        </p>
+        <EditableParagraph
+          text={block.text || ''}
+          isEditing={isEditing}
+          onUpdate={(text) => handleUpdate({ text })}
+        />
       );
 
     case 'heading':
-      const HeadingTag = `h${block.level || 3}` as keyof JSX.IntrinsicElements;
-      const headingClasses = {
-        2: 'text-2xl font-bold text-gray-900 mt-6 mb-3',
-        3: 'text-xl font-bold text-gray-900 mt-5 mb-2',
-        4: 'text-lg font-semibold text-gray-900 mt-4 mb-2',
-        5: 'text-base font-semibold text-gray-900 mt-3 mb-1',
-        6: 'text-sm font-semibold text-gray-900 mt-2 mb-1',
-      };
       return (
-        <HeadingTag className={headingClasses[block.level || 3]}>
-          {block.text}
-        </HeadingTag>
+        <EditableHeading
+          text={block.text || ''}
+          level={block.level || 3}
+          isEditing={isEditing}
+          onUpdate={handleUpdate}
+        />
       );
 
     case 'list':
       return (
-        <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-          {block.items?.map((item, index) => (
-            <li key={index} className="leading-relaxed">{item}</li>
-          ))}
-        </ul>
+        <EditableList
+          items={block.items || []}
+          ordered={false}
+          isEditing={isEditing}
+          onUpdate={handleUpdate}
+        />
       );
 
     case 'ordered-list':
       return (
-        <ol className="list-decimal list-inside space-y-1 text-gray-700 ml-4">
-          {block.items?.map((item, index) => (
-            <li key={index} className="leading-relaxed">{item}</li>
-          ))}
-        </ol>
+        <EditableList
+          items={block.items || []}
+          ordered={true}
+          isEditing={isEditing}
+          onUpdate={handleUpdate}
+        />
       );
 
     case 'code':
       return (
-        <div className="code-block-wrapper relative group">
-          <div className="absolute top-2 right-2 z-10">
-            <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">
-              {block.language || 'code'}
-            </span>
-          </div>
-          <pre className="bg-gray-900 rounded-lg overflow-x-auto">
-            <code className={`language-${block.language || 'javascript'} text-sm`}>
-              {block.code || block.text}
-            </code>
-          </pre>
-        </div>
+        <EditableCodeBlock
+          code={block.code || block.text || ''}
+          language={block.language || 'javascript'}
+          isEditing={isEditing}
+          onUpdate={handleUpdate}
+        />
       );
 
     case 'callout':
-      const calloutStyles = {
-        info: 'bg-blue-50 border-blue-200 text-blue-900',
-        warning: 'bg-yellow-50 border-yellow-200 text-yellow-900',
-        error: 'bg-red-50 border-red-200 text-red-900',
-        success: 'bg-green-50 border-green-200 text-green-900',
-        tip: 'bg-purple-50 border-purple-200 text-purple-900',
-      };
-      const calloutIcons = {
-        info: 'ℹ️',
-        warning: '⚠️',
-        error: '❌',
-        success: '✅',
-        tip: '💡',
-      };
-      const calloutType = block.calloutType || 'info';
       return (
-        <div className={`callout p-4 rounded-lg border-l-4 ${calloutStyles[calloutType]}`}>
-          <div className="flex items-start gap-2">
-            <span className="text-lg">{calloutIcons[calloutType]}</span>
-            <p className="text-sm leading-relaxed">{block.text}</p>
-          </div>
-        </div>
+        <EditableCallout
+          text={block.text || ''}
+          calloutType={block.calloutType || 'info'}
+          isEditing={isEditing}
+          onUpdate={handleUpdate}
+        />
       );
 
     case 'image':
       return (
-        <figure className="my-6">
-          <img
-            src={block.url}
-            alt={block.alt || ''}
-            className="rounded-lg border border-gray-200 w-full"
-            loading="lazy"
-          />
-          {block.caption && (
-            <figcaption className="text-sm text-gray-600 text-center mt-2 italic">
-              {block.caption}
-            </figcaption>
-          )}
-        </figure>
+        <EditableImage
+          url={block.url || ''}
+          alt={block.alt}
+          caption={block.caption}
+          isEditing={isEditing}
+          onUpdate={handleUpdate}
+        />
       );
 
     default:
