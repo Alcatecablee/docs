@@ -33,6 +33,9 @@ import {
 import { CheckIcon, FireIcon } from "@heroicons/react/24/solid";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { EditableDocViewer } from "@/components/EditableDocViewer";
+import { useDocEditor } from "@/hooks/use-doc-editor";
+import type { Documentation } from "../../shared/doc-editor-types";
 
 interface Stage {
   id: number;
@@ -121,8 +124,12 @@ export default function GenerationProgress() {
   const [targetUrl, setTargetUrl] = useState<string>("");
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [previewContent, setPreviewContent] = useState<string>("");
+  const [previewDocumentation, setPreviewDocumentation] = useState<Documentation | null>(null);
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+  
+  // Doc editor hook for managing editable preview
+  const docEditor = useDocEditor();
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     connected: false,
     reconnecting: false,
@@ -1096,23 +1103,14 @@ export default function GenerationProgress() {
               
               {/* Preview Content */}
               <div className="flex-1 relative bg-white overflow-hidden">
-                {previewContent ? (
-                  <div className="p-6 h-full overflow-y-auto bg-white custom-scrollbar">
-                    <div className="prose prose-sm md:prose max-w-none">
-                      <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border-2 border-[rgb(102,255,228)]/30 shadow-2xl">
-                        <div className="mb-4 pb-4 border-b-2 border-[rgb(102,255,228)]/20">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-[rgb(102,255,228)] animate-pulse"></div>
-                            <span className="text-xs text-[rgb(102,255,228)] font-bold uppercase tracking-wider">Live Preview</span>
-                          </div>
-                        </div>
-                        <div 
-                          className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap"
-                          dangerouslySetInnerHTML={{ __html: previewContent }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                {previewDocumentation || previewContent ? (
+                  <EditableDocViewer
+                    documentation={previewDocumentation}
+                    isEditing={docEditor.isEditing}
+                    onEditModeToggle={docEditor.toggleEditMode}
+                    onDocumentChange={(doc) => setPreviewDocumentation(doc)}
+                    isLoading={!isComplete && progress < 100}
+                  />
                 ) : targetUrl ? (
                   <iframe
                     src={targetUrl}

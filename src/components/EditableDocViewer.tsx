@@ -4,8 +4,6 @@
  * Future: Inline editing, drag-and-drop, block management
  */
 
-import { useEffect, useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -13,15 +11,6 @@ import {
   PencilIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
 import type { Documentation, Section, ContentBlock } from '../../shared/doc-editor-types';
 
 export interface EditableDocViewerProps {
@@ -40,10 +29,7 @@ export function EditableDocViewer({
   isLoading = false,
 }: EditableDocViewerProps) {
   
-  // Syntax highlighting on mount and updates
-  useEffect(() => {
-    Prism.highlightAll();
-  }, [documentation]);
+  // TODO Phase 2: Add syntax highlighting with Prism.js or similar
 
   if (isLoading) {
     return (
