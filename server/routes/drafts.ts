@@ -107,15 +107,23 @@ router.post('/api/documentations/:id/draft', verifySupabaseAuth, async (req, res
       return res.status(500).json({ error: 'Database not configured' });
     }
 
-    // Verify the documentation exists
+    // SECURITY: Verify the documentation exists AND user owns it
     const docs = await db
       .select()
       .from(documentations)
-      .where(eq(documentations.id, docId))
+      .where(
+        and(
+          eq(documentations.id, docId),
+          eq(documentations.user_id, userId)
+        )
+      )
       .limit(1);
 
     if (docs.length === 0) {
-      return res.status(404).json({ error: 'Documentation not found' });
+      return res.status(403).json({ 
+        error: 'Forbidden',
+        message: 'Documentation not found or you do not have permission to access it'
+      });
     }
 
     // Check if a draft already exists
@@ -220,10 +228,17 @@ router.post('/api/documentations/:id/publish', verifySupabaseAuth, async (req, r
     // Get the draft
     let drafts;
     if (draftId) {
+      // SECURITY: Verify draft ownership when using draftId
       drafts = await db
         .select()
         .from(documentationDrafts)
-        .where(eq(documentationDrafts.id, draftId))
+        .where(
+          and(
+            eq(documentationDrafts.id, draftId),
+            eq(documentationDrafts.documentation_id, docId),
+            eq(documentationDrafts.user_id, userId)
+          )
+        )
         .limit(1);
     } else {
       // Get the latest draft for this user
@@ -250,15 +265,28 @@ router.post('/api/documentations/:id/publish', verifySupabaseAuth, async (req, r
     // For now, we'll store a JSON stringified version
     const contentHtml = `<!-- Published from draft -->\n${JSON.stringify(draft.sections, null, 2)}`;
 
-    // Update the main documentation with the draft content
+    // SECURITY: Update the main documentation with the draft content (verify ownership)
     const updated = await db
       .update(documentations)
       .set({
         title: draft.title,
         content: contentHtml,
       })
-      .where(eq(documentations.id, docId))
+      .where(
+        and(
+          eq(documentations.id, docId),
+          eq(documentations.user_id, userId)
+        )
+      )
       .returning();
+
+    // Check if update was successful
+    if (updated.length === 0) {
+      return res.status(404).json({
+        error: 'Documentation not found',
+        message: 'The documentation may have been deleted or you no longer have access to it'
+      });
+    }
 
     // Mark the draft as published
     await db
