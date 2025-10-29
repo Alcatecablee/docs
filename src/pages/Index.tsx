@@ -239,6 +239,9 @@ const Index = () => {
                 <span className="block font-light text-white/90">It's Just Scattered Across the Internet</span>
               </h1>
 
+              {/* Research Sources Carousel */}
+              <ResearchSourcesCarousel />
+
               {/* Description - Secondary */}
               <p className="text-lg lg:text-xl text-white/80 leading-relaxed max-w-3xl mx-auto font-light text-center">
                 For products with vibrant ecosystems—<strong>Stripe, Supabase, Next.js</strong>—your community has already documented you. We aggregate knowledge across <strong>Stack Overflow</strong>, <strong>GitHub</strong>, <strong>YouTube</strong>, <strong>Reddit</strong>, and 10+ sources then generate beautiful, <strong>Apple-quality docs</strong> that match your brand.
