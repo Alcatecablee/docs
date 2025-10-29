@@ -88,9 +88,6 @@ export default function ResearchSourcesCarousel() {
   return (
     <div className="w-full py-8">
       <div className="overflow-hidden relative">
-        {/* Gradient overlays for fade effect */}
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[rgb(34,38,46)] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[rgb(34,38,46)] to-transparent z-10 pointer-events-none" />
 
         {/* Animated container */}
         <div className="flex gap-8 animate-scroll">
