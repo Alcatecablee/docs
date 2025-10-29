@@ -119,8 +119,8 @@ export default function ResearchSourcesCarousel() {
                     alt={source.label}
                     className="h-12 w-12 object-contain"
                   />
-                ) : source.icon ? (
-                  <source.icon className="h-8 w-8 text-white/70" strokeWidth={1.5} />
+                ) : source.logo ? (
+                  source.logo
                 ) : null}
               </div>
               <span className="text-xs text-white/60 text-center whitespace-nowrap text-[11px] max-w-16">
@@ -143,8 +143,8 @@ export default function ResearchSourcesCarousel() {
                     alt={source.label}
                     className="h-12 w-12 object-contain"
                   />
-                ) : source.icon ? (
-                  <source.icon className="h-8 w-8 text-white/70" strokeWidth={1.5} />
+                ) : source.logo ? (
+                  source.logo
                 ) : null}
               </div>
               <span className="text-xs text-white/60 text-center whitespace-nowrap text-[11px] max-w-16">
