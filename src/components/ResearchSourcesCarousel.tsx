@@ -52,12 +52,7 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'quora',
     label: 'Quora',
-    logo: (
-      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
-        <circle cx="60" cy="60" r="45" fill="none" stroke="#A82400" strokeWidth="3" />
-        <text x="60" y="72" textAnchor="middle" fontSize="48" fontWeight="bold" fill="#A82400" fontFamily="serif">Q</text>
-      </svg>
-    ),
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fccc743da1d214acca5a5418e184d941b?format=webp&width=800',
   },
   {
     id: 'forums',
