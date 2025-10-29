@@ -477,7 +477,7 @@ const Index = () => {
                         { image: "/attached_assets/images/toppng.com-reddit-logo-reddit-icon-698x698.png", label: "Reddit" },
                         { image: "/attached_assets/images/dev-rainbow.png", label: "DEV.to" },
                         { image: "/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png", label: "CodeProject" },
-                        { icon: AcademicCapIcon, label: "Stack Exchange" },
+                        { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Faac4e760a8544892bd6e5f6a40054f2c?format=webp&width=800", label: "Stack Exchange" },
                         { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F3e4b910659394a4ba3676e420f451025?format=webp&width=800", label: "Quora" },
                         { icon: BuildingOfficeIcon, label: "Forums" },
                       ].map((source) => (
