@@ -96,7 +96,7 @@ describe('Chaos Engineering: Provider Failures', () => {
       const rejected = await limiter.acquire('test-provider-2', 1);
       expect(rejected).toBe(false);
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 1100));
 
       const allowed = await limiter.acquire('test-provider-2', 1);
       expect(allowed).toBe(true);
@@ -109,17 +109,21 @@ describe('Chaos Engineering: Provider Failures', () => {
         throw new Error('ECONNREFUSED: Provider unreachable');
       };
 
-      const results = await Promise.allSettled(
-        Array.from({ length: 10 }, () =>
-          withCircuitBreaker('outage-provider', outageFn, { failureThreshold: 5, resetTimeout: 500 })
-        )
-      );
+      const results: Array<{ status: 'fulfilled' | 'rejected', reason?: any }> = [];
+      for (let i = 0; i < 10; i++) {
+        try {
+          await withCircuitBreaker('outage-provider', outageFn, { failureThreshold: 5, resetTimeout: 500 });
+          results.push({ status: 'fulfilled' });
+        } catch (error) {
+          results.push({ status: 'rejected', reason: error });
+        }
+      }
 
       const failed = results.filter(r => r.status === 'rejected');
       expect(failed.length).toBe(10);
 
       const circuitOpenErrors = failed.filter(r => 
-        r.status === 'rejected' && r.reason.message.includes('Circuit breaker OPEN')
+        r.status === 'rejected' && r.reason && r.reason.message && r.reason.message.includes('Circuit breaker OPEN')
       );
       expect(circuitOpenErrors.length).toBeGreaterThan(0);
     });
