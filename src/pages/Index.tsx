@@ -471,11 +471,15 @@ const Index = () => {
                         { icon: DocumentTextIcon, label: "DEV.to" },
                         { icon: CodeBracketIcon, label: "CodeProject" },
                         { icon: AcademicCapIcon, label: "Stack Exchange" },
-                        { icon: QuestionMarkCircleIcon, label: "Quora" },
+                        { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fccc743da1d214acca5a5418e184d941b?format=webp&width=800", label: "Quora" },
                         { icon: BuildingOfficeIcon, label: "Forums" },
                       ].map((source) => (
                         <div key={source.label} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-[rgb(102,255,228)]/30 transition-all">
-                          <source.icon className="h-5 w-5 text-white/60" strokeWidth={1.5} />
+                          {source.image ? (
+                            <img src={source.image} alt={source.label} className="h-5 w-5 object-contain" />
+                          ) : source.icon ? (
+                            <source.icon className="h-5 w-5 text-white/60" strokeWidth={1.5} />
+                          ) : null}
                           <span className="text-xs text-white/60 text-center leading-tight">{source.label}</span>
                         </div>
                       ))}
