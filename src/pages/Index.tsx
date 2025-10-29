@@ -471,14 +471,14 @@ const Index = () => {
                     {/* Research Sources Grid */}
                     <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                       {[
-                        { icon: CodeBracketIcon, label: "Stack Overflow" },
-                        { icon: CodeBracketIcon, label: "GitHub Issues" },
-                        { icon: VideoCameraIcon, label: "YouTube" },
-                        { icon: ChatBubbleLeftRightIcon, label: "Reddit" },
-                        { icon: DocumentTextIcon, label: "DEV.to" },
-                        { icon: CodeBracketIcon, label: "CodeProject" },
+                        { image: "/attached_assets/images/Stack-Overflow-Logo-emblem-of-the-programming-community-transparent-png-image.png", label: "Stack Overflow" },
+                        { image: "/attached_assets/images/toppng.com-github-logo-524x512.png", label: "GitHub Issues" },
+                        { image: "/attached_assets/images/toppng.com-youtube-icon-1024x1024.png", label: "YouTube" },
+                        { image: "/attached_assets/images/toppng.com-reddit-logo-reddit-icon-698x698.png", label: "Reddit" },
+                        { image: "/attached_assets/images/dev-rainbow.png", label: "DEV.to" },
+                        { image: "/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png", label: "CodeProject" },
                         { icon: AcademicCapIcon, label: "Stack Exchange" },
-                        { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fccc743da1d214acca5a5418e184d941b?format=webp&width=800", label: "Quora" },
+                        { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F3e4b910659394a4ba3676e420f451025?format=webp&width=800", label: "Quora" },
                         { icon: BuildingOfficeIcon, label: "Forums" },
                       ].map((source) => (
                         <div key={source.label} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-[rgb(102,255,228)]/30 transition-all">
