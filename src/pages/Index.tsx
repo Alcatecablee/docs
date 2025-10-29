@@ -93,7 +93,7 @@ const Index = () => {
   const stages = [
     { id: 1, name: "Site Discovery", description: "Comprehensive site discovery — multi-domain crawling, sitemap parsing, subdomain enumeration, robots.txt-aware crawling, and link-graph analysis to prioritize high-value pages." },
     { id: 2, name: "Research & Analysis", description: "Aggregate community knowledge across Stack Overflow, GitHub, YouTube, Reddit, and official docs. Extract authoritative answers, issue threads, and transcripts, then quality-score and prioritize insights for documentation." },
-    { id: 3, name: "Documentation Generation", description: "Synthesize research into structured documentation—getting started guides, tutorials, troubleshooting, FAQs, and API references—with embedded code samples and inline source attributions." },
+    { id: 3, name: "Documentation Generation", description: "Synthesize research into structured documentation��getting started guides, tutorials, troubleshooting, FAQs, and API references—with embedded code samples and inline source attributions." },
     { id: 4, name: "Export & Optimization", description: "Apply brand styling, run accessibility and SEO checks, and export to PDF, DOCX, HTML, Markdown, or JSON. Optionally publish to a hosted subdomain with search and indexing enabled." }
   ];
 
@@ -290,11 +290,6 @@ const Index = () => {
                       )}
                     </Button>
                   </div>
-                  
-                  {/* Helper Text */}
-                  <p className="mt-4 text-sm text-white/60 text-center font-light">
-                    ✨ Built for DevRel teams • Aggregates 10+ community sources • Enterprise-ready
-                  </p>
                 </div>
               </div>
             </div>
