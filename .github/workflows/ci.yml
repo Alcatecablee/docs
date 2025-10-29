@@ -46,3 +46,9 @@ jobs:
       - name: E2E tests
         run: npm run e2e
 
+      - name: Chaos tests (provider failures)
+        run: npx vitest run tests/chaos/provider-failures.test.ts
+
+      - name: Adversarial tests (safety filters)
+        run: npx vitest run tests/adversarial/safety-filters.test.ts
+

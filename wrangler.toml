@@ -1,0 +1,76 @@
+# Cloudflare Workers Configuration for Edge Deployment
+# See: PRODUCTION_HARDENING_ROADMAP.md - Phase 1 Milestone 5.1
+
+name = "viberdoc"
+main = "server/cloudflare-worker.ts"
+compatibility_date = "2024-01-01"
+node_compat = true
+
+# Account ID - Replace with your Cloudflare account ID
+# Find at: https://dash.cloudflare.com/ → Workers & Pages → Overview
+# Leave empty for now - set during deployment setup
+# account_id = "your-account-id-here"
+
+# Workers configuration
+workers_dev = true
+route = { pattern = "*.viberdoc.app/*", zone_name = "viberdoc.app" }
+
+# Environment variables
+[env.production]
+vars = { NODE_ENV = "production" }
+
+# Uncomment and configure after creating KV namespace:
+# wrangler kv:namespace create "DOCS_CACHE" --preview=false
+# [env.production.kv_namespaces]
+# binding = "DOCS_CACHE"
+# id = "your-kv-namespace-id"
+
+# Uncomment to enable Durable Objects for distributed rate limiting:
+# [env.production.durable_objects]
+# bindings = [
+#   { name = "RATE_LIMITER", class_name = "RateLimiter", script_name = "viberdoc" }
+# ]
+
+[[durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+script_name = "viberdoc"
+
+# Asset configuration - Option 1: Worker Sites (Recommended)
+# Uncomment to enable automatic static asset serving:
+# [site]
+# bucket = "./dist"
+# entry-point = "workers-site"
+
+# Build configuration
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "service-worker"
+
+# Custom domains
+[[routes]]
+pattern = "docs.viberdoc.app/*"
+zone_name = "viberdoc.app"
+
+[[routes]]
+pattern = "*.docs.viberdoc.app/*"
+zone_name = "viberdoc.app"
+
+# SSL configuration (automatic with Cloudflare)
+# - Universal SSL certificate automatically provisioned
+# - Custom certificates can be uploaded in dashboard
+# - HSTS headers configured in worker code
+
+# Cache configuration
+[cache]
+# Cache HTML for 1 hour, assets for 1 year
+html_ttl = 3600
+asset_ttl = 31536000
+
+# Limits (adjust based on plan)
+# Free: 100,000 requests/day, 1ms CPU time
+# Paid: Unlimited requests, 50ms CPU time
+[limits]
+cpu_ms = 50
