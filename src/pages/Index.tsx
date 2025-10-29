@@ -984,9 +984,9 @@ const Index = () => {
                       { image: "/attached_assets/images/dev-rainbow.png", name: "DEV.to", desc: "Best Practices" },
                       { image: "/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png", name: "CodeProject", desc: "Code Examples" },
                       { icon: DocumentTextIcon, name: "Stack Exchange", desc: "Expert Knowledge" },
-                      { icon: ChatBubbleLeftRightIcon, name: "Quora", desc: "Expert Insights" },
+                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fccc743da1d214acca5a5418e184d941b?format=webp&width=800", name: "Quora", desc: "Expert Insights" },
                       { icon: GlobeAltIcon, name: "Official Forums", desc: "Product-Specific" },
-                      { icon: MagnifyingGlassIcon, name: "Web Search", desc: "Comprehensive" },
+                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdbf37a3ec2b54b77b7a7c9fb35f3bd73?format=webp&width=800", name: "Web Search", desc: "Comprehensive" },
                       { icon: DocumentMagnifyingGlassIcon, name: "Internal Docs", desc: "Official Guides" }
                     ].map((item, idx) => (
                       <div key={item.name} className="group" style={{animationDelay: `${idx * 50}ms`}}>
