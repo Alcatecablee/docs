@@ -244,6 +244,13 @@ const Index = () => {
                 We aggregate knowledge across <strong>Stack Overflow</strong>, <strong>GitHub</strong>, <strong>YouTube</strong>, <strong>Reddit</strong>, and 10+ sources then generate beautiful, <strong>Apple-quality docs</strong> that match your brand.
               </p>
 
+              {/* Sources Label */}
+              <div className="mt-8">
+                <p className="text-sm md:text-base text-white/60 uppercase tracking-widest font-semibold text-center mb-6">
+                  Powered by Community Knowledge
+                </p>
+              </div>
+
               {/* Research Sources Carousel */}
               <ResearchSourcesCarousel />
 
