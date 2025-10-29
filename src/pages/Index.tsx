@@ -959,72 +959,86 @@ const Index = () => {
                     Real insights from where developers actually learn and troubleshoot
                   </p>
                 </div>
-                
-                <div className="relative">
-                  {/* Enhanced animated background */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[rgb(102,255,228)]/5 via-transparent to-[rgb(102,255,228)]/5 rounded-3xl blur-xl"></div>
-                  
-                  {/* SVG Animated connecting lines */}
-                  <svg className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1200 400" style={{opacity: 0.2}}>
-                    <defs>
-                      <linearGradient id="cyanPulse" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="rgb(102,255,228)" stopOpacity="0" />
-                        <stop offset="50%" stopColor="rgb(102,255,228)" stopOpacity="1" />
-                        <stop offset="100%" stopColor="rgb(102,255,228)" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <g strokeLinecap="round" strokeWidth="1.5" fill="none">
-                      <path d="M50 200 Q300 100, 550 200 T1050 200" stroke="url(#cyanPulse)" strokeDasharray="8 4" strokeDashoffset="0" style={{animation: 'flowCyan 8s linear infinite'}} />
-                      <path d="M100 250 Q400 350, 700 250 T1200 250" stroke="url(#cyanPulse)" strokeDasharray="8 4" strokeDashoffset="0" style={{animation: 'flowCyan 10s linear infinite 2s'}} />
-                    </g>
-                  </svg>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-5 relative z-10">
+                <div className="w-full overflow-hidden relative">
+                  {/* Animated carousel container */}
+                  <div className="flex gap-8 animate-scroll-sources">
+                    {/* First set of logos */}
                     {[
-                      { image: "/attached_assets/images/Stack-Overflow-Logo-emblem-of-the-programming-community-transparent-png-image.png", name: "Stack Overflow", desc: "Q&A Solutions" },
-                      { image: "/attached_assets/images/toppng.com-github-logo-524x512.png", name: "GitHub Issues", desc: "Real Bugs" },
-                      { image: "/attached_assets/images/toppng.com-youtube-icon-1024x1024.png", name: "YouTube", desc: "Video Tutorials" },
-                      { image: "/attached_assets/images/toppng.com-reddit-logo-reddit-icon-698x698.png", name: "Reddit", desc: "Community Posts" },
-                      { image: "/attached_assets/images/dev-rainbow.png", name: "DEV.to", desc: "Best Practices" },
-                      { image: "/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png", name: "CodeProject", desc: "Code Examples" },
-                      { icon: DocumentTextIcon, name: "Stack Exchange", desc: "Expert Knowledge" },
-                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fccc743da1d214acca5a5418e184d941b?format=webp&width=800", name: "Quora", desc: "Expert Insights" },
-                      { icon: GlobeAltIcon, name: "Official Forums", desc: "Product-Specific" },
-                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdbf37a3ec2b54b77b7a7c9fb35f3bd73?format=webp&width=800", name: "Web Search", desc: "Comprehensive" },
-                      { icon: DocumentMagnifyingGlassIcon, name: "Internal Docs", desc: "Official Guides" }
+                      { image: "/attached_assets/images/Stack-Overflow-Logo-emblem-of-the-programming-community-transparent-png-image.png", name: "Stack Overflow" },
+                      { image: "/attached_assets/images/toppng.com-github-logo-524x512.png", name: "GitHub Issues" },
+                      { image: "/attached_assets/images/toppng.com-youtube-icon-1024x1024.png", name: "YouTube" },
+                      { image: "/attached_assets/images/toppng.com-reddit-logo-reddit-icon-698x698.png", name: "Reddit" },
+                      { image: "/attached_assets/images/dev-rainbow.png", name: "DEV.to" },
+                      { image: "/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png", name: "CodeProject" },
+                      { icon: DocumentTextIcon, name: "Stack Exchange" },
+                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F3e4b910659394a4ba3676e420f451025?format=webp&width=800", name: "Quora" },
+                      { icon: GlobeAltIcon, name: "Official Forums" },
+                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdbf37a3ec2b54b77b7a7c9fb35f3bd73?format=webp&width=800", name: "Web Search" },
+                      { icon: DocumentMagnifyingGlassIcon, name: "Internal Docs" }
                     ].map((item, idx) => (
-                      <div key={item.name} className="group" style={{animationDelay: `${idx * 50}ms`}}>
-                        <div className="relative bg-gradient-to-br from-white/10 to-white/5 hover:from-white/15 hover:to-white/10 border border-white/20 hover:border-[rgb(102,255,228)]/50 rounded-2xl p-5 md:p-6 transition-all duration-400 h-full backdrop-blur-sm hover:shadow-[0_15px_40px_rgba(102,255,228,0.15)] hover:scale-105">
-                          {/* Glow effect on hover */}
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[rgb(102,255,228)]/0 to-[rgb(102,255,228)]/0 group-hover:from-[rgb(102,255,228)]/5 group-hover:to-transparent transition-all duration-400"></div>
-                          
-                          <div className="flex flex-col items-center text-center gap-3 h-full relative z-10">
-                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white/15 group-hover:bg-[rgb(102,255,228)]/25 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 overflow-hidden shadow-lg">
-                              {item.image ? (
-                                <img
-                                  src={item.image}
-                                  alt={item.name}
-                                  className="h-6 w-6 md:h-8 md:w-8 object-contain group-hover:brightness-125 transition-all"
-                                />
-                              ) : (
-                                <item.icon className="h-5 w-5 md:h-6 md:w-6 text-white/80 group-hover:text-[rgb(102,255,228)] transition-colors" strokeWidth={1.5} />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-white/95 leading-snug mb-1">{item.name}</p>
-                              <p className="text-xs text-white/60 leading-tight">{item.desc}</p>
-                            </div>
-                          </div>
+                      <div key={`${item.name}-1`} className="flex flex-col items-center justify-center gap-2 flex-shrink-0">
+                        <div className="flex items-center justify-center h-16 w-16">
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} className="h-12 w-12 object-contain" />
+                          ) : item.icon ? (
+                            <item.icon className="h-8 w-8 text-white/70" strokeWidth={1.5} />
+                          ) : null}
                         </div>
+                        <span className="text-xs text-white/60 text-center whitespace-nowrap text-[11px] max-w-16">
+                          {item.name}
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* Duplicate set for seamless loop */}
+                    {[
+                      { image: "/attached_assets/images/Stack-Overflow-Logo-emblem-of-the-programming-community-transparent-png-image.png", name: "Stack Overflow" },
+                      { image: "/attached_assets/images/toppng.com-github-logo-524x512.png", name: "GitHub Issues" },
+                      { image: "/attached_assets/images/toppng.com-youtube-icon-1024x1024.png", name: "YouTube" },
+                      { image: "/attached_assets/images/toppng.com-reddit-logo-reddit-icon-698x698.png", name: "Reddit" },
+                      { image: "/attached_assets/images/dev-rainbow.png", name: "DEV.to" },
+                      { image: "/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png", name: "CodeProject" },
+                      { icon: DocumentTextIcon, name: "Stack Exchange" },
+                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F3e4b910659394a4ba3676e420f451025?format=webp&width=800", name: "Quora" },
+                      { icon: GlobeAltIcon, name: "Official Forums" },
+                      { image: "https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdbf37a3ec2b54b77b7a7c9fb35f3bd73?format=webp&width=800", name: "Web Search" },
+                      { icon: DocumentMagnifyingGlassIcon, name: "Internal Docs" }
+                    ].map((item, idx) => (
+                      <div key={`${item.name}-2`} className="flex flex-col items-center justify-center gap-2 flex-shrink-0">
+                        <div className="flex items-center justify-center h-16 w-16">
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} className="h-12 w-12 object-contain" />
+                          ) : item.icon ? (
+                            <item.icon className="h-8 w-8 text-white/70" strokeWidth={1.5} />
+                          ) : null}
+                        </div>
+                        <span className="text-xs text-white/60 text-center whitespace-nowrap text-[11px] max-w-16">
+                          {item.name}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <style>{`
-                  @keyframes flowCyan {
-                    0% { stroke-dashoffset: 0; }
-                    100% { stroke-dashoffset: 100; }
+                  @keyframes scroll-left-sources {
+                    0% {
+                      transform: translateX(0);
+                    }
+                    100% {
+                      transform: translateX(-50%);
+                    }
+                  }
+
+                  .animate-scroll-sources {
+                    animation: scroll-left-sources 35s linear infinite;
+                  }
+
+                  @media (prefers-reduced-motion: reduce) {
+                    .animate-scroll-sources {
+                      animation: none;
+                    }
                   }
                 `}</style>
               </div>
