@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import ResearchSourcesCarousel from "@/components/ResearchSourcesCarousel";
 import { 
   DocumentTextIcon, 
   ArrowTopRightOnSquareIcon, 
