@@ -8,6 +8,7 @@ import { db } from '../db';
 import { documentationDrafts, documentationEditHistory, documentations } from '../../shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { verifySupabaseAuth } from '../middleware/auth';
+import { convertDraftToExportFormat, draftSectionsToHTML, draftSectionsToMarkdown } from '../utils/draft-exporter';
 
 const router = express.Router();
 
@@ -464,6 +465,194 @@ router.get('/api/documentations/:id/draft/history', verifySupabaseAuth, async (r
       error: 'Failed to fetch edit history',
       message: error.message,
     });
+  }
+});
+
+/**
+ * GET /api/documentations/:id/draft/export/json
+ * Export draft as JSON
+ */
+router.get('/api/documentations/:id/draft/export/json', verifySupabaseAuth, async (req, res) => {
+  try {
+    const docId = parseInt(req.params.id);
+    const userId = (req as any).user?.id;
+
+    if (isNaN(docId)) {
+      return res.status(400).json({ error: 'Invalid documentation ID' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    if (!db) {
+      return res.status(500).json({ error: 'Database not configured' });
+    }
+
+    // Get the latest draft
+    const drafts = await db
+      .select()
+      .from(documentationDrafts)
+      .where(
+        and(
+          eq(documentationDrafts.documentation_id, docId),
+          eq(documentationDrafts.user_id, userId)
+        )
+      )
+      .orderBy(desc(documentationDrafts.updated_at))
+      .limit(1);
+
+    if (drafts.length === 0) {
+      return res.status(404).json({ error: 'No draft found' });
+    }
+
+    const draft = drafts[0];
+    const exportData = convertDraftToExportFormat(draft);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${draft.title.replace(/[^a-z0-9]/gi, '_')}_draft.json"`);
+    res.json(exportData);
+  } catch (error: any) {
+    console.error('Error exporting draft as JSON:', error);
+    res.status(500).json({ error: 'Failed to export draft as JSON' });
+  }
+});
+
+/**
+ * GET /api/documentations/:id/draft/export/markdown
+ * Export draft as Markdown
+ */
+router.get('/api/documentations/:id/draft/export/markdown', verifySupabaseAuth, async (req, res) => {
+  try {
+    const docId = parseInt(req.params.id);
+    const userId = (req as any).user?.id;
+
+    if (isNaN(docId)) {
+      return res.status(400).json({ error: 'Invalid documentation ID' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    if (!db) {
+      return res.status(500).json({ error: 'Database not configured' });
+    }
+
+    // Get the latest draft
+    const drafts = await db
+      .select()
+      .from(documentationDrafts)
+      .where(
+        and(
+          eq(documentationDrafts.documentation_id, docId),
+          eq(documentationDrafts.user_id, userId)
+        )
+      )
+      .orderBy(desc(documentationDrafts.updated_at))
+      .limit(1);
+
+    if (drafts.length === 0) {
+      return res.status(404).json({ error: 'No draft found' });
+    }
+
+    const draft = drafts[0];
+    const exportData = convertDraftToExportFormat(draft);
+
+    let markdown = `# ${exportData.title}\n\n`;
+    if (exportData.description) {
+      markdown += `${exportData.description}\n\n---\n\n`;
+    }
+    markdown += draftSectionsToMarkdown(exportData.sections);
+
+    res.setHeader('Content-Type', 'text/markdown');
+    res.setHeader('Content-Disposition', `attachment; filename="${draft.title.replace(/[^a-z0-9]/gi, '_')}_draft.md"`);
+    res.send(markdown);
+  } catch (error: any) {
+    console.error('Error exporting draft as Markdown:', error);
+    res.status(500).json({ error: 'Failed to export draft as Markdown' });
+  }
+});
+
+/**
+ * GET /api/documentations/:id/draft/export/html
+ * Export draft as HTML
+ */
+router.get('/api/documentations/:id/draft/export/html', verifySupabaseAuth, async (req, res) => {
+  try {
+    const docId = parseInt(req.params.id);
+    const userId = (req as any).user?.id;
+
+    if (isNaN(docId)) {
+      return res.status(400).json({ error: 'Invalid documentation ID' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    if (!db) {
+      return res.status(500).json({ error: 'Database not configured' });
+    }
+
+    // Get the latest draft
+    const drafts = await db
+      .select()
+      .from(documentationDrafts)
+      .where(
+        and(
+          eq(documentationDrafts.documentation_id, docId),
+          eq(documentationDrafts.user_id, userId)
+        )
+      )
+      .orderBy(desc(documentationDrafts.updated_at))
+      .limit(1);
+
+    if (drafts.length === 0) {
+      return res.status(404).json({ error: 'No draft found' });
+    }
+
+    const draft = drafts[0];
+    const exportData = convertDraftToExportFormat(draft);
+
+    let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${exportData.title}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; color: #333; }
+    h1 { color: #8B5CF6; border-bottom: 2px solid #8B5CF6; padding-bottom: 10px; }
+    h2 { color: #6366F1; margin-top: 30px; }
+    .section-icon { margin-right: 8px; }
+    code { background: #f4f4f5; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    .callout { padding: 12px 16px; border-left: 4px solid; border-radius: 4px; margin: 16px 0; }
+    .callout-info { background: #eff6ff; border-color: #3b82f6; }
+    .callout-warning { background: #fefce8; border-color: #eab308; }
+    .callout-error { background: #fef2f2; border-color: #ef4444; }
+    .callout-success { background: #f0fdf4; border-color: #22c55e; }
+    .callout-tip { background: #faf5ff; border-color: #a855f7; }
+    img { max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0; }
+    figcaption { text-align: center; font-style: italic; color: #666; margin-top: 8px; }
+    .anchor-link { text-decoration: none; color: #d1d5db; margin-left: 8px; opacity: 0; }
+    h2:hover .anchor-link, h3:hover .anchor-link { opacity: 1; }
+  </style>
+</head>
+<body>
+  <h1>${exportData.title}</h1>
+  ${exportData.description ? `<p>${exportData.description}</p>` : ''}
+  ${draftSectionsToHTML(exportData.sections)}
+</body>
+</html>`;
+
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `attachment; filename="${draft.title.replace(/[^a-z0-9]/gi, '_')}_draft.html"`);
+    res.send(html);
+  } catch (error: any) {
+    console.error('Error exporting draft as HTML:', error);
+    res.status(500).json({ error: 'Failed to export draft as HTML' });
   }
 });
 

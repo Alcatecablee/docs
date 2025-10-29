@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import type { Documentation, Section, ContentBlock } from '../../shared/doc-editor-types';
 import { EditableParagraph } from './doc-editor/EditableParagraph';
@@ -21,7 +22,9 @@ import { EditableList } from './doc-editor/EditableList';
 import { EditableCodeBlock } from './doc-editor/EditableCodeBlock';
 import { EditableCallout } from './doc-editor/EditableCallout';
 import { EditableImage } from './doc-editor/EditableImage';
-import { useEffect } from 'react';
+import { FindReplaceDialog } from './doc-editor/FindReplaceDialog';
+import { BlockToolbar } from './doc-editor/BlockToolbar';
+import { useEffect, useState } from 'react';
 
 export interface EditableDocViewerProps {
   documentation: Documentation | null;
@@ -34,11 +37,13 @@ export interface EditableDocViewerProps {
   onEditModeToggle?: () => void;
   onDocumentChange?: (doc: Documentation) => void;
   onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
+  onAddBlock?: (sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => void;
   onSave?: () => Promise<void>;
   onPublish?: () => Promise<void>;
   onUndo?: () => void;
   onRedo?: () => void;
   isLoading?: boolean;
+  documentationId?: number; // For draft exports
 }
 
 export function EditableDocViewer({
@@ -52,12 +57,65 @@ export function EditableDocViewer({
   onEditModeToggle,
   onDocumentChange,
   onBlockUpdate,
+  onAddBlock,
   onSave,
   onPublish,
   onUndo,
   onRedo,
   isLoading = false,
+  documentationId,
 }: EditableDocViewerProps) {
+  
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  
+  const handleExportDraft = async (format: 'json' | 'markdown' | 'html') => {
+    if (!documentationId) return;
+    
+    try {
+      const response = await fetch(`/api/documentations/${documentationId}/draft/export/${format}`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${documentation?.title || 'documentation'}_draft.${format === 'markdown' ? 'md' : format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting draft:', error);
+    }
+  };
+  
+  const handleFindReplaceText = (sectionId: string, blockId: string, newContent: string, blockType: string) => {
+    if (!onBlockUpdate || !documentation) return;
+    
+    // Find the block to determine its type
+    const section = documentation.sections.find(s => s.id === sectionId);
+    const block = section?.content.find(b => b.id === blockId);
+    
+    if (!block) return;
+    
+    // Update the appropriate field based on block type
+    if (block.type === 'code') {
+      onBlockUpdate(sectionId, blockId, { code: newContent });
+    } else if (block.type === 'list' || block.type === 'ordered-list') {
+      // For both list types, split the content back into items
+      // Keep empty lines to preserve user intent
+      const items = newContent.split('\n');
+      onBlockUpdate(sectionId, blockId, { items });
+    } else {
+      // For paragraph, heading, callout - use text field
+      onBlockUpdate(sectionId, blockId, { text: newContent });
+    }
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -84,6 +142,12 @@ export function EditableDocViewer({
         if (canRedo && onRedo) {
           onRedo();
         }
+      }
+      
+      // Cmd+F or Ctrl+F to open find & replace
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.preventDefault();
+        setShowFindReplace(true);
       }
     };
 
@@ -203,6 +267,43 @@ export function EditableDocViewer({
               >
                 Publish
               </Button>
+              
+              <div className="w-px h-6 bg-gray-300" />
+              
+              {/* Export Draft Dropdown */}
+              {documentationId && (
+                <div className="relative group">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    title="Export draft"
+                  >
+                    <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                    Export Draft
+                  </Button>
+                  <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                    <button
+                      onClick={() => handleExportDraft('json')}
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 rounded-t-md"
+                    >
+                      Export as JSON
+                    </button>
+                    <button
+                      onClick={() => handleExportDraft('markdown')}
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-gray-100"
+                    >
+                      Export as Markdown
+                    </button>
+                    <button
+                      onClick={() => handleExportDraft('html')}
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 rounded-b-md"
+                    >
+                      Export as HTML
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
           
@@ -240,10 +341,19 @@ export function EditableDocViewer({
               section={section}
               isEditing={isEditing}
               onBlockUpdate={onBlockUpdate}
+              onAddBlock={onAddBlock}
             />
           ))}
         </article>
       </div>
+      
+      {/* Find & Replace Dialog */}
+      <FindReplaceDialog
+        isOpen={showFindReplace}
+        onClose={() => setShowFindReplace(false)}
+        documentation={documentation}
+        onReplace={handleFindReplaceText}
+      />
     </div>
   );
 }
@@ -256,9 +366,10 @@ interface SectionRendererProps {
   section: Section;
   isEditing: boolean;
   onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
+  onAddBlock?: (sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => void;
 }
 
-function SectionRenderer({ section, isEditing, onBlockUpdate }: SectionRendererProps) {
+function SectionRenderer({ section, isEditing, onBlockUpdate, onAddBlock }: SectionRendererProps) {
   return (
     <section className="space-y-4 scroll-mt-20" id={section.id}>
       {/* Section Header */}
@@ -270,16 +381,32 @@ function SectionRenderer({ section, isEditing, onBlockUpdate }: SectionRendererP
       </div>
 
       {/* Section Content Blocks */}
-      <div className="space-y-4 pl-2">
+      <div className="space-y-2 pl-2">
         {section.content.map((block, index) => (
-          <ContentBlockRenderer
-            key={block.id || index}
-            block={block}
-            sectionId={section.id}
-            isEditing={isEditing}
-            onBlockUpdate={onBlockUpdate}
-          />
+          <div key={block.id || index}>
+            <ContentBlockRenderer
+              block={block}
+              sectionId={section.id}
+              isEditing={isEditing}
+              onBlockUpdate={onBlockUpdate}
+            />
+            {isEditing && onAddBlock && (
+              <BlockToolbar
+                sectionId={section.id}
+                insertAfterBlockId={block.id}
+                onAddBlock={onAddBlock}
+              />
+            )}
+          </div>
         ))}
+        
+        {/* Add block at end of section if no blocks exist */}
+        {isEditing && onAddBlock && section.content.length === 0 && (
+          <BlockToolbar
+            sectionId={section.id}
+            onAddBlock={onAddBlock}
+          />
+        )}
       </div>
     </section>
   );

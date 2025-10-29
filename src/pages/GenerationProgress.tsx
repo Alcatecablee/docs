@@ -1137,8 +1137,10 @@ export default function GenerationProgress() {
                     canRedo={docEditor.canRedo}
                     isSaving={autoSave.isSaving}
                     lastSaved={autoSave.lastSaved}
+                    documentationId={documentationId ? parseInt(documentationId) : undefined}
                     onEditModeToggle={docEditor.toggleEditMode}
                     onBlockUpdate={docEditor.updateBlock}
+                    onAddBlock={docEditor.addBlock}
                     onSave={async () => {
                       if (documentationId) {
                         await docEditor.saveDraft(parseInt(documentationId));

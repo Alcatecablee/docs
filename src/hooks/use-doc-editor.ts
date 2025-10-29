@@ -272,6 +272,41 @@ export function useDocEditor(): UseDocEditorResult {
     });
   }, [addToHistory]);
 
+  const addBlock = useCallback((sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => {
+    setState(prev => {
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, `Add ${block.type} block`);
+      
+      const newDoc = { ...prev.documentation };
+      const sectionIndex = newDoc.sections.findIndex(s => s.id === sectionId);
+      
+      if (sectionIndex === -1) return prev;
+      
+      const section = newDoc.sections[sectionIndex];
+      const newContent = [...section.content];
+      
+      if (insertAfterBlockId) {
+        const afterIndex = newContent.findIndex(b => b.id === insertAfterBlockId);
+        if (afterIndex !== -1) {
+          newContent.splice(afterIndex + 1, 0, block);
+        } else {
+          newContent.push(block);
+        }
+      } else {
+        newContent.push(block);
+      }
+      
+      newDoc.sections = [...newDoc.sections];
+      newDoc.sections[sectionIndex] = { ...section, content: newContent };
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true,
+      };
+    });
+  }, [addToHistory]);
+
   // Compute derived state
   const canUndo = state.historyIndex >= 0;
   const canRedo = state.historyIndex < state.history.length - 1;
@@ -356,6 +391,7 @@ export function useDocEditor(): UseDocEditorResult {
     addSection,
     deleteSection,
     updateBlock,
+    addBlock,
     saveDraft,
     publish,
     markClean,
