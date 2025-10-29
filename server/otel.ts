@@ -12,26 +12,32 @@ const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhos
 const traceExporter = new OTLPTraceExporter({ url: `${otlpEndpoint}/v1/traces` });
 const metricExporter = new OTLPMetricExporter({ url: `${otlpEndpoint}/v1/metrics` });
 
-const sdk = new NodeSDK({
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
-    [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
-  }),
-  traceExporter,
-  metricReader: new PeriodicExportingMetricReader({ exporter: metricExporter }),
-  instrumentations: [getNodeAutoInstrumentations()],
-});
+let sdk: NodeSDK | undefined;
 
-sdk.start().catch((err) => {
-  console.error('Failed to start OpenTelemetry SDK', err);
-});
+try {
+  sdk = new NodeSDK({
+    resource: new Resource({
+      [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+      [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
+    }),
+    traceExporter,
+    metricReader: new PeriodicExportingMetricReader({ exporter: metricExporter }),
+    instrumentations: [getNodeAutoInstrumentations()],
+  });
+
+  sdk.start().catch((err) => {
+    console.error('Failed to start OpenTelemetry SDK', err);
+  });
+} catch (err) {
+  console.warn('OpenTelemetry SDK initialization failed, continuing without monitoring:', err);
+}
 
 process.on('SIGTERM', () => {
-  sdk.shutdown().finally(() => process.exit(0));
+  sdk?.shutdown().finally(() => process.exit(0));
 });
 
 process.on('SIGINT', () => {
-  sdk.shutdown().finally(() => process.exit(0));
+  sdk?.shutdown().finally(() => process.exit(0));
 });
 
 
