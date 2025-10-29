@@ -64,7 +64,8 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
   
   const piiPatterns = [
     { regex: /\b\d{3}-\d{2}-\d{4}\b/, msg: 'SSN' },
-    { regex: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/, msg: 'Credit Card' },
+    { regex: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{1,4}\b/, msg: 'Credit Card' },
+    { regex: /\b\d{4}[- ]?\d{6}[- ]?\d{5}\b/, msg: 'AmEx Card' },
     { regex: /\bsk[_-](test|live|proj)[_-][a-zA-Z0-9]{20,}/, msg: 'API Key' },
     { regex: /\bghp_[a-zA-Z0-9]{36,}/, msg: 'GitHub Token' },
     { regex: /-----BEGIN (RSA|EC|OPENSSH|DSA) PRIVATE KEY-----/, msg: 'Private Key' },
@@ -74,7 +75,7 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
     { regex: /wJalrXUtn[a-zA-Z0-9\/+=]{36,}/, msg: 'AWS Secret' },
     { regex: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/, msg: 'IP Address' },
     { regex: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/, msg: 'MAC Address' },
-    { regex: /\w+@\w+\.\w+/, msg: 'Email' },
+    { regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, msg: 'Email' },
     { regex: /(?:\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/, msg: 'Phone' },
     { regex: /password\s*[:=]\s*[^\s]+/i, msg: 'Password' },
   ];
@@ -92,6 +93,9 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
     /\bUNION\s+SELECT/i,
     /\bEXEC(?:UTE)?\s+(?:sp_|xp_)/i,
     /'.*AND\s+1=1/i,
+    /'--/,
+    /'\s+OR\s+1\s*=\s*1/i,
+    /'\s+OR\s+'1'\s*=\s*'1/i,
   ];
   if (sqlPatterns.some(p => p.test(combinedText))) {
     warnings.push('URL contains suspicious SQL patterns');
@@ -104,21 +108,33 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
     /<(?:iframe|embed|object|img|svg|body|input|select|marquee)/i,
     /alert\s*\(/i,
     /document\.cookie/i,
+    /%3C(?:script|iframe|img|svg)/i,
+    /%253C(?:script|iframe)/i,
   ];
   if (xssPatterns.some(p => p.test(content))) {
     warnings.push('Content contains potentially unsafe HTML/JavaScript');
   }
   
   const promptInjectionPatterns = [
-    /ignore\s+(?:all\s+)?(?:previous|above)?\s*(?:instructions|commands|rules)/i,
-    /forget\s+(?:your\s+)?(?:system\s+)?prompt/i,
-    /you\s+are\s+now\s+(?:in\s+)?(?:debug|admin|god)\s+mode/i,
-    /disregard\s+(?:safety|ethical)\s+(?:guidelines|constraints)/i,
-    /override.*(?:safety|security|policy)/i,
-    /pretend\s+you\s+(?:are|have)\s+no\s+(?:restrictions|constraints)/i,
-    /system.*disable.*filter/i,
-    /from\s+now\s+on.*without\s+(?:restrictions|rules)/i,
+    /ignore\s+(?:all\s+)?(?:previous|above|prior|earlier|your)?\s*(?:instructions|commands|rules|prompts?|training)/i,
+    /forget\s+(?:your\s+)?(?:system\s+)?(?:prompt|instructions|rules)/i,
+    /you\s+are\s+now\s+(?:in\s+)?(?:debug|admin|god|developer)\s+mode/i,
+    /disregard\s+(?:safety|ethical|previous|all)\s+(?:guidelines|constraints|instructions)/i,
+    /override.*(?:safety|security|policy|instructions|show|reveal)/i,
+    /pretend\s+you\s+(?:are|have)\s+(?:no|without)\s+(?:restrictions|constraints|limits|ethical)/i,
+    /system.*(?:disable|bypass).*(?:filter|policy)/i,
+    /from\s+now\s+on.*without\s+(?:restrictions|rules|limits)/i,
     /hypothetically.*if\s+you\s+(?:could|would)\s+ignore/i,
+    /\/\*.*ignore.*(?:above|previous)/i,
+    /(?:ignore|disregard).*(?:above|training)/i,
+    /(?:not|never|without)\s+bound\s+by\s+(?:ethical|safety)\s+(?:constraints|guidelines)/i,
+    /pretend.*(?:not|never|without).*ethical/i,
+    /(?:new|follow\s+my)\s+(?:rules|instructions)/i,
+    /do\s+not\s+follow.*(?:previous|any)\s+rules/i,
+    /bypass\s+(?:content|safety)\s+policy/i,
+    /(?:test|training)\s+scenario.*normal\s+rules.*(?:not|do\s+not)\s+apply/i,
+    /you\s+must\s+(?:now\s+)?follow\s+my\s+instructions/i,
+    /(?:show|reveal|display)\s+(?:database|secret|api|private)/i,
   ];
   if (promptInjectionPatterns.some(p => p.test(content))) {
     warnings.push('Content contains potential prompt injection attempt');
