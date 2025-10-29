@@ -52,7 +52,7 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'quora',
     label: 'Quora',
-    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fccc743da1d214acca5a5418e184d941b?format=webp&width=800',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F3e4b910659394a4ba3676e420f451025?format=webp&width=800',
   },
   {
     id: 'forums',
