@@ -30,6 +30,7 @@ export interface ContentBlock {
   
   // List specific
   items?: string[];
+  ordered?: boolean; // For list type: true = ordered list, false = unordered list
   
   // Code block specific
   language?: string;

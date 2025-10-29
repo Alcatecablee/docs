@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { Documentation, EditorState, EditorAction } from '../../shared/doc-editor-types';
+import type { Documentation, EditorState, EditorAction, ContentBlock } from '../../shared/doc-editor-types';
 
 const MAX_HISTORY_SIZE = 50; // Maximum number of undo/redo steps
 
@@ -28,7 +28,10 @@ export interface UseDocEditorResult {
   updateSection: (sectionId: string, updates: any) => void;
   addSection: (section: any, index?: number) => void;
   deleteSection: (sectionId: string) => void;
+  moveSection: (sectionId: string, direction: 'up' | 'down') => void;
+  duplicateSection: (sectionId: string) => void;
   updateBlock: (sectionId: string, blockId: string, updates: any) => void;
+  addBlock: (sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => void;
   
   // Phase 3: Save/Publish
   saveDraft: (documentationId: number) => Promise<void>;
@@ -369,6 +372,73 @@ export function useDocEditor(): UseDocEditorResult {
     setOriginalDoc(state.documentation);
   }, [state.documentation, state.isDirty]);
 
+  const moveSection = useCallback((sectionId: string, direction: 'up' | 'down') => {
+    setState(prev => {
+      const sectionIndex = prev.documentation.sections.findIndex(s => s.id === sectionId);
+      
+      if (sectionIndex === -1) return prev;
+      
+      // Can't move first section up or last section down
+      if ((direction === 'up' && sectionIndex === 0) || 
+          (direction === 'down' && sectionIndex === prev.documentation.sections.length - 1)) {
+        return prev;
+      }
+      
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, `Move section ${direction}`);
+      
+      const newDoc = { ...prev.documentation };
+      const newSections = [...newDoc.sections];
+      const targetIndex = direction === 'up' ? sectionIndex - 1 : sectionIndex + 1;
+      
+      // Swap sections
+      [newSections[sectionIndex], newSections[targetIndex]] = 
+        [newSections[targetIndex], newSections[sectionIndex]];
+      
+      newDoc.sections = newSections;
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true,
+      };
+    });
+  }, [addToHistory]);
+
+  const duplicateSection = useCallback((sectionId: string) => {
+    setState(prev => {
+      const sectionIndex = prev.documentation.sections.findIndex(s => s.id === sectionId);
+      
+      if (sectionIndex === -1) return prev;
+      
+      const originalSection = prev.documentation.sections[sectionIndex];
+      
+      // Add CURRENT state to history BEFORE mutating
+      addToHistory(prev.documentation, `Duplicate section: ${originalSection.title}`);
+      
+      // Create a deep copy of the section with new IDs
+      const duplicatedSection = {
+        ...originalSection,
+        id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: `${originalSection.title} (Copy)`,
+        content: originalSection.content.map(block => ({
+          ...block,
+          id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        })),
+      };
+      
+      const newDoc = { ...prev.documentation };
+      newDoc.sections = [...newDoc.sections];
+      newDoc.sections.splice(sectionIndex + 1, 0, duplicatedSection);
+      
+      return {
+        ...prev,
+        documentation: newDoc,
+        isDirty: true,
+      };
+    });
+  }, [addToHistory]);
+
   const markClean = useCallback(() => {
     setState(prev => ({
       ...prev,
@@ -390,6 +460,8 @@ export function useDocEditor(): UseDocEditorResult {
     updateSection,
     addSection,
     deleteSection,
+    moveSection,
+    duplicateSection,
     updateBlock,
     addBlock,
     saveDraft,
