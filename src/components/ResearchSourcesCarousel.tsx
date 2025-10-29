@@ -41,13 +41,7 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'stackexchange',
     label: 'Stack Exchange',
-    logo: (
-      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
-        <rect x="20" y="35" width="80" height="12" fill="#1E90FF" rx="2" />
-        <rect x="20" y="55" width="80" height="12" fill="#1E90FF" rx="2" />
-        <rect x="20" y="75" width="80" height="12" fill="#1E90FF" rx="2" />
-      </svg>
-    ),
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Faac4e760a8544892bd6e5f6a40054f2c?format=webp&width=800',
   },
   {
     id: 'quora',
