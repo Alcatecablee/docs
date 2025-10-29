@@ -1141,6 +1141,10 @@ export default function GenerationProgress() {
                     onEditModeToggle={docEditor.toggleEditMode}
                     onBlockUpdate={docEditor.updateBlock}
                     onAddBlock={docEditor.addBlock}
+                    onAddSection={docEditor.addSection}
+                    onMoveSection={docEditor.moveSection}
+                    onDeleteSection={docEditor.deleteSection}
+                    onDuplicateSection={docEditor.duplicateSection}
                     onSave={async () => {
                       if (documentationId) {
                         await docEditor.saveDraft(parseInt(documentationId));

@@ -24,6 +24,8 @@ import { EditableCallout } from './doc-editor/EditableCallout';
 import { EditableImage } from './doc-editor/EditableImage';
 import { FindReplaceDialog } from './doc-editor/FindReplaceDialog';
 import { BlockToolbar } from './doc-editor/BlockToolbar';
+import { SectionToolbar } from './doc-editor/SectionToolbar';
+import { AddSectionButton } from './doc-editor/AddSectionButton';
 import { useEffect, useState } from 'react';
 
 export interface EditableDocViewerProps {
@@ -38,6 +40,10 @@ export interface EditableDocViewerProps {
   onDocumentChange?: (doc: Documentation) => void;
   onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
   onAddBlock?: (sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => void;
+  onAddSection?: (section: any, index?: number) => void;
+  onMoveSection?: (sectionId: string, direction: 'up' | 'down') => void;
+  onDeleteSection?: (sectionId: string) => void;
+  onDuplicateSection?: (sectionId: string) => void;
   onSave?: () => Promise<void>;
   onPublish?: () => Promise<void>;
   onUndo?: () => void;
@@ -58,6 +64,10 @@ export function EditableDocViewer({
   onDocumentChange,
   onBlockUpdate,
   onAddBlock,
+  onAddSection,
+  onMoveSection,
+  onDeleteSection,
+  onDuplicateSection,
   onSave,
   onPublish,
   onUndo,
@@ -336,14 +346,36 @@ export function EditableDocViewer({
 
           {/* Sections */}
           {documentation.sections.map((section, index) => (
-            <SectionRenderer
-              key={section.id || index}
-              section={section}
-              isEditing={isEditing}
-              onBlockUpdate={onBlockUpdate}
-              onAddBlock={onAddBlock}
-            />
+            <div key={section.id || index}>
+              {/* Add Section Button (appears before each section when editing) */}
+              {isEditing && onAddSection && (
+                <AddSectionButton
+                  onAddSection={onAddSection}
+                  insertIndex={index}
+                />
+              )}
+              
+              <SectionRenderer
+                section={section}
+                sectionIndex={index}
+                totalSections={documentation.sections.length}
+                isEditing={isEditing}
+                onBlockUpdate={onBlockUpdate}
+                onAddBlock={onAddBlock}
+                onMoveSection={onMoveSection}
+                onDeleteSection={onDeleteSection}
+                onDuplicateSection={onDuplicateSection}
+              />
+            </div>
           ))}
+          
+          {/* Add Section Button at end */}
+          {isEditing && onAddSection && (
+            <AddSectionButton
+              onAddSection={onAddSection}
+              insertIndex={documentation.sections.length}
+            />
+          )}
         </article>
       </div>
       
@@ -364,20 +396,51 @@ export function EditableDocViewer({
 
 interface SectionRendererProps {
   section: Section;
+  sectionIndex: number;
+  totalSections: number;
   isEditing: boolean;
   onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
   onAddBlock?: (sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => void;
+  onMoveSection?: (sectionId: string, direction: 'up' | 'down') => void;
+  onDeleteSection?: (sectionId: string) => void;
+  onDuplicateSection?: (sectionId: string) => void;
 }
 
-function SectionRenderer({ section, isEditing, onBlockUpdate, onAddBlock }: SectionRendererProps) {
+function SectionRenderer({ 
+  section, 
+  sectionIndex,
+  totalSections,
+  isEditing, 
+  onBlockUpdate, 
+  onAddBlock,
+  onMoveSection,
+  onDeleteSection,
+  onDuplicateSection,
+}: SectionRendererProps) {
   return (
-    <section className="space-y-4 scroll-mt-20" id={section.id}>
+    <section className="space-y-4 scroll-mt-20 group" id={section.id}>
       {/* Section Header */}
-      <div className="flex items-center gap-3 pb-2 border-b border-gray-300">
-        <span className="text-2xl">{section.icon}</span>
-        <h2 className="text-2xl font-bold text-gray-900">
-          {section.title}
-        </h2>
+      <div className="flex items-center justify-between gap-3 pb-2 border-b border-gray-300">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{section.icon}</span>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {section.title}
+          </h2>
+        </div>
+        
+        {/* Section Toolbar (appears on hover when editing) */}
+        {isEditing && onMoveSection && onDeleteSection && onDuplicateSection && (
+          <SectionToolbar
+            sectionId={section.id}
+            sectionTitle={section.title}
+            isFirst={sectionIndex === 0}
+            isLast={sectionIndex === totalSections - 1}
+            onMoveUp={() => onMoveSection(section.id, 'up')}
+            onMoveDown={() => onMoveSection(section.id, 'down')}
+            onDelete={() => onDeleteSection(section.id)}
+            onDuplicate={() => onDuplicateSection(section.id)}
+          />
+        )}
       </div>
 
       {/* Section Content Blocks */}
