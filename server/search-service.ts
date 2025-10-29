@@ -1,6 +1,9 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { retryWithFallback } from './utils/retry-with-fallback';
+import { withCircuitBreaker } from './utils/circuit-breaker';
+import { rateLimiter } from './rate-limiter';
+import { monitoring } from './monitoring';
 import { scoreSource, filterTrustedSources, deduplicateContent, validateLinks, crossVerifyContent, type ScoredSource, type SourceMetrics } from './utils/source-quality-scorer';
 import { youtubeService, type YouTubeVideo } from './youtube-service';
 import { redditService, type RedditPost } from './reddit-service';
@@ -122,6 +125,28 @@ export class SearchService {
   constructor(serpApiKey?: string, braveApiKey?: string) {
     this.serpApiKey = serpApiKey || process.env.SERPAPI_KEY;
     this.braveApiKey = braveApiKey || process.env.BRAVE_API_KEY;
+    // Configure basic request-per-minute limits for web search providers
+    // Adjust conservatively; SERP providers often enforce strict QPS
+    try {
+      rateLimiter.configure('serpapi', { tokensPerMinute: 60, burstCapacity: 60 });
+      rateLimiter.configure('brave', { tokensPerMinute: 60, burstCapacity: 60 });
+    } catch {}
+  }
+
+  private async withProvider<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    const allowed = await rateLimiter.waitForToken(key, 1, 5000);
+    if (!allowed) {
+      throw new Error(`${key} rate limit exceeded`);
+    }
+    const t0 = Date.now();
+    try {
+      const result = await withCircuitBreaker(`search-${key}`, fn, { failureThreshold: 3, resetTimeout: 20000, successThreshold: 2 } as any);
+      monitoring.recordMetric(`search.${key}`, Date.now() - t0, true);
+      return result;
+    } catch (e: any) {
+      monitoring.recordMetric(`search.${key}`, Date.now() - t0, false, e?.message);
+      throw e;
+    }
   }
 
   /**
@@ -483,8 +508,8 @@ export class SearchService {
     url.searchParams.append('num', numResults.toString());
     url.searchParams.append('engine', 'google');
 
-    const response = await fetch(url.toString(), {
-      headers: { 'Content-Type': 'application/json' }
+    const response = await this.withProvider('serpapi', async () => {
+      return await fetch(url.toString(), { headers: { 'Content-Type': 'application/json' } });
     });
 
     if (!response.ok) {
@@ -521,12 +546,14 @@ export class SearchService {
     url.searchParams.append('q', query);
     url.searchParams.append('count', Math.min(numResults, 20).toString());
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip',
-        'X-Subscription-Token': this.braveApiKey!
-      }
+    const response = await this.withProvider('brave', async () => {
+      return await fetch(url.toString(), {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Encoding': 'gzip',
+          'X-Subscription-Token': this.braveApiKey!
+        }
+      });
     });
 
     if (!response.ok) {
