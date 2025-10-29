@@ -41,18 +41,15 @@ import {
   validateMetadata
 } from './utils/ai-validation';
 import { withPipelineTimeout, withStageTimeout, checkAbortSignal, TimeoutError } from './utils/pipeline-timeout';
+import { politeFetch, politeHeadOrGet, politeFetchWithRetry } from './utils/polite-fetch';
+import { buildLinkGraph } from './services/link-graph';
+import { createRevisitPolicyService } from './services/revisit-policy';
+import { monitoring } from './monitoring';
+import { headlessFetchHTML } from './utils/headless-fetch';
 
 // Utility: attempt HEAD then GET to verify URL exists
 async function headOrGet(url: string): Promise<Response | null> {
-  try {
-    const headResp = await fetch(url, { method: 'HEAD' });
-    if (headResp.ok) return headResp;
-  } catch {}
-  try {
-    const getResp = await fetch(url, { method: 'GET' });
-    if (getResp.ok) return getResp;
-  } catch {}
-  return null;
+  return politeHeadOrGet(url);
 }
 
 // Utility: naive sitemap XML parser for <loc> entries
@@ -89,7 +86,7 @@ async function fetchSitemaps(baseUrl: string, extraHosts: string[] = []): Promis
     async (combo, _index, signal) => {
       const target = new URL(combo.path, combo.root).href;
       try {
-        const resp = await fetch(target, { signal });
+        const resp = await politeFetch(target, { signal: signal as any, timeoutMs: 6000 });
         if (resp.ok) {
           try {
             const xml = await resp.text();
@@ -119,11 +116,7 @@ async function fetchSitemaps(baseUrl: string, extraHosts: string[] = []): Promis
 // Enhanced site discovery and crawling
 export async function discoverSiteStructure(baseUrl: string, sessionId?: string) {
   try {
-    const homepage = await fetch(baseUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    });
+    let homepage = await politeFetch(baseUrl, { timeoutMs: 10000 });
     
     if (!homepage.ok) {
       // Provide specific feedback for 403 Forbidden errors
@@ -136,7 +129,24 @@ export async function discoverSiteStructure(baseUrl: string, sessionId?: string)
         }
         throw new Error(`Site blocks automated access (403 Forbidden) - using external sources only`);
       }
-      throw new Error(`Failed to fetch homepage: ${homepage.statusText}`);
+      // Fallback to headless if enabled
+      if (process.env.HEADLESS_CRAWL === '1' || process.env.HEADLESS_CRAWL === 'true') {
+        try {
+          const h = await headlessFetchHTML(baseUrl, 12000);
+          const $ = cheerio.load(h.html);
+          const title = $('title').text();
+          // synthesize a Response-like object for downstream code path
+          (homepage as any) = {
+            ok: true,
+            status: 200,
+            text: async () => h.html
+          };
+        } catch (e) {
+          throw new Error(`Failed to fetch homepage: ${homepage.statusText}`);
+        }
+      } else {
+        throw new Error(`Failed to fetch homepage: ${homepage.statusText}`);
+      }
     }
     
     let html: string;
@@ -362,14 +372,57 @@ export async function extractMultiPageContent(urls: string[], sessionId?: string
   const results = await processConcurrently(
     urlsToProcess,
     async (url, _index, signal) => {
-      const response = await fetch(url, { 
-        signal, // AbortSignal for proper timeout handling
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-      });
+      // Revisit policy and conditional requests
+      const revisit = createRevisitPolicyService();
+      const conditional = await revisit.getConditionalHeaders(url);
+      const response = await politeFetchWithRetry(url, { 
+        signal: signal as any,
+        timeoutMs: 7000,
+        headers: conditional
+      }, 2, 300);
       
+      if (response.status === 304) {
+        monitoring.recordMetric('crawler.not_modified', 0, true, undefined, { url });
+        return {
+          url,
+          title: 'Unchanged',
+          content: '',
+          excerpt: '',
+          codeBlocks: [],
+          images: [],
+          headings: [],
+          wordCount: 0
+        };
+      }
+
       if (!response.ok) {
+        // Headless fallback on 403/401/419 style blocks
+        if ((response.status === 403 || response.status === 401) && (process.env.HEADLESS_CRAWL === '1' || process.env.HEADLESS_CRAWL === 'true')) {
+          try {
+            const h = await headlessFetchHTML(url, 12000);
+            const $ = cheerio.load(h.html);
+            await revisit.updateFromResponse(url, response as any);
+            const codeBlocks: any[] = [];
+            $('pre code, pre, .code-block, .highlight').each((i, el) => {
+              const code = $(el).text().trim();
+              const language = $(el).attr('class')?.match(/language-(\w+)/)?.[1] || 'text';
+              if (code.length > 10) codeBlocks.push({ language, code });
+            });
+            const headings: any[] = [];
+            $('h1, h2, h3, h4').each((i, el) => headings.push({ level: el.tagName.toLowerCase(), text: $(el).text().trim() }));
+            const content = $('main, article, .content, .post-content, .entry-content').text() || $('body').text();
+            return {
+              url,
+              title: $('title').text() || $('h1').first().text() || 'Untitled',
+              content: content.substring(0, 5000),
+              excerpt: $('meta[name="description"]').attr('content') || '',
+              codeBlocks,
+              images: [],
+              headings,
+              wordCount: content.split(/\s+/).length
+            };
+          } catch {}
+        }
         throw new Error(`HTTP ${response.status}`);
       }
       
@@ -382,6 +435,7 @@ export async function extractMultiPageContent(urls: string[], sessionId?: string
         throw new Error(`Page read failed: ${textError.message || textError.code}`);
       }
       const $ = cheerio.load(html);
+      await revisit.updateFromResponse(url, response as any);
       
       // Extract code blocks
       const codeBlocks = [];
@@ -708,12 +762,19 @@ export async function generateEnhancedDocumentation(
     });
   }
   const docLikePatterns = /(doc|help|support|guide|tutorial|api|developer|faq|question|blog|article|changelog|release|update|resource|learn|integration|pricing|security|status|knowledge|kb)/i;
-  const candidateUrls = Array.from(new Set([
+  const candidateRaw = Array.from(new Set([
     ...siteStructure.validDocPaths,
     ...siteStructure.navLinks,
     ...(siteStructure.sitemapUrls || []),
     ...siteStructure.allInternalLinks.filter((u: string) => docLikePatterns.test(u))
   ]));
+
+  // Build a simple link graph from homepage links and valid paths;
+  // use it to prioritize the frontier.
+  const homepage = url;
+  const edges = siteStructure.allInternalLinks.map((to: string) => ({ from: homepage, to }));
+  const graph = buildLinkGraph({ roots: [homepage], links: edges, candidates: candidateRaw });
+  const candidateUrls = graph.prioritize(200);
 
   // First pass
   let extractedContent = await extractMultiPageContent(candidateUrls.slice(0, 60), sessionId);
