@@ -18,8 +18,7 @@
     "test": "vitest run --coverage",
     "e2e": "playwright test",
     "validate:seo": "node scripts/validate-structured-data.mjs",
-    "test:watch": "vitest",
-    "postinstall": "husky install"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.0",
@@ -123,9 +122,9 @@
     "@opentelemetry/auto-instrumentations-node": "^0.56.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.56.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.56.0",
-    "@opentelemetry/resources": "^1.23.0",
-    "@opentelemetry/semantic-conventions": "^1.23.0",
-    "@opentelemetry/sdk-metrics": "^1.23.0",
+    "@opentelemetry/resources": "^1.29.0",
+    "@opentelemetry/semantic-conventions": "^1.29.0",
+    "@opentelemetry/sdk-metrics": "^1.29.0",
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",
     "pino-pretty": "^11.2.2"

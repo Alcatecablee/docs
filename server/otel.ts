@@ -21,13 +21,16 @@ try {
       [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
     }),
     traceExporter,
-    metricReader: new PeriodicExportingMetricReader({ exporter: metricExporter }),
+    metricReader: new PeriodicExportingMetricReader({ exporter: metricExporter }) as any,
     instrumentations: [getNodeAutoInstrumentations()],
   });
 
-  sdk.start().catch((err) => {
-    console.error('Failed to start OpenTelemetry SDK', err);
-  });
+  try {
+    sdk.start();
+    console.log('OpenTelemetry SDK started successfully');
+  } catch (startErr) {
+    console.error('Failed to start OpenTelemetry SDK', startErr);
+  }
 } catch (err) {
   console.warn('OpenTelemetry SDK initialization failed, continuing without monitoring:', err);
 }
