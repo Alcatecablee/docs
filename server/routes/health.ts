@@ -8,6 +8,7 @@
 import { Router } from 'express';
 import { monitoring } from '../monitoring';
 import { getAllCircuitStates } from '../utils/circuit-breaker';
+import { rateLimiter } from '../rate-limiter';
 import { getIdempotencyStats } from '../middleware/idempotency';
 
 const router = Router();
@@ -127,6 +128,25 @@ router.get('/circuits', (req, res) => {
       status: 'error',
       message: error.message,
     });
+  }
+});
+
+/**
+ * Rate limiter status per provider
+ */
+router.get('/ratelimits', (req, res) => {
+  try {
+    const providers = [
+      'google','together','openrouter','groq','hyperbolic','deepseek','openai',
+      'serpapi','brave'
+    ];
+    const usage: Record<string, any> = {};
+    for (const p of providers) {
+      usage[p] = rateLimiter.getUsage(p);
+    }
+    res.json({ status: 'ok', usage, timestamp: new Date().toISOString() });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: error.message });
   }
 });
 

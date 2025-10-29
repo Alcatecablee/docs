@@ -1,11 +1,16 @@
+import './otel';
 import express from "express";
 import { createServer } from "http";
 import routes from "./routes";
 import { setupVite } from "./vite";
 import { initializeRateLimits } from "./rate-limiter";
+import { logger } from './logger';
+import pinoHttp from 'pino-http';
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+app.use(pinoHttp({ logger }));
 
 initializeRateLimits();
 // Log configured providers on startup
@@ -18,18 +23,12 @@ if (process.env.HYPERBOLIC_API_KEY) configuredProviders.push('Hyperbolic');
 if (process.env.DEEPSEEK_API_KEY) configuredProviders.push('DeepSeek');
 if (process.env.OPENAI_API_KEY) configuredProviders.push('OpenAI');
 
-console.log('🚀 ViberDoc Multi-Provider LLM System');
-console.log('📊 Configured AI Providers:', configuredProviders.length > 0 ? configuredProviders.join(', ') : 'NONE - Please add API keys!');
-console.log('🗄️  Database:', process.env.DATABASE_URL ? 'Connected' : 'Not configured');
-console.log('🔐 Supabase:', process.env.SUPABASE_URL ? 'Connected' : 'Not configured');
+logger.info('ViberDoc Multi-Provider LLM System');
+logger.info({ providers: configuredProviders }, 'Configured AI Providers');
+logger.info({ dbConfigured: !!process.env.DATABASE_URL }, 'Database');
+logger.info({ supabaseConfigured: !!process.env.SUPABASE_URL }, 'Supabase');
 
-// Log incoming HTTP requests for debugging
-app.use((req, res, next) => {
-  try {
-    console.log('[HTTP]', req.method, req.originalUrl, 'from', req.ip);
-  } catch (e) {}
-  next();
-});
+// pino-http provides request logging
 
 app.use(express.json());
 
@@ -167,7 +166,7 @@ app.use(async (req, res, next) => {
       }
     }
   } catch (err) {
-    console.error('Subdomain routing error:', err);
+    logger.error({ err }, 'Subdomain routing error');
   }
   
   next();
@@ -186,7 +185,7 @@ import { createDocumentationWithTransaction } from './utils/documentation-transa
 // Initialize with 5 concurrent workers for production
 initUnifiedQueue(async (job: any) => {
   try {
-    console.log('Processing job', job.id, job.name);
+    logger.info({ jobId: job.id, name: job.name }, 'Processing job');
     const { url, userId, sessionId, userPlan, userEmail } = job.payload || {};
     if (job.name === 'generate-docs' && url) {
       const result = await generateDocumentationPipeline(url, userId || null, sessionId, userPlan || 'free');
@@ -203,13 +202,13 @@ initUnifiedQueue(async (job: any) => {
       });
       
       job.result = { documentationId: documentation.id };
-      console.log('Job completed', job.id, job.result);
+      logger.info({ jobId: job.id, result: job.result }, 'Job completed');
     } else {
       throw new Error('Unknown job or missing payload');
     }
   } catch (err: any) {
     job.error = err?.message || String(err);
-    console.error('Job failed', job.id, job.error);
+    logger.error({ jobId: job.id, error: job.error }, 'Job failed');
     throw err;
   }
 }, { concurrency: 5 });
@@ -220,12 +219,12 @@ async function start() {
   app.use(routes);
 
   server.listen(Number(port), "0.0.0.0", () => {
-    console.log(`Server running on port ${port}`);
+    logger.info({ port }, 'Server running');
   });
 }
 
 start().catch((err) => {
-  console.error("Failed to start server:", err);
+  logger.error({ err }, "Failed to start server");
   process.exit(1);
 });
 

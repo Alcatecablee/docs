@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { createRobotsTxtService } from '../services/robots-txt';
 import { monitoring } from '../monitoring';
+import { logger } from '../logger';
 
 type Bucket = {
   tokens: number;
@@ -117,6 +118,9 @@ export async function politeFetch(url: string, options: PoliteFetchOptions = {})
       status: resp && resp.status,
       method: options.method || 'GET'
     });
+    if (!resp.ok) {
+      logger.warn({ host, url, status: resp && resp.status }, 'Fetch non-OK');
+    }
     return resp;
   } finally {
     clearTimeout(t);

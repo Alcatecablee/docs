@@ -1,3 +1,5 @@
+import { normalizeUrl } from '../utils/url-normalization';
+
 export interface LinkEdge {
   from: string;
   to: string;
@@ -20,15 +22,7 @@ export interface LinkGraphInput {
 
 const DOC_KEYWORDS = /(doc|help|support|guide|tutorial|api|developer|faq|question|blog|article|changelog|release|update|resource|learn|integration|pricing|security|status|knowledge|kb)/i;
 
-function normalize(u: string): string {
-  try {
-    const url = new URL(u);
-    url.hash = '';
-    return url.href;
-  } catch {
-    return u.trim();
-  }
-}
+const normalize = (u: string) => normalizeUrl(u);
 
 function urlDepth(u: string): number {
   try {

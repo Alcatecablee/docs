@@ -12,6 +12,7 @@ export interface PerformanceMetrics {
 export class MonitoringService {
   private static metrics: PerformanceMetrics[] = [];
   private static maxMetrics = 1000; // Keep last 1000 metrics
+  private static retentionInterval: NodeJS.Timer | null = null;
 
   /**
    * Record a performance metric
@@ -82,6 +83,15 @@ export class MonitoringService {
     this.metrics = this.metrics.filter(m => m.timestamp > cutoff);
   }
 
+  static startRetentionScheduler() {
+    const hours = Number(process.env.METRICS_RETENTION_HOURS || '24');
+    const everyMs = 60 * 60 * 1000; // hourly sweep
+    try { if (this.retentionInterval) clearInterval(this.retentionInterval); } catch {}
+    this.retentionInterval = setInterval(() => {
+      try { this.clearOldMetrics(hours); } catch {}
+    }, everyMs);
+  }
+
   /**
    * Get health status
    */
@@ -111,3 +121,4 @@ export class MonitoringService {
 
 // Export singleton instance
 export const monitoring = MonitoringService;
+try { MonitoringService.startRetentionScheduler(); } catch {}

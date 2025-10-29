@@ -36,6 +36,7 @@ import { idempotencyMiddleware, generateIdempotencyKey } from './middleware/idem
 import { validate } from './middleware/validation';
 import { generateDocsSchema } from './validation/schemas';
 import { verifySupabaseAuth, verifyApiKey } from './middleware/auth';
+import { enforceSafety } from './middleware/safety';
 
 // Guard against undefined db
 function ensureDb() {
@@ -196,6 +197,7 @@ router.get("/api/progress/:sessionId", (req, res) => {
 // Generate documentation endpoint
 router.post("/api/generate-docs", 
   verifySupabaseAuth,
+  enforceSafety,
   validate(generateDocsSchema, 'body'),
   idempotencyMiddleware({ 
     ttlSeconds: 86400,
@@ -585,11 +587,13 @@ Available images: ${images.slice(0, 10).join(', ')}`
     }
 
     const stage1Data = await stage1Response.json();
+    const { shadowValidateJSON } = await import('./utils/ai-shadow-validator');
     const extractedStructure = await parseJSONWithRetry(
       OPENAI_API_KEY,
       stage1Data.choices?.[0]?.message?.content || '{}',
       'Ensure the output is valid JSON matching the structure extraction format'
     );
+    try { await shadowValidateJSON('stage1_structure', JSON.stringify(extractedStructure)); } catch {}
     
     console.log("Stage 2: Writing professional documentation...");
 
@@ -683,6 +687,7 @@ Use proper formatting, include relevant images, and make it professional and com
       stage2Data.choices?.[0]?.message?.content || '{}',
       'Ensure the output is valid JSON with proper documentation structure'
     );
+    try { await shadowValidateJSON('stage2_write', JSON.stringify(writtenDocs)); } catch {}
     
     console.log("Stage 3: Generating metadata and SEO optimization...");
 
@@ -751,6 +756,7 @@ Source URL: ${url}`
       stage3Data.choices?.[0]?.message?.content || '{}',
       'Ensure the output is valid JSON with metadata and searchability fields'
     );
+    try { await shadowValidateJSON('stage3_metadata', JSON.stringify(finalMetadata)); } catch {}
     
     console.log("Stage 4: Quality validation and refinement...");
 
@@ -822,6 +828,7 @@ Return ONLY valid JSON.`
         stage4Data.choices?.[0]?.message?.content || '{}',
         'Ensure the output is valid JSON with validation results and refined sections'
       );
+      try { await shadowValidateJSON('stage4_quality', JSON.stringify(validationData)); } catch {}
       validationResults = validationData.validation_results;
       
       // Use refined sections if validation found issues
@@ -1028,7 +1035,7 @@ router.get("/api/user/profile", verifySupabaseAuth, async (req, res) => {
 });
 
 // Enterprise API: Generate documentation with API key authentication
-router.post("/api/v1/generate", verifyApiKey, async (req, res) => {
+router.post("/api/v1/generate", verifyApiKey, enforceSafety, async (req, res) => {
   try {
     console.log('/api/v1/generate called with API key auth');
 
@@ -1144,6 +1151,7 @@ router.get("/api/export/json/:id", verifySupabaseAuth, async (req, res) => {
     }
 
     const parsedContent = JSON.parse(doc.content);
+    const { buildSoftwareApplicationJSONLD, buildFAQJSONLD } = await import('./seo/jsonld');
 
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="${doc.title.replace(/[^a-z0-9]/gi, '_')}.json"`);
@@ -1314,6 +1322,8 @@ router.get("/api/export/html/:id", verifySupabaseAuth, async (req, res) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${parsedContent.title}</title>
+  <script type="application/ld+json">${JSON.stringify(buildSoftwareApplicationJSONLD(parsedContent))}</script>
+  ${(() => { const faq = buildFAQJSONLD(parsedContent); return faq ? `<script type=\"application/ld+json\">${JSON.stringify(faq)}</script>` : '' })()}
   <style>
     :root {
       --primary-color: ${primaryColor};
