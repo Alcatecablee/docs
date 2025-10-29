@@ -51,18 +51,27 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'forums',
     label: 'Official Forums',
-    logo: (
-      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
-        <path d="M25 35h70c5.5 0 10 4.5 10 10v40c0 5.5-4.5 10-10 10h-25l-15 12v-12H25c-5.5 0-10-4.5-10-10V45c0-5.5 4.5-10 10-10z" stroke="#16A34A" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        <line x1="35" y1="55" x2="85" y2="55" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" />
-        <line x1="35" y1="68" x2="85" y2="68" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    ),
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fb8216429200747eaa3c51c29f593a569?format=webp&width=800',
+  },
+  {
+    id: 'brave',
+    label: 'Brave',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F73189a81a7514d5190723e50a3e5b864?format=webp&width=800',
   },
   {
     id: 'websearch',
     label: 'Web Search',
     image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdbf37a3ec2b54b77b7a7c9fb35f3bd73?format=webp&width=800',
+  },
+  {
+    id: 'bing',
+    label: 'Bing',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdc9e8a8adf084bb7b32199a93a57db51?format=webp&width=800',
+  },
+  {
+    id: 'yandex',
+    label: 'Yandex',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F103fe0a5d65341158d873c6e52ff4d3a?format=webp&width=800',
   },
   {
     id: 'internaldocs',
