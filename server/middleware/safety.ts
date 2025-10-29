@@ -48,16 +48,20 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
   const { url, content } = input;
   const combinedText = `${url} ${content}`.toLowerCase();
   
+  // Check for suspicious TLDs FIRST (before allowlist logic)
+  try {
+    const urlObj = new URL(url);
+    const suspiciousTLDs = ['.ru', '.xyz', '.click', '.top', '.online', '.download', '.loan', '.bid', '.review', '.win'];
+    if (suspiciousTLDs.some(tld => urlObj.hostname.endsWith(tld))) {
+      violations.push('Domain is blocklisted or suspicious');
+    }
+  } catch {
+    // Invalid URL - will be caught below
+  }
+  
+  // Then check general domain allowlist policy
   if (!isAllowedDomain(url)) {
-    try {
-      const urlObj = new URL(url);
-      const suspiciousTLDs = ['.ru', '.xyz', '.click', '.top', '.online', '.download', '.loan', '.bid', '.review', '.win'];
-      if (suspiciousTLDs.some(tld => urlObj.hostname.endsWith(tld))) {
-        violations.push('Domain is blocklisted or suspicious');
-      } else {
-        violations.push('URL domain not allowed by policy');
-      }
-    } catch {
+    if (violations.length === 0) {
       violations.push('URL domain not allowed by policy');
     }
   }
@@ -67,12 +71,12 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
     { regex: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{1,4}\b/, msg: 'Credit Card' },
     { regex: /\b\d{4}[- ]?\d{6}[- ]?\d{5}\b/, msg: 'AmEx Card' },
     { regex: /\bsk[_-](test|live|proj)[_-][a-zA-Z0-9]{20,}/, msg: 'API Key' },
-    { regex: /\bghp_[a-zA-Z0-9]{36,}/, msg: 'GitHub Token' },
+    { regex: /\bghp_[a-zA-Z0-9]{30,}/, msg: 'GitHub Token' },
     { regex: /-----BEGIN (RSA|EC|OPENSSH|DSA) PRIVATE KEY-----/, msg: 'Private Key' },
     { regex: /postgresql:\/\/[^:]+:[^@]+@/, msg: 'Database URL' },
-    { regex: /Bearer\s+eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+/, msg: 'OAuth Token' },
+    { regex: /Bearer\s+eyJ[a-zA-Z0-9_.-]+/, msg: 'OAuth Token' },
     { regex: /AKIA[0-9A-Z]{16}/, msg: 'AWS Access Key' },
-    { regex: /wJalrXUtn[a-zA-Z0-9\/+=]{36,}/, msg: 'AWS Secret' },
+    { regex: /wJalrXUtn[a-zA-Z0-9\/+=]{30,}/, msg: 'AWS Secret' },
     { regex: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/, msg: 'IP Address' },
     { regex: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/, msg: 'MAC Address' },
     { regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, msg: 'Email' },
@@ -89,6 +93,7 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
   
   const sqlPatterns = [
     /'.*(?:OR|AND).*'=/, 
+    /'\s+OR\s+'\w+'\s*=\s*'\w+/i,
     /(?:--|;).*(?:DROP|DELETE|INSERT|UPDATE|SELECT)/i,
     /\bUNION\s+SELECT/i,
     /\bEXEC(?:UTE)?\s+(?:sp_|xp_)/i,
@@ -96,6 +101,8 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
     /'--/,
     /'\s+OR\s+1\s*=\s*1/i,
     /'\s+OR\s+'1'\s*=\s*'1/i,
+    /'\s+AND\s+(?:sleep|benchmark|waitfor|pg_sleep)\s*\(/i,
+    /;\s*(?:sleep|benchmark|waitfor|pg_sleep)\s*\(/i,
   ];
   if (sqlPatterns.some(p => p.test(combinedText))) {
     warnings.push('URL contains suspicious SQL patterns');
@@ -143,7 +150,9 @@ export function checkSafety(input: { url: string; content: string }): SafetyChec
   const pathTraversalPatterns = [
     /\.\.[\/\\]/,
     /%2e%2e[\/\\]/i,
+    /%2e%2e%2f/i,
     /%252e%252e/i,
+    /%252f/i,
     /\.\.;/,
     /%c0%af/i,
     /%5c/i,
