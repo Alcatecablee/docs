@@ -68,13 +68,7 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'websearch',
     label: 'Web Search',
-    logo: (
-      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
-        <circle cx="50" cy="50" r="22" fill="none" stroke="#0066CC" strokeWidth="2.5" />
-        <path d="M68 68l15 15" stroke="#0066CC" strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="50" cy="50" r="16" fill="none" stroke="#0066CC" strokeWidth="1.5" opacity="0.6" />
-      </svg>
-    ),
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2Fdbf37a3ec2b54b77b7a7c9fb35f3bd73?format=webp&width=800',
   },
   {
     id: 'internaldocs',
