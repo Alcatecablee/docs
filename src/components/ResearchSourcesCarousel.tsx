@@ -1,17 +1,10 @@
 import React from 'react';
-import {
-  DocumentTextIcon,
-  ChatBubbleLeftRightIcon,
-  GlobeAltIcon,
-  MagnifyingGlassIcon,
-  DocumentMagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
 
 interface ResearchSource {
   id: string;
   label: string;
   image?: string;
-  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  logo?: React.ReactNode;
 }
 
 const RESEARCH_SOURCES: ResearchSource[] = [
@@ -48,27 +41,57 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'stackexchange',
     label: 'Stack Exchange',
-    icon: DocumentTextIcon,
+    logo: (
+      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
+        <rect x="20" y="35" width="80" height="12" fill="#1E90FF" rx="2" />
+        <rect x="20" y="55" width="80" height="12" fill="#1E90FF" rx="2" />
+        <rect x="20" y="75" width="80" height="12" fill="#1E90FF" rx="2" />
+      </svg>
+    ),
   },
   {
     id: 'quora',
     label: 'Quora',
-    icon: ChatBubbleLeftRightIcon,
+    logo: (
+      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
+        <circle cx="60" cy="60" r="45" fill="none" stroke="#A82400" strokeWidth="3" />
+        <text x="60" y="72" textAnchor="middle" fontSize="48" fontWeight="bold" fill="#A82400" fontFamily="serif">Q</text>
+      </svg>
+    ),
   },
   {
     id: 'forums',
     label: 'Official Forums',
-    icon: GlobeAltIcon,
+    logo: (
+      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
+        <path d="M25 35h70c5.5 0 10 4.5 10 10v40c0 5.5-4.5 10-10 10h-25l-15 12v-12H25c-5.5 0-10-4.5-10-10V45c0-5.5 4.5-10 10-10z" stroke="#16A34A" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <line x1="35" y1="55" x2="85" y2="55" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" />
+        <line x1="35" y1="68" x2="85" y2="68" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
   },
   {
     id: 'websearch',
     label: 'Web Search',
-    icon: MagnifyingGlassIcon,
+    logo: (
+      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
+        <circle cx="50" cy="50" r="22" fill="none" stroke="#0066CC" strokeWidth="2.5" />
+        <path d="M68 68l15 15" stroke="#0066CC" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="50" cy="50" r="16" fill="none" stroke="#0066CC" strokeWidth="1.5" opacity="0.6" />
+      </svg>
+    ),
   },
   {
     id: 'internaldocs',
     label: 'Internal Docs',
-    icon: DocumentMagnifyingGlassIcon,
+    logo: (
+      <svg viewBox="0 0 120 120" fill="none" className="w-12 h-12">
+        <path d="M30 25h50c2.2 0 4 1.8 4 4v70c0 2.2-1.8 4-4 4H30c-2.2 0-4-1.8-4-4V29c0-2.2 1.8-4 4-4z" fill="none" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <line x1="40" y1="45" x2="75" y2="45" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" />
+        <line x1="40" y1="60" x2="75" y2="60" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" />
+        <line x1="40" y1="75" x2="65" y2="75" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
   },
 ];
 
