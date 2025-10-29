@@ -872,8 +872,27 @@ const Index = () => {
                   </p>
                 </div>
               </div>
+
+              {/* 100% Source Attribution Trust Card */}
+              <div className="relative bg-gradient-to-br from-[rgb(102,255,228)]/15 to-[rgb(102,255,228)]/5 border-2 border-[rgb(102,255,228)]/40 rounded-3xl p-10 md:p-14 max-w-4xl mx-auto text-center shadow-[0_25px_60px_rgba(102,255,228,0.25)] hover:shadow-[0_30px_80px_rgba(102,255,228,0.3)] transition-all duration-500 hover:border-[rgb(102,255,228)]/60 backdrop-blur-sm">
+                {/* Decorative corners */}
+                <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-[rgb(102,255,228)]/60 rounded-tl-3xl"></div>
+                <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-[rgb(102,255,228)]/60 rounded-br-3xl"></div>
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="p-3 bg-[rgb(102,255,228)]/25 rounded-full">
+                      <CheckBadgeIcon className="h-10 w-10 text-[rgb(102,255,228)]" aria-hidden="true" />
+                    </div>
+                    <h4 className="text-3xl md:text-4xl font-bold text-white">100% Source Attribution</h4>
+                  </div>
+                  <p className="text-white/90 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
+                    Every insight is traced to its source. Quality scored, validated for reliability, and fully transparent so you can verify any claim.
+                  </p>
+                </div>
+              </div>
             </div>
-            
+
             {/* Capability Grid */}
             <div className="space-y-24">
               {/* Research Sources */}
