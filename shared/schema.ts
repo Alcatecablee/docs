@@ -24,6 +24,7 @@ export const users = pgTable("users", {
   api_usage: integer("api_usage").notNull().default(0), // Token usage for Enterprise billing
   balance: decimal("balance", { precision: 10, scale: 2 }).default("0.00"), // For API usage billing
   last_reset_at: timestamp("last_reset_at").notNull().defaultNow(), // For monthly reset of free tier
+  deleted_at: timestamp("deleted_at"), // GDPR: Timestamp when user requested deletion
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -144,6 +145,7 @@ export const documentations = pgTable("documentations", {
   theme_id: integer("theme_id"),
   current_version: integer("current_version").notNull().default(1), // Track current version number
   search_vector: tsvector("search_vector"), // TIER 3.3: Full-text search vector
+  deletion_scheduled_at: timestamp("deletion_scheduled_at"), // GDPR: Scheduled deletion date
   generatedAt: timestamp("generated_at").notNull().defaultNow(),
 });
 

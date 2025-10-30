@@ -6,6 +6,8 @@ import { setupVite } from "./vite";
 import { initializeRateLimits } from "./rate-limiter";
 import { logger } from './logger';
 import pinoHttp from 'pino-http';
+import cron from 'node-cron';
+import { runDailyCleanup } from './data-retention';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -217,6 +219,23 @@ async function start() {
   await setupVite(app, server);
   // Register application routes after Vite middleware to ensure HMR endpoints are handled correctly
   app.use(routes);
+
+  // Setup data retention cron job (runs daily at 2 AM UTC)
+  // See: COMPLIANCE.md for retention policies
+  if (process.env.ENABLE_DATA_RETENTION !== 'false') {
+    cron.schedule('0 2 * * *', async () => {
+      try {
+        await runDailyCleanup();
+      } catch (error) {
+        logger.error({ error }, 'Data retention cleanup job failed');
+      }
+    }, {
+      timezone: 'UTC'
+    });
+    logger.info('Data retention cron job scheduled (daily at 2 AM UTC)');
+  } else {
+    logger.warn('Data retention automation disabled via ENABLE_DATA_RETENTION=false');
+  }
 
   server.listen(Number(port), "0.0.0.0", () => {
     logger.info({ port }, 'Server running');
