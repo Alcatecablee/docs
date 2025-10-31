@@ -824,11 +824,12 @@ export async function generateEnhancedDocumentation(
     }
     
     // Prepare agent context
+    const siteMetadata = (siteStructure as any).metadata || {};
     const agentContext = {
       url,
       product: siteStructure.productName || new URL(url).hostname,
-      productType: siteStructure.metadata?.type || 'SaaS',
-      repoUrl: siteStructure.metadata?.repository,
+      productType: siteMetadata.type || 'SaaS',
+      repoUrl: siteMetadata.repository,
       language: 'JavaScript', // Could be detected from site
       sessionId: pmId,
       userPlan
