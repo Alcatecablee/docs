@@ -132,6 +132,7 @@ export interface CombinedAgentResults {
   research: ResearchResult;
   code: CodeResult;
   structure: StructureResult;
+  critic?: CriticResult;
   executionTime: number;
   status: 'success' | 'partial' | 'failed';
   failedAgents?: string[];

@@ -3,23 +3,26 @@
  * Coordinates parallel execution of specialist agents
  */
 
-import { AgentContext, AgentResult, CombinedAgentResults, ResearchResult, CodeResult, StructureResult } from './types';
+import { AgentContext, AgentResult, CombinedAgentResults, ResearchResult, CodeResult, StructureResult, CriticResult } from './types';
 import { ResearchAgent } from './research-agent';
 import { CodeAgent } from './code-agent';
 import { StructureAgent } from './structure-agent';
+import { CriticAgent } from './critic-agent';
 import { BaseAgent } from './base-agent';
 
 export class AgentOrchestrator {
   private researchAgent: ResearchAgent;
   private codeAgent: CodeAgent;
   private structureAgent: StructureAgent;
+  private criticAgent: CriticAgent;
 
   constructor() {
     this.researchAgent = new ResearchAgent();
     this.codeAgent = new CodeAgent();
     this.structureAgent = new StructureAgent();
+    this.criticAgent = new CriticAgent();
     
-    console.log('🎭 Agent Orchestrator initialized');
+    console.log('🎭 Agent Orchestrator initialized (with Critic Agent)');
   }
 
   /**
@@ -54,18 +57,43 @@ export class AgentOrchestrator {
                    : failedAgents.length === 3 ? 'failed'
                    : 'partial';
 
-      const executionTime = Date.now() - startTime;
+      const parallelTime = Date.now() - startTime;
 
-      console.log(`✅ Agents completed in ${executionTime}ms - Status: ${status}`);
+      console.log(`✅ Parallel agents completed in ${parallelTime}ms - Status: ${status}`);
       if (failedAgents.length > 0) {
         console.log(`⚠️  Failed agents: ${failedAgents.join(', ')}`);
       }
+
+      // Execute Critic Agent sequentially after parallel agents
+      let critic: CriticResult | undefined;
+      if (status !== 'failed') {
+        try {
+          console.log(`  🔍 Critic Agent validating quality...`);
+          const preliminaryResults: CombinedAgentResults = {
+            research,
+            code,
+            structure,
+            executionTime: parallelTime,
+            status,
+            failedAgents: failedAgents.length > 0 ? failedAgents : undefined
+          };
+          
+          critic = await this.criticAgent.execute(context, preliminaryResults);
+          console.log(`  ✅ Critic Agent completed - Quality Score: ${critic.data.qualityScore}/100`);
+        } catch (error: any) {
+          console.warn(`  ⚠️  Critic Agent failed: ${error.message} - Continuing without quality validation`);
+          critic = undefined;
+        }
+      }
+
+      const totalExecutionTime = Date.now() - startTime;
 
       return {
         research,
         code,
         structure,
-        executionTime,
+        critic,
+        executionTime: totalExecutionTime,
         status,
         failedAgents: failedAgents.length > 0 ? failedAgents : undefined
       };

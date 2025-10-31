@@ -714,7 +714,7 @@ export async function parseJSONWithRetry(aiProvider: ReturnType<typeof createAIP
 }
 
 // Feature flag for Agent System (3-agent parallel architecture)
-const ENABLE_AGENT_SYSTEM = process.env.ENABLE_AGENT_SYSTEM === 'true' || false;
+const ENABLE_AGENT_SYSTEM = process.env.ENABLE_AGENT_SYSTEM === 'true' || true;
 
 // Enhanced documentation generation pipeline
 export async function generateEnhancedDocumentation(
