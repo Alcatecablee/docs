@@ -34,6 +34,7 @@ import { CheckIcon, FireIcon } from "@heroicons/react/24/solid";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EditableDocViewer } from "@/components/EditableDocViewer";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useDocEditor } from "@/hooks/use-doc-editor";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import type { Documentation } from "../../shared/doc-editor-types";
@@ -1129,52 +1130,54 @@ export default function GenerationProgress() {
               {/* Preview Content */}
               <div className="flex-1 relative bg-white overflow-hidden">
                 {previewDocumentation || previewContent ? (
-                  <EditableDocViewer
-                    documentation={docEditor.documentation}
-                    isEditing={docEditor.isEditing}
-                    isDirty={docEditor.isDirty}
-                    canUndo={docEditor.canUndo}
-                    canRedo={docEditor.canRedo}
-                    isSaving={autoSave.isSaving}
-                    lastSaved={autoSave.lastSaved}
-                    documentationId={documentationId ? parseInt(documentationId) : undefined}
-                    onEditModeToggle={docEditor.toggleEditMode}
-                    onBlockUpdate={docEditor.updateBlock}
-                    onAddBlock={docEditor.addBlock}
-                    onAddSection={docEditor.addSection}
-                    onMoveSection={docEditor.moveSection}
-                    onDeleteSection={docEditor.deleteSection}
-                    onDuplicateSection={docEditor.duplicateSection}
-                    onSave={async () => {
-                      if (documentationId) {
-                        await docEditor.saveDraft(parseInt(documentationId));
-                        toast({
-                          title: "Saved!",
-                          description: "Your documentation draft has been saved.",
-                        });
-                      }
-                    }}
-                    onPublish={async () => {
-                      if (documentationId) {
-                        try {
-                          await docEditor.publish(parseInt(documentationId));
+                  <ErrorBoundary>
+                    <EditableDocViewer
+                      documentation={docEditor.documentation}
+                      isEditing={docEditor.isEditing}
+                      isDirty={docEditor.isDirty}
+                      canUndo={docEditor.canUndo}
+                      canRedo={docEditor.canRedo}
+                      isSaving={autoSave.isSaving}
+                      lastSaved={autoSave.lastSaved}
+                      documentationId={documentationId ? parseInt(documentationId) : undefined}
+                      onEditModeToggle={docEditor.toggleEditMode}
+                      onBlockUpdate={docEditor.updateBlock}
+                      onAddBlock={docEditor.addBlock}
+                      onAddSection={docEditor.addSection}
+                      onMoveSection={docEditor.moveSection}
+                      onDeleteSection={docEditor.deleteSection}
+                      onDuplicateSection={docEditor.duplicateSection}
+                      onSave={async () => {
+                        if (documentationId) {
+                          await docEditor.saveDraft(parseInt(documentationId));
                           toast({
-                            title: "Published!",
-                            description: "Your documentation has been published successfully.",
-                          });
-                        } catch (error: any) {
-                          toast({
-                            title: "Error",
-                            description: error.message,
-                            variant: "destructive",
+                            title: "Saved!",
+                            description: "Your documentation draft has been saved.",
                           });
                         }
-                      }
-                    }}
-                    onUndo={docEditor.undo}
-                    onRedo={docEditor.redo}
-                    isLoading={!isComplete && progress < 100}
-                  />
+                      }}
+                      onPublish={async () => {
+                        if (documentationId) {
+                          try {
+                            await docEditor.publish(parseInt(documentationId));
+                            toast({
+                              title: "Published!",
+                              description: "Your documentation has been published successfully.",
+                            });
+                          } catch (error: any) {
+                            toast({
+                              title: "Error",
+                              description: error.message,
+                              variant: "destructive",
+                            });
+                          }
+                        }
+                      }}
+                      onUndo={docEditor.undo}
+                      onRedo={docEditor.redo}
+                      isLoading={!isComplete && progress < 100}
+                    />
+                  </ErrorBoundary>
                 ) : targetUrl ? (
                   <iframe
                     src={targetUrl}

@@ -1,6 +1,6 @@
 /**
  * EditableDocViewer Component
- * Phase 3: Real-time editing with Save/Publish and Auto-save
+ * Phase 4: Enhanced with Drag-Drop, Collapse/Expand, and Version Comparison
  */
 
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,9 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   ArrowDownTrayIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  CodeBracketSquareIcon,
 } from '@heroicons/react/24/outline';
 import type { Documentation, Section, ContentBlock } from '../../shared/doc-editor-types';
 import { EditableParagraph } from './doc-editor/EditableParagraph';
@@ -26,7 +29,24 @@ import { FindReplaceDialog } from './doc-editor/FindReplaceDialog';
 import { BlockToolbar } from './doc-editor/BlockToolbar';
 import { SectionToolbar } from './doc-editor/SectionToolbar';
 import { AddSectionButton } from './doc-editor/AddSectionButton';
+import { VersionComparisonDialog } from './doc-editor/VersionComparisonDialog';
 import { useEffect, useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 export interface EditableDocViewerProps {
   documentation: Documentation | null;
@@ -77,6 +97,92 @@ export function EditableDocViewer({
 }: EditableDocViewerProps) {
   
   const [showFindReplace, setShowFindReplace] = useState(false);
+  const [showVersionComparison, setShowVersionComparison] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [originalDocumentation, setOriginalDocumentation] = useState<Documentation | null>(null);
+  const [snapshotTaken, setSnapshotTaken] = useState(false);
+  const [snapshotDocId, setSnapshotDocId] = useState<number | undefined>(undefined);
+
+  // Set up drag-and-drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Store original documentation snapshot (capture ONCE on first load, then only when document truly switches)
+  useEffect(() => {
+    // Scenario 1: First time capturing (when documentation first loads)
+    if (documentation && !snapshotTaken) {
+      setOriginalDocumentation(JSON.parse(JSON.stringify(documentation)));
+      setSnapshotDocId(documentationId);
+      setSnapshotTaken(true);
+      return;
+    }
+
+    // Scenario 2: Late ID arrives after snapshot was taken (update ID without recapturing)
+    if (snapshotTaken && snapshotDocId === undefined && documentationId !== undefined) {
+      setSnapshotDocId(documentationId);
+      return;
+    }
+
+    // Scenario 3: Real document switch (both IDs are defined and different - capture new snapshot)
+    if (documentation && documentationId !== undefined && snapshotDocId !== undefined && documentationId !== snapshotDocId) {
+      setOriginalDocumentation(JSON.parse(JSON.stringify(documentation)));
+      setSnapshotDocId(documentationId);
+    }
+  }, [documentation, documentationId, snapshotTaken, snapshotDocId]);
+
+  // Collapse/Expand handlers
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
+  const collapseAll = () => {
+    if (documentation) {
+      setCollapsedSections(new Set(documentation.sections.map(s => s.id)));
+    }
+  };
+
+  const expandAll = () => {
+    setCollapsedSections(new Set());
+  };
+
+  // Drag-and-drop handler
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !documentation || !onDocumentChange) {
+      return;
+    }
+
+    const oldIndex = documentation.sections.findIndex(s => s.id === active.id);
+    const newIndex = documentation.sections.findIndex(s => s.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newSections = [...documentation.sections];
+      const [movedSection] = newSections.splice(oldIndex, 1);
+      newSections.splice(newIndex, 0, movedSection);
+
+      onDocumentChange({
+        ...documentation,
+        sections: newSections,
+      });
+    }
+  };
   
   const handleExportDraft = async (format: 'json' | 'markdown' | 'html') => {
     if (!documentationId) return;
@@ -253,6 +359,39 @@ export function EditableDocViewer({
               
               <div className="w-px h-6 bg-gray-300" />
               
+              {/* Collapse/Expand All */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={collapseAll}
+                title="Collapse All Sections"
+                className="text-xs"
+              >
+                <ChevronUpIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={expandAll}
+                title="Expand All Sections"
+                className="text-xs"
+              >
+                <ChevronDownIcon className="h-4 w-4" />
+              </Button>
+              
+              {/* Version Comparison */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowVersionComparison(true)}
+                title="Compare with Original"
+                className="text-xs"
+              >
+                <CodeBracketSquareIcon className="h-4 w-4" />
+              </Button>
+              
+              <div className="w-px h-6 bg-gray-300" />
+              
               {/* Save Button */}
               <Button
                 size="sm"
@@ -344,30 +483,43 @@ export function EditableDocViewer({
             )}
           </header>
 
-          {/* Sections */}
-          {documentation.sections.map((section, index) => (
-            <div key={section.id || index}>
-              {/* Add Section Button (appears before each section when editing) */}
-              {isEditing && onAddSection && (
-                <AddSectionButton
-                  onAddSection={onAddSection}
-                  insertIndex={index}
-                />
-              )}
-              
-              <SectionRenderer
-                section={section}
-                sectionIndex={index}
-                totalSections={documentation.sections.length}
-                isEditing={isEditing}
-                onBlockUpdate={onBlockUpdate}
-                onAddBlock={onAddBlock}
-                onMoveSection={onMoveSection}
-                onDeleteSection={onDeleteSection}
-                onDuplicateSection={onDuplicateSection}
-              />
-            </div>
-          ))}
+          {/* Sections with Drag-and-Drop */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={documentation.sections.map(s => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {documentation.sections.map((section, index) => (
+                <div key={section.id || index}>
+                  {/* Add Section Button (appears before each section when editing) */}
+                  {isEditing && onAddSection && (
+                    <AddSectionButton
+                      onAddSection={onAddSection}
+                      insertIndex={index}
+                    />
+                  )}
+                  
+                  <SortableSection
+                    section={section}
+                    sectionIndex={index}
+                    totalSections={documentation.sections.length}
+                    isEditing={isEditing}
+                    isCollapsed={collapsedSections.has(section.id)}
+                    onToggleCollapse={toggleSection}
+                    onBlockUpdate={onBlockUpdate}
+                    onAddBlock={onAddBlock}
+                    onMoveSection={onMoveSection}
+                    onDeleteSection={onDeleteSection}
+                    onDuplicateSection={onDuplicateSection}
+                  />
+                </div>
+              ))}
+            </SortableContext>
+          </DndContext>
           
           {/* Add Section Button at end */}
           {isEditing && onAddSection && (
@@ -386,19 +538,35 @@ export function EditableDocViewer({
         documentation={documentation}
         onReplace={handleFindReplaceText}
       />
+      
+      {/* Version Comparison Dialog */}
+      <VersionComparisonDialog
+        isOpen={showVersionComparison}
+        onClose={() => setShowVersionComparison(false)}
+        currentDocumentation={documentation}
+        originalDocumentation={originalDocumentation}
+        onRevertAll={() => {
+          if (originalDocumentation && onDocumentChange) {
+            onDocumentChange(originalDocumentation);
+            setShowVersionComparison(false);
+          }
+        }}
+      />
     </div>
   );
 }
 
 // ========================================
-// SECTION RENDERER
+// SORTABLE SECTION (with Drag-Drop & Collapse)
 // ========================================
 
-interface SectionRendererProps {
+interface SortableSectionProps {
   section: Section;
   sectionIndex: number;
   totalSections: number;
   isEditing: boolean;
+  isCollapsed: boolean;
+  onToggleCollapse: (sectionId: string) => void;
   onBlockUpdate?: (sectionId: string, blockId: string, updates: Partial<ContentBlock>) => void;
   onAddBlock?: (sectionId: string, block: ContentBlock, insertAfterBlockId?: string) => void;
   onMoveSection?: (sectionId: string, direction: 'up' | 'down') => void;
@@ -406,22 +574,73 @@ interface SectionRendererProps {
   onDuplicateSection?: (sectionId: string) => void;
 }
 
-function SectionRenderer({ 
+function SortableSection({ 
   section, 
   sectionIndex,
   totalSections,
   isEditing, 
+  isCollapsed,
+  onToggleCollapse,
   onBlockUpdate, 
   onAddBlock,
   onMoveSection,
   onDeleteSection,
   onDuplicateSection,
-}: SectionRendererProps) {
+}: SortableSectionProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
-    <section className="space-y-4 scroll-mt-20 group" id={section.id}>
+    <section 
+      ref={setNodeRef} 
+      style={style}
+      className={`space-y-4 scroll-mt-20 group ${isDragging ? 'z-50' : ''}`} 
+      id={section.id}
+    >
       {/* Section Header */}
       <div className="flex items-center justify-between gap-3 pb-2 border-b border-gray-300">
         <div className="flex items-center gap-3">
+          {/* Drag Handle (only visible when editing) */}
+          {isEditing && (
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded"
+              title="Drag to reorder"
+              aria-label="Drag to reorder section"
+            >
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+              </svg>
+            </button>
+          )}
+          
+          {/* Collapse/Expand Chevron */}
+          <button
+            onClick={() => onToggleCollapse(section.id)}
+            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            title={isCollapsed ? 'Expand section' : 'Collapse section'}
+            aria-label={isCollapsed ? 'Expand section' : 'Collapse section'}
+          >
+            {isCollapsed ? (
+              <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+            ) : (
+              <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+            )}
+          </button>
+          
           <span className="text-2xl">{section.icon}</span>
           <h2 className="text-2xl font-bold text-gray-900">
             {section.title}
@@ -443,34 +662,36 @@ function SectionRenderer({
         )}
       </div>
 
-      {/* Section Content Blocks */}
-      <div className="space-y-2 pl-2">
-        {section.content.map((block, index) => (
-          <div key={block.id || index}>
-            <ContentBlockRenderer
-              block={block}
-              sectionId={section.id}
-              isEditing={isEditing}
-              onBlockUpdate={onBlockUpdate}
-            />
-            {isEditing && onAddBlock && (
-              <BlockToolbar
+      {/* Section Content Blocks (collapsible) */}
+      {!isCollapsed && (
+        <div className="space-y-2 pl-2">
+          {section.content.map((block, index) => (
+            <div key={block.id || index}>
+              <ContentBlockRenderer
+                block={block}
                 sectionId={section.id}
-                insertAfterBlockId={block.id}
-                onAddBlock={onAddBlock}
+                isEditing={isEditing}
+                onBlockUpdate={onBlockUpdate}
               />
-            )}
-          </div>
-        ))}
-        
-        {/* Add block at end of section if no blocks exist */}
-        {isEditing && onAddBlock && section.content.length === 0 && (
-          <BlockToolbar
-            sectionId={section.id}
-            onAddBlock={onAddBlock}
-          />
-        )}
-      </div>
+              {isEditing && onAddBlock && (
+                <BlockToolbar
+                  sectionId={section.id}
+                  insertAfterBlockId={block.id}
+                  onAddBlock={onAddBlock}
+                />
+              )}
+            </div>
+          ))}
+          
+          {/* Add block at end of section if no blocks exist */}
+          {isEditing && onAddBlock && section.content.length === 0 && (
+            <BlockToolbar
+              sectionId={section.id}
+              onAddBlock={onAddBlock}
+            />
+          )}
+        </div>
+      )}
     </section>
   );
 }
