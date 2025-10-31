@@ -44,6 +44,7 @@ import { getDefaultTheme, Theme } from "../../shared/themes";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TypewriterText } from "@/components/TypewriterText";
 import PipelineVisualization from "@/components/PipelineVisualization";
+import AnimatedProjectFlow from "@/components/AnimatedProjectFlow";
 
 function convertToViewerTheme(theme: Theme) {
   return {
