@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 type AnimatedProjectFlowProps = {
   labels?: [string, string, string, string];
@@ -7,20 +7,16 @@ type AnimatedProjectFlowProps = {
 
 // Animated project workflow SVG adapted for this project
 export default function AnimatedProjectFlow({
-  labels = ["Backlog", "In Progress", "Review", "Release"],
+  labels = ['Backlog', 'In Progress', 'Review', 'Release'],
   className,
 }: AnimatedProjectFlowProps) {
   // Ensure we always have exactly 4 labels
   const [l1, l2, l3, l4] = labels;
 
   return (
-    <div className={"w-full " + (className || "")}>
+    <div className={'w-full ' + (className || '')}>
       <div className="hidden md:block" aria-hidden>
-        <svg
-          className="w-full h-[320px] text-white/60"
-          viewBox="0 0 200 100"
-          role="img"
-        >
+        <svg className="w-full h-[320px] text-white/60" viewBox="0 0 200 100" role="img">
           <title>Project workflow connections</title>
 
           <defs>
@@ -30,10 +26,18 @@ export default function AnimatedProjectFlow({
             <path id="pf-p3" d="M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10" />
             <path id="pf-p4" d="M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 10" />
 
-            <mask id="pf-mask-1"><use href="#pf-p1" strokeWidth="0.5" stroke="white" fill="none" /></mask>
-            <mask id="pf-mask-2"><use href="#pf-p2" strokeWidth="0.5" stroke="white" fill="none" /></mask>
-            <mask id="pf-mask-3"><use href="#pf-p3" strokeWidth="0.5" stroke="white" fill="none" /></mask>
-            <mask id="pf-mask-4"><use href="#pf-p4" strokeWidth="0.5" stroke="white" fill="none" /></mask>
+            <mask id="pf-mask-1">
+              <use href="#pf-p1" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <mask id="pf-mask-2">
+              <use href="#pf-p2" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <mask id="pf-mask-3">
+              <use href="#pf-p3" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <mask id="pf-mask-4">
+              <use href="#pf-p4" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
 
             <radialGradient id="pf-blue-grad" fx="1">
               <stop offset="0%" stopColor="#00A6F5" />
@@ -42,7 +46,13 @@ export default function AnimatedProjectFlow({
           </defs>
 
           {/* Reveal stroke animation */}
-          <g stroke="currentColor" fill="none" strokeWidth="0.4" strokeDasharray="100 100" pathLength={100}>
+          <g
+            stroke="currentColor"
+            fill="none"
+            strokeWidth="0.4"
+            strokeDasharray="100 100"
+            pathLength={100}
+          >
             <use href="#pf-p1" />
             <use href="#pf-p2" />
             <use href="#pf-p3" />
@@ -93,25 +103,57 @@ export default function AnimatedProjectFlow({
           <g stroke="currentColor" fill="none" strokeWidth="0.4">
             <g>
               <rect fill="#18181B" x="14" y="5" width="34" height="10" rx="5" />
-              <text x="31" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500" textAnchor="middle">
+              <text
+                x="31"
+                y="12"
+                fill="white"
+                stroke="none"
+                fontSize="5"
+                fontWeight="500"
+                textAnchor="middle"
+              >
                 {l1}
               </text>
             </g>
             <g>
               <rect fill="#18181B" x="60" y="5" width="34" height="10" rx="5" />
-              <text x="77" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500" textAnchor="middle">
+              <text
+                x="77"
+                y="12"
+                fill="white"
+                stroke="none"
+                fontSize="5"
+                fontWeight="500"
+                textAnchor="middle"
+              >
                 {l2}
               </text>
             </g>
             <g>
               <rect fill="#18181B" x="108" y="5" width="38" height="10" rx="5" />
-              <text x="127" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500" textAnchor="middle">
+              <text
+                x="127"
+                y="12"
+                fill="white"
+                stroke="none"
+                fontSize="5"
+                fontWeight="500"
+                textAnchor="middle"
+              >
                 {l3}
               </text>
             </g>
             <g>
               <rect fill="#18181B" x="150" y="5" width="40" height="10" rx="5" />
-              <text x="170" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500" textAnchor="middle">
+              <text
+                x="170"
+                y="12"
+                fill="white"
+                stroke="none"
+                fontSize="5"
+                fontWeight="500"
+                textAnchor="middle"
+              >
                 {l4}
               </text>
             </g>
