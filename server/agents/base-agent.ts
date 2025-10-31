@@ -4,15 +4,17 @@
  */
 
 import { AgentContext, AgentResult, AgentConfig, LLMOptions } from './types';
-import { callWithProviderFallback } from '../llm-router';
+import { createAIProvider, AIProvider, AIMessage } from '../ai-provider';
 import { z } from 'zod';
 
 export abstract class BaseAgent<T extends AgentResult> {
   abstract readonly name: string;
   protected abstract readonly config: AgentConfig;
+  protected aiProvider: AIProvider;
 
   constructor() {
-    console.log(`🤖 Initializing ${this.name}`);
+    // Create AI provider with free-first routing
+    this.aiProvider = createAIProvider(['google', 'together', 'openrouter', 'groq', 'hyperbolic', 'deepseek', 'openai']);
   }
 
   /**
@@ -32,19 +34,24 @@ export abstract class BaseAgent<T extends AgentResult> {
     try {
       console.log(`🧠 ${this.name}: Calling LLM...`);
       
-      const response = await callWithProviderFallback(prompt, {
-        model: options.model,
-        temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 4000,
-        preferFree: true, // Always prefer free providers first
-        timeout: options.timeout ?? this.config.timeout
+      const messages: AIMessage[] = [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ];
+      
+      const response = await this.aiProvider.generateCompletion(messages, {
+        jsonMode: options.jsonMode ?? false,
+        maxRetries: 3,
+        timeoutMs: options.timeout ?? this.config.timeout
       });
 
       const executionTime = Date.now() - startTime;
-      console.log(`✅ ${this.name}: LLM call completed in ${executionTime}ms`);
+      console.log(`✅ ${this.name}: LLM call completed in ${executionTime}ms via ${response.provider}`);
       
-      return response;
-    } catch (error) {
+      return response.content;
+    } catch (error: any) {
       console.error(`❌ ${this.name}: LLM call failed:`, error);
       throw new Error(`${this.name} LLM call failed: ${error.message}`);
     }

@@ -144,6 +144,7 @@ export interface LLMOptions {
   maxTokens?: number;
   timeout?: number;
   preferredProviders?: string[];
+  jsonMode?: boolean;
 }
 
 // Agent configuration

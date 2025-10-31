@@ -3,7 +3,7 @@
  * Coordinates parallel execution of specialist agents
  */
 
-import { AgentContext, CombinedAgentResults, ResearchResult, CodeResult, StructureResult } from './types';
+import { AgentContext, AgentResult, CombinedAgentResults, ResearchResult, CodeResult, StructureResult } from './types';
 import { ResearchAgent } from './research-agent';
 import { CodeAgent } from './code-agent';
 import { StructureAgent } from './structure-agent';
@@ -89,7 +89,7 @@ export class AgentOrchestrator {
   /**
    * Execute a single agent with timeout and error handling
    */
-  private async executeAgentSafely<T>(
+  private async executeAgentSafely<T extends AgentResult>(
     agent: BaseAgent<T>,
     context: AgentContext,
     agentName: string
@@ -99,7 +99,7 @@ export class AgentOrchestrator {
       const result = await agent.executeWithTimeout(context);
       console.log(`  ✅ ${agentName} Agent completed (${result.executionTime}ms)`);
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`  ❌ ${agentName} Agent failed:`, error.message);
       throw error;
     }
@@ -108,7 +108,7 @@ export class AgentOrchestrator {
   /**
    * Extract result from Promise.allSettled result
    */
-  private extractResult<T>(
+  private extractResult<T extends AgentResult>(
     result: PromiseSettledResult<T>,
     agentName: string
   ): T {

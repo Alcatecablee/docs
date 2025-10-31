@@ -1,15 +1,16 @@
 /**
  * Structure Agent
  * Analyzes sitemap, README, docs structure to create optimal documentation outline
+ * Uses LLM with context about the product to generate structure
  */
 
 import { BaseAgent } from './base-agent';
-import { AgentContext, StructureResult, structureResultSchema } from './types';
+import { AgentContext, StructureResult, DocumentSection, NavigationItem } from './types';
 
 export class StructureAgent extends BaseAgent<StructureResult> {
   readonly name = 'Structure Agent';
   protected readonly config = {
-    timeout: 30000, // 30 seconds
+    timeout: 45000, // 45 seconds
     retries: 2,
     cacheTTL: 3600, // 1 hour
     enabled: true
@@ -21,14 +22,15 @@ export class StructureAgent extends BaseAgent<StructureResult> {
     try {
       this.log('Analyzing structure for ' + context.product);
       
-      // Generate structure analysis prompt
+      // Use LLM to analyze and create optimal documentation structure
+      // This is appropriate use of LLM for strategic/architectural decisions
       const prompt = this.buildStructurePrompt(context);
       
-      // Call LLM to analyze and create outline
       const response = await this.measure('LLM structure analysis', () =>
         this.callLLM(prompt, {
           temperature: 0.5, // Balanced for creative but organized structure
-          maxTokens: 5000
+          maxTokens: 6000,
+          jsonMode: true
         })
       );
       
@@ -39,23 +41,23 @@ export class StructureAgent extends BaseAgent<StructureResult> {
         throw new Error('Failed to parse structure results');
       }
       
-      // Validate the output
-      const validation = await this.validateOutput(data, structureResultSchema);
-      
-      if (!validation.valid) {
-        this.log(`Validation warning: ${validation.error}`, 'warn');
-      }
-      
       const executionTime = Date.now() - startTime;
+      this.log(`Structure created with ${data.outline?.length || 0} sections in ${executionTime}ms`);
       
       return {
         agentName: this.name,
         executionTime,
         success: true,
-        data: validation.data || data
+        data: {
+          outline: data.outline || this.getDefaultOutline(context),
+          navigation: data.navigation || [],
+          contentGaps: data.contentGaps || [],
+          recommendedSections: data.recommendedSections || [],
+          pageCount: data.pageCount || data.outline?.length || 0
+        }
       };
       
-    } catch (error) {
+    } catch (error: any) {
       const executionTime = Date.now() - startTime;
       this.log(`Structure analysis failed: ${error.message}`, 'error');
       

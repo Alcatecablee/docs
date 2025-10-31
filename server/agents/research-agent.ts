@@ -1,15 +1,20 @@
 /**
  * Research Agent
  * Gathers external knowledge from Stack Overflow, GitHub, Reddit, YouTube
+ * Uses REAL API integrations instead of LLM prompts
  */
 
 import { BaseAgent } from './base-agent';
-import { AgentContext, ResearchResult, researchResultSchema } from './types';
+import { AgentContext, ResearchResult, ResearchIssue, ResearchSolution, ResearchUseCase } from './types';
+import { searchService } from '../search-service';
+import { youtubeService } from '../youtube-service';
+import { redditService } from '../reddit-service';
+import { stackExchangeService } from '../stackexchange-service';
 
 export class ResearchAgent extends BaseAgent<ResearchResult> {
   readonly name = 'Research Agent';
   protected readonly config = {
-    timeout: 30000, // 30 seconds
+    timeout: 60000, // 60 seconds (increased for real API calls)
     retries: 2,
     cacheTTL: 3600, // 1 hour
     enabled: true
@@ -19,44 +24,116 @@ export class ResearchAgent extends BaseAgent<ResearchResult> {
     const startTime = Date.now();
     
     try {
-      this.log('Starting research for ' + context.product);
+      this.log('Starting real API research for ' + context.product);
       
-      // Generate research prompt
-      const prompt = this.buildResearchPrompt(context);
-      
-      // Call LLM to gather and analyze external knowledge
-      const response = await this.measure('LLM research call', () =>
-        this.callLLM(prompt, {
-          temperature: 0.4, // Lower temperature for factual research
-          maxTokens: 6000
-        })
+      // Use REAL search service to gather comprehensive research
+      const research = await this.measure('API research calls', () =>
+        searchService.performComprehensiveResearch(
+          context.product,
+          context.url,
+          'medium', // Will be auto-estimated
+          0, // crawledPageCount (will be estimated by service)
+          true, // youtubeApiAccess
+          false // youtubeTranscripts
+        )
       );
       
-      // Parse the research results
-      const data = this.parseJSON<any>(response);
+      // Transform the research data to match our agent format
+      const issues: ResearchIssue[] = [
+        ...research.stackOverflowAnswers.slice(0, 10).map(so => ({
+          title: so.question,
+          url: so.url,
+          votes: so.votes,
+          solution: so.answer.substring(0, 500),
+          source: 'stackoverflow' as const
+        })),
+        ...research.gitHubIssues.slice(0, 10).map(gh => ({
+          title: gh.title,
+          url: gh.url,
+          votes: gh.comments_count,
+          solution: gh.description.substring(0, 500),
+          source: 'github' as const
+        }))
+      ];
       
-      if (!data) {
-        throw new Error('Failed to parse research results');
-      }
+      const solutions: ResearchSolution[] = research.stackOverflowAnswers
+        .filter(so => so.accepted)
+        .slice(0, 15)
+        .map(so => ({
+          approach: so.question,
+          code: so.answer.substring(0, 1000),
+          popularity: so.votes,
+          source: so.url
+        }));
       
-      // Validate the output
-      const validation = await this.validateOutput(data, researchResultSchema);
+      const useCases: ResearchUseCase[] = [
+        ...research.youtubeVideos.slice(0, 8).map(yt => ({
+          scenario: yt.title,
+          description: yt.description.substring(0, 300),
+          source: 'YouTube',
+          url: yt.url
+        })),
+        ...research.redditPosts.slice(0, 8).map(rd => ({
+          scenario: rd.title,
+          description: rd.snippet.substring(0, 300),
+          source: 'Reddit',
+          url: rd.url
+        }))
+      ];
       
-      if (!validation.valid) {
-        this.log(`Validation warning: ${validation.error}`, 'warn');
-        // Continue with partial data
-      }
+      // Analyze community sentiment from Reddit and Stack Overflow
+      const avgRedditUpvotes = research.redditPosts.length > 0
+        ? research.redditPosts.reduce((sum, p) => sum + p.upvotes, 0) / research.redditPosts.length
+        : 0;
+      
+      const avgSOVotes = research.stackOverflowAnswers.length > 0
+        ? research.stackOverflowAnswers.reduce((sum, a) => sum + a.votes, 0) / research.stackOverflowAnswers.length
+        : 0;
+      
+      const sentiment = (avgRedditUpvotes + avgSOVotes) > 20 ? 'positive' 
+                      : (avgRedditUpvotes + avgSOVotes) > 5 ? 'neutral'
+                      : 'negative';
+      
+      const popularityTrend = research.youtubeVideos.length > 5 ? 'rising'
+                            : research.youtubeVideos.length > 2 ? 'stable'
+                            : 'declining';
+      
+      // Extract common pain points from issues
+      const commonPainPoints: string[] = research.gitHubIssues
+        .filter(issue => issue.state === 'open')
+        .slice(0, 5)
+        .map(issue => issue.title);
+      
+      const sources = [
+        `Stack Overflow: ${research.stackOverflowAnswers.length} answers`,
+        `GitHub: ${research.gitHubIssues.length} issues`,
+        `YouTube: ${research.youtubeVideos.length} videos`,
+        `Reddit: ${research.redditPosts.length} discussions`,
+        `DEV.to: ${research.devToArticles.length} articles`,
+        `Total: ${research.totalSources} sources`
+      ];
       
       const executionTime = Date.now() - startTime;
+      this.log(`Research completed with ${research.totalSources} sources in ${executionTime}ms`);
       
       return {
         agentName: this.name,
         executionTime,
         success: true,
-        data: validation.data || data
+        data: {
+          issues,
+          solutions,
+          useCases,
+          communityInsights: {
+            sentiment: sentiment as 'positive' | 'neutral' | 'negative',
+            popularityTrend: popularityTrend as 'rising' | 'stable' | 'declining',
+            commonPainPoints
+          },
+          sources
+        }
       };
       
-    } catch (error) {
+    } catch (error: any) {
       const executionTime = Date.now() - startTime;
       this.log(`Research failed: ${error.message}`, 'error');
       
@@ -81,7 +158,8 @@ export class ResearchAgent extends BaseAgent<ResearchResult> {
     }
   }
 
-  private buildResearchPrompt(context: AgentContext): string {
+  // Removed buildResearchPrompt - now using real API services
+  private oldBuildResearchPrompt(context: AgentContext): string {
     return `You are a research specialist analyzing external knowledge about ${context.product}.
 
 **Your Task**: Research and analyze community knowledge from multiple sources.

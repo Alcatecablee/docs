@@ -1,15 +1,17 @@
 /**
  * Code Agent
  * Finds real, working code examples from GitHub, official repos, documentation
+ * Uses REAL search and LLM to extract code examples
  */
 
 import { BaseAgent } from './base-agent';
-import { AgentContext, CodeResult, codeResultSchema } from './types';
+import { AgentContext, CodeResult, CodeExample, APIExample, IntegrationExample, CodePattern } from './types';
+import { searchService } from '../search-service';
 
 export class CodeAgent extends BaseAgent<CodeResult> {
   readonly name = 'Code Agent';
   protected readonly config = {
-    timeout: 30000, // 30 seconds
+    timeout: 60000, // 60 seconds (increased for real API calls + LLM processing)
     retries: 2,
     cacheTTL: 3600, // 1 hour
     enabled: true
@@ -19,16 +21,28 @@ export class CodeAgent extends BaseAgent<CodeResult> {
     const startTime = Date.now();
     
     try {
-      this.log('Finding code examples for ' + context.product);
+      this.log('Finding real code examples for ' + context.product);
       
-      // Generate code search prompt
-      const prompt = this.buildCodePrompt(context);
+      // Get real search results for code examples
+      const searchResults = await this.measure('Search for code examples', () =>
+        searchService.performComprehensiveResearch(
+          context.product,
+          context.url,
+          'medium',
+          0,
+          false, // No YouTube for code search
+          false
+        )
+      );
       
-      // Call LLM to find and analyze code examples
-      const response = await this.measure('LLM code search', () =>
+      // Use LLM to analyze the search results and extract structured code examples
+      const prompt = this.buildCodeAnalysisPrompt(context, searchResults);
+      
+      const response = await this.measure('LLM code analysis', () =>
         this.callLLM(prompt, {
           temperature: 0.3, // Lower temperature for accurate code
-          maxTokens: 6000
+          maxTokens: 8000,
+          jsonMode: true
         })
       );
       
@@ -39,23 +53,23 @@ export class CodeAgent extends BaseAgent<CodeResult> {
         throw new Error('Failed to parse code results');
       }
       
-      // Validate the output
-      const validation = await this.validateOutput(data, codeResultSchema);
-      
-      if (!validation.valid) {
-        this.log(`Validation warning: ${validation.error}`, 'warn');
-      }
-      
       const executionTime = Date.now() - startTime;
+      this.log(`Code search completed with ${data.quickStart?.length || 0} examples in ${executionTime}ms`);
       
       return {
         agentName: this.name,
         executionTime,
         success: true,
-        data: validation.data || data
+        data: {
+          quickStart: data.quickStart || [],
+          apiExamples: data.apiExamples || [],
+          integrationExamples: data.integrationExamples || [],
+          commonPatterns: data.commonPatterns || [],
+          officialRepo: context.repoUrl || data.officialRepo
+        }
       };
       
-    } catch (error) {
+    } catch (error: any) {
       const executionTime = Date.now() - startTime;
       this.log(`Code search failed: ${error.message}`, 'error');
       
@@ -74,6 +88,78 @@ export class CodeAgent extends BaseAgent<CodeResult> {
         }
       };
     }
+  }
+
+  private buildCodeAnalysisPrompt(context: AgentContext, searchResults: any): string {
+    const stackOverflowCode = searchResults.stackOverflowAnswers
+      .slice(0, 5)
+      .map(so => `Q: ${so.question}\nA: ${so.answer.substring(0, 800)}`)
+      .join('\n\n---\n\n');
+    
+    const githubInfo = searchResults.gitHubIssues
+      .slice(0, 5)
+      .map(gh => `Issue: ${gh.title}\nDescription: ${gh.description.substring(0, 500)}`)
+      .join('\n\n---\n\n');
+    
+    const language = context.language || 'JavaScript';
+    
+    return `You are analyzing real search results to extract code examples for ${context.product}.
+
+**Product**: ${context.product}
+**URL**: ${context.url}
+**Primary Language**: ${language}
+${context.repoUrl ? `**GitHub**: ${context.repoUrl}` : ''}
+
+**Real Stack Overflow Data**:
+${stackOverflowCode || 'No Stack Overflow data available'}
+
+**Real GitHub Issues**:
+${githubInfo || 'No GitHub data available'}
+
+**Your Task**: Extract and structure real code examples from the above data.
+
+Output JSON format:
+\`\`\`json
+{
+  "quickStart": [
+    {
+      "language": "javascript",
+      "code": "// Real code from search results",
+      "description": "Basic setup example",
+      "source": "Stack Overflow",
+      "stars": 42
+    }
+  ],
+  "apiExamples": [
+    {
+      "method": "authenticate",
+      "endpoint": "/api/auth",
+      "example": "const result = await api.auth()",
+      "explanation": "How to authenticate",
+      "language": "javascript"
+    }
+  ],
+  "integrationExamples": [
+    {
+      "framework": "React",
+      "code": "// Integration code",
+      "description": "React integration",
+      "source": "GitHub"
+    }
+  ],
+  "commonPatterns": [
+    {
+      "pattern": "Error handling",
+      "usage": "Wrap API calls in try-catch",
+      "example": "try { await api.call() } catch(e) {}",
+      "frequency": 85
+    }
+  ],
+  "officialRepo": "https://github.com/..."
+}
+\`\`\`
+
+Extract ONLY real code from the search results above. Do not invent examples.`;
   }
 
   private buildCodePrompt(context: AgentContext): string {
