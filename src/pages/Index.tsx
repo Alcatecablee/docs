@@ -1113,50 +1113,6 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Enterprise Features */}
-              <div>
-                <div className="flex flex-col items-center text-center mb-12">
-                  <div className="inline-flex items-center gap-3 mb-4">
-                    <div className="h-px w-12 bg-gradient-to-r from-transparent to-[rgb(102,255,228)]"></div>
-                    <BuildingOfficeIcon className="h-6 w-6 text-[rgb(102,255,228)]" strokeWidth={1.5} />
-                    <div className="h-px w-12 bg-gradient-to-l from-transparent to-[rgb(102,255,228)]"></div>
-                  </div>
-                  <h3 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">Enterprise Features</h3>
-                  <p className="text-white/70 text-lg max-w-2xl">
-                    Production-ready capabilities for teams that demand the best
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-                  {[
-                    { icon: CheckBadgeIcon, name: "Quality Scoring", desc: "AI-Powered Validation" },
-                    { icon: SwatchIcon, name: "Brand Styling", desc: "Auto-Match Colors" },
-                    { icon: MagnifyingGlassIcon, name: "Full Search", desc: "Advanced Indexing" },
-                    { icon: Cog6ToothIcon, name: "SEO Ready", desc: "Meta & Schema" },
-                    { icon: ShieldCheckIcon, name: "Accessibility", desc: "WCAG Compliant" },
-                    { icon: BuildingOfficeIcon, name: "Enterprise SSO", desc: "SAML & OAuth" },
-                    { icon: ArrowPathIcon, name: "Auto Updates", desc: "Stay Current" },
-                    { icon: ClipboardDocumentListIcon, name: "Analytics", desc: "Usage Insights" }
-                  ].map((item, idx) => (
-                    <div key={item.name} className="group" style={{animationDelay: `${idx * 40}ms`}}>
-                      <div className="relative bg-gradient-to-br from-white/10 to-white/5 hover:from-white/15 hover:to-white/10 border border-white/20 hover:border-[rgb(102,255,228)]/50 rounded-2xl p-6 md:p-7 transition-all duration-400 h-full backdrop-blur-sm hover:shadow-[0_15px_40px_rgba(102,255,228,0.15)] hover:scale-105">
-                        {/* Glow effect */}
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[rgb(102,255,228)]/0 to-[rgb(102,255,228)]/0 group-hover:from-[rgb(102,255,228)]/5 group-hover:to-transparent transition-all duration-400"></div>
-                        
-                        <div className="flex flex-col items-center text-center gap-3 h-full relative z-10">
-                          <div className="w-14 h-14 rounded-xl bg-white/15 group-hover:bg-[rgb(102,255,228)]/25 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg">
-                            <item.icon className="h-6 w-6 text-white/80 group-hover:text-[rgb(102,255,228)] transition-colors" strokeWidth={1.5} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-white/95 leading-snug mb-1">{item.name}</p>
-                            <p className="text-xs text-white/60 leading-tight">{item.desc}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </section>
