@@ -44,8 +44,14 @@ router.post('/quote', async (req, res) => {
     // Validate with Zod
     const validated = quoteRequestSchema.parse(sanitized);
 
-    // Calculate pricing
-    const pricing = calculatePrice(validated, validated.currency);
+    // Calculate pricing with defaults
+    const pricing = calculatePrice({
+      ...validated,
+      customRequirements: validated.customRequirements || '',
+      youtubeOptions: validated.youtubeOptions || [],
+      seoOptions: validated.seoOptions || [],
+      enterpriseFeatures: validated.enterpriseFeatures || []
+    }, validated.currency);
 
     res.json(successResponse(pricing, 'Pricing calculated successfully'));
   } catch (error) {
@@ -68,8 +74,14 @@ router.post('/', async (req, res) => {
     // Validate with Zod
     const validated = createCustomOrderSchema.parse(sanitized);
 
-    // Calculate pricing
-    const pricing = calculatePrice(validated, validated.currency);
+    // Calculate pricing with defaults
+    const pricing = calculatePrice({
+      ...validated,
+      customRequirements: validated.customRequirements || '',
+      youtubeOptions: validated.youtubeOptions || [],
+      seoOptions: validated.seoOptions || [],
+      enterpriseFeatures: validated.enterpriseFeatures || []
+    }, validated.currency);
 
     // Parse custom requirements
     const requirementsParsed = parseCustomRequirements(validated.customRequirements);

@@ -14,16 +14,25 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 /**
  * Verify Supabase JWT token
- * Falls back to allowing unauthenticated access if Supabase is not configured
+ * SECURITY: Requires Supabase configuration in production environments
  */
 export async function verifySupabaseAuth(req: any, res: any, next: any) {
   try {
     const auth = req.headers.authorization || req.headers.Authorization;
     const token = auth && typeof auth === 'string' ? auth.split(' ')[1] : null;
     
-    // If Supabase is not configured, allow unauthenticated access
+    // SECURITY: Require Supabase configuration in production
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      console.log('Supabase not configured - allowing unauthenticated access');
+      const isProduction = process.env.NODE_ENV === 'production';
+      if (isProduction) {
+        console.error('CRITICAL: Supabase credentials missing in production!');
+        return res.status(500).json({ 
+          error: 'Authentication service not configured',
+          message: 'Please contact the system administrator'
+        });
+      }
+      // Development fallback only
+      console.warn('⚠️ Supabase not configured - DEVELOPMENT MODE ONLY');
       req.user = null;
       return next();
     }

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { storage } from "./storage";
-import { insertDocumentationSchema } from "@shared/schema";
+import { insertDocumentationSchema, users } from "../shared/schema";
 import { generateDocumentationPipeline } from './generator';
 import archiver from "archiver";
 import { progressTracker } from './progress-tracker';
@@ -29,7 +29,6 @@ import adminRouter from './routes/admin';
 import draftsRouter from './routes/drafts';
 import { fetchImagesForExport, limitImagesForExport } from './image-utils';
 import { db } from './db';
-import { users } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 import { canGenerateDocumentation, calculateSmartScaling, enforceTierLimits } from './tier-config';
 import { idempotencyMiddleware, generateIdempotencyKey } from './middleware/idempotency';
