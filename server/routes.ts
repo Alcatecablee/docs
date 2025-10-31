@@ -36,6 +36,10 @@ import { validate } from './middleware/validation';
 import { generateDocsSchema } from './validation/schemas';
 import { verifySupabaseAuth, verifyApiKey } from './middleware/auth';
 import { enforceSafety } from './middleware/safety';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import { TemplateRenderer } from './utils/template-renderer';
+import { DocumentationParser } from './utils/documentation-parser';
 
 // Guard against undefined db
 function ensureDb() {
@@ -1291,7 +1295,7 @@ router.get("/api/export/markdown/:id", verifySupabaseAuth, async (req, res) => {
   }
 });
 
-// Export documentation as HTML
+// Export documentation as HTML (Enterprise Template)
 router.get("/api/export/html/:id", verifySupabaseAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -1309,147 +1313,44 @@ router.get("/api/export/html/:id", verifySupabaseAuth, async (req, res) => {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    const parsedContent = JSON.parse(doc.content);
-    const theme = parsedContent.theme || {};
-    const primaryColor = theme.primaryColor || '#8B5CF6';
-    const secondaryColor = theme.secondaryColor || '#6366F1';
-    const primaryFont = theme.primaryFont || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-
-    let html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${parsedContent.title}</title>
-  <script type="application/ld+json">${JSON.stringify(buildSoftwareApplicationJSONLD(parsedContent))}</script>
-  ${(() => { const faq = buildFAQJSONLD(parsedContent); return faq ? `<script type=\"application/ld+json\">${JSON.stringify(faq)}</script>` : '' })()}
-  <style>
-    :root {
-      --primary-color: ${primaryColor};
-      --secondary-color: ${secondaryColor};
-      --primary-font: ${primaryFont};
-    }
-    body { 
-      font-family: var(--primary-font); 
-      line-height: 1.6; 
-      max-width: 900px; 
-      margin: 0 auto; 
-      padding: 20px; 
-      color: #333; 
-    }
-    h1 { 
-      border-bottom: 3px solid var(--primary-color); 
-      padding-bottom: 10px; 
-      color: var(--primary-color);
-    }
-    h2 { 
-      color: var(--primary-color); 
-      margin-top: 30px; 
-    }
-    h3 { 
-      color: var(--secondary-color); 
-    }
-    code { 
-      background: #f4f4f4; 
-      padding: 2px 6px; 
-      border-radius: 3px; 
-      font-family: 'Courier New', monospace; 
-    }
-    pre { 
-      background: #1e1e1e; 
-      color: #d4d4d4; 
-      padding: 15px; 
-      border-radius: 5px; 
-      overflow-x: auto; 
-    }
-    img { 
-      max-width: 100%; 
-      height: auto; 
-      border-radius: 8px; 
-    }
-    ul { 
-      padding-left: 20px; 
-    }
-    a { 
-      color: var(--primary-color); 
-    }
-    .callout {
-      border-left: 4px solid var(--primary-color);
-      padding: 12px 16px;
-      margin: 16px 0;
-      border-radius: 4px;
-      background: #f8f9fa;
-    }
-  </style>
-</head>
-<body>
-  <h1>${parsedContent.title}</h1>
-  ${parsedContent.description ? `<p><em>${parsedContent.description}</em></p>` : ''}
-`;
+    // Load enterprise templates
+    const templatePath = join(process.cwd(), 'server', 'templates', 'documentation-template.html');
+    const cssPath = join(process.cwd(), 'server', 'templates', 'documentation-styles.css');
+    const jsPath = join(process.cwd(), 'server', 'templates', 'documentation-scripts.js');
     
-    const _citationsRoot = parsedContent.citations || parsedContent.source_citations || {};
-
-    parsedContent.sections?.forEach((section: any) => {
-      html += `  <h2>${section.title}</h2>\n`;
-      section.content?.forEach((block: any) => {
-        switch (block.type) {
-          case 'paragraph':
-            html += `  <p>${block.text}</p>\n`;
-            break;
-          case 'heading':
-            html += `  <h${block.level || 3}>${block.text}</h${block.level || 3}>\n`;
-            break;
-          case 'list':
-            html += '  <ul>\n';
-            block.items?.forEach((item: string) => {
-              html += `    <li>${item}</li>\n`;
-            });
-            html += '  </ul>\n';
-            break;
-          case 'code':
-            html += `  <pre><code>${block.code || block.text}</code></pre>\n`;
-            break;
-          case 'image':
-            html += `  <figure>\n    <img src="${block.url}" alt="${block.alt || 'Image'}">\n`;
-            if (block.caption) html += `    <figcaption>${block.caption}</figcaption>\n`;
-            html += '  </figure>\n';
-            break;
-        }
-      });
-
-      // Collect citations for this section
-      let sectionCites: any[] = [];
-      try {
-        if (Array.isArray(_citationsRoot)) {
-          sectionCites = _citationsRoot;
-        } else if (_citationsRoot) {
-          if (section.id && _citationsRoot[section.id]) sectionCites.push(..._citationsRoot[section.id]);
-          if (section.title && _citationsRoot[section.title]) sectionCites.push(..._citationsRoot[section.title]);
-          if (_citationsRoot.sections && section.id && _citationsRoot.sections[section.id]) sectionCites.push(..._citationsRoot.sections[section.id]);
-        }
-        if (section.citations && Array.isArray(section.citations)) sectionCites.push(...section.citations);
-      } catch (e) {}
-
-      const seen = new Set();
-      const normalized: string[] = [];
-      sectionCites.forEach((c: any) => {
-        if (!c) return;
-        let s = '';
-        if (typeof c === 'string') s = c;
-        else if (c.title && c.url) s = `<a href="${c.url}">${c.title}</a>`;
-        else if (c.url) s = `<a href="${c.url}">${c.url}</a>`;
-        else s = `<code>${JSON.stringify(c)}</code>`;
-        if (!seen.has(s)) { seen.add(s); normalized.push(s); }
-      });
-
-      if (normalized.length > 0) {
-        html += '  <div class="callout">\n    <strong>Sources:</strong>\n    <ul>\n';
-        normalized.forEach((s) => { html += `      <li>${s}</li>\n`; });
-        html += '    </ul>\n  </div>\n';
-      }
-    });
+    const [template, css, js] = await Promise.all([
+      readFile(templatePath, 'utf-8'),
+      readFile(cssPath, 'utf-8'),
+      readFile(jsPath, 'utf-8')
+    ]);
     
-    html += `</body>\n</html>`;
+    // Parse documentation sections
+    const sections = DocumentationParser.parseSections(doc.content);
+    const contentHTML = DocumentationParser.sectionsToHTML(sections);
+    
+    // Get description from doc
+    let description = '';
+    try {
+      const docData = typeof doc.content === 'string' ? JSON.parse(doc.content) : doc.content;
+      description = docData.description || doc.description || '';
+    } catch {
+      description = doc.description || '';
+    }
+    
+    // Prepare template data
+    const templateData = {
+      title: doc.title || 'Documentation',
+      description: description,
+      sections: sections,
+      content: contentHTML,
+      customCSS: css,
+      customJS: js,
+      baseUrl: 'viberdoc.app',
+      theme: 'light'
+    };
+    
+    // Render enterprise template
+    const html = TemplateRenderer.render(template, templateData);
     
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Content-Disposition', `attachment; filename="${doc.title.replace(/[^a-z0-9]/gi, '_')}.html"`);
