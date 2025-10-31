@@ -713,6 +713,9 @@ export async function parseJSONWithRetry(aiProvider: ReturnType<typeof createAIP
   }
 }
 
+// Feature flag for Agent System (3-agent parallel architecture)
+const ENABLE_AGENT_SYSTEM = process.env.ENABLE_AGENT_SYSTEM === 'true' || false;
+
 // Enhanced documentation generation pipeline
 export async function generateEnhancedDocumentation(
   url: string, 
@@ -725,6 +728,13 @@ export async function generateEnhancedDocumentation(
   // Initialize Delivery Routing Service
   const { DeliveryRoutingService } = await import('./services/delivery-routing-service');
   const freeProvider = createAIProvider(['deepseek', 'google', 'together', 'openrouter', 'groq', 'hyperbolic']);
+  
+  // Initialize Agent System if enabled
+  if (ENABLE_AGENT_SYSTEM) {
+    console.log('🤖 3-Agent Parallel Architecture ENABLED');
+  } else {
+    console.log('📝 Using standard linear pipeline');
+  }
   const openaiProvider = createAIProvider(['openai']);
   const deliveryRouter = new DeliveryRoutingService(freeProvider, openaiProvider);
   
@@ -791,52 +801,167 @@ export async function generateEnhancedDocumentation(
   }
   pipelineMonitor.updateStage(pmId, 2, { status: 'completed', progress: 100, details: { itemsProcessed: extractedContent.length, itemsTotal: candidateUrls.length } });
   
-  console.log('Stage 3: Performing external research...');
-  pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
-  if (sessionId) {
-    progressTracker.emitProgress(sessionId, {
-      stage: 3,
-      stageName: 'Research & Analysis',
-      description: 'Gathering external insights and community knowledge',
-      progress: 50,
+  // ============================================================================
+  // CONDITIONAL: 3-Agent Parallel System OR Linear Pipeline
+  // ============================================================================
+  let externalResearch: any;
+  
+  if (ENABLE_AGENT_SYSTEM) {
+    // 🚀 NEW: 3-Agent Parallel Architecture
+    console.log('🤖 Launching 3-Agent Parallel System...');
+    const { AgentOrchestrator } = await import('./agents/orchestrator');
+    const orchestrator = new AgentOrchestrator();
+    
+    // Update progress to show parallel execution
+    pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
+    if (sessionId) {
+      progressTracker.emitProgress(sessionId, {
+        stage: 3,
+        stageName: '3-Agent Parallel System',
+        description: 'Research, Code, and Structure agents running in parallel...',
+        progress: 50,
+      });
+    }
+    
+    // Prepare agent context
+    const agentContext = {
+      url,
+      product: siteStructure.productName || new URL(url).hostname,
+      productType: siteStructure.metadata?.type || 'SaaS',
+      repoUrl: siteStructure.metadata?.repository,
+      language: 'JavaScript', // Could be detected from site
+      sessionId: pmId,
+      userPlan
+    };
+    
+    const agentStartTime = Date.now();
+    
+    // Execute 3 agents in parallel (Research, Code, Structure)
+    const agentResults = await orchestrator.executeParallel(agentContext);
+    
+    const agentTime = Date.now() - agentStartTime;
+    console.log(`✅ 3-Agent System completed in ${agentTime}ms (${agentResults.status})`);
+    
+    // Transform agent results to match expected externalResearch format
+    externalResearch = {
+      // Research Agent data
+      stack_overflow_answers: agentResults.research.data.issues
+        .filter(i => i.source === 'stackoverflow')
+        .slice(0, 20)
+        .map(i => ({
+          question: i.title,
+          answer: i.solution || '',
+          url: i.url,
+          votes: i.votes,
+          accepted: i.votes > 10
+        })),
+      
+      github_issues: agentResults.research.data.issues
+        .filter(i => i.source === 'github')
+        .slice(0, 20)
+        .map(i => ({
+          title: i.title,
+          description: i.solution || '',
+          url: i.url,
+          state: i.votes > 5 ? 'closed' : 'open',
+          comments_count: i.votes
+        })),
+      
+      youtube_videos: agentResults.research.data.useCases
+        .filter(uc => uc.source === 'YouTube')
+        .slice(0, 10)
+        .map(uc => ({
+          title: uc.scenario,
+          description: uc.description,
+          url: uc.url || ''
+        })),
+      
+      reddit_posts: agentResults.research.data.useCases
+        .filter(uc => uc.source === 'Reddit')
+        .slice(0, 10)
+        .map(uc => ({
+          title: uc.scenario,
+          snippet: uc.description,
+          url: uc.url || '',
+          upvotes: 10,
+          subreddit: 'programming'
+        })),
+      
+      // Code Agent data (stored separately for later use)
+      code_examples: {
+        quickStart: agentResults.code.data.quickStart,
+        apiExamples: agentResults.code.data.apiExamples,
+        integrations: agentResults.code.data.integrationExamples,
+        patterns: agentResults.code.data.commonPatterns
+      },
+      
+      // Structure Agent data (stored for outline generation)
+      suggested_outline: agentResults.structure.data.outline,
+      navigation_structure: agentResults.structure.data.navigation,
+      
+      // Metadata
+      total_sources: agentResults.research.data.sources.length,
+      product_complexity: agentResults.structure.data.pageCount > 10 ? 'large' : 
+                          agentResults.structure.data.pageCount > 5 ? 'medium' : 'small',
+      agent_execution_time: agentTime,
+      agent_status: agentResults.status
+    };
+    
+    console.log(`📊 Agent Results: ${agentResults.research.data.issues.length} issues, ${agentResults.code.data.quickStart.length} code examples, ${agentResults.structure.data.outline.length} sections`);
+    
+  } else {
+    // 📝 EXISTING: Linear Pipeline (Fallback)
+    console.log('Stage 3: Performing external research...');
+    pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
+    if (sessionId) {
+      progressTracker.emitProgress(sessionId, {
+        stage: 3,
+        stageName: 'Research & Analysis',
+        description: 'Gathering external insights and community knowledge',
+        progress: 50,
+      });
+    }
+    // Enforce tier limits for YouTube access
+    const smartScaling = calculateSmartScaling(extractedContent.length);
+    const tierLimits = enforceTierLimits(userPlan, smartScaling);
+    
+    externalResearch = await performExternalResearch(
+      siteStructure.productName, 
+      url, 
+      extractedContent.length,
+      tierLimits.youtubeApiAccess,
+      tierLimits.youtubeTranscripts,
+      sessionId
+    );
+    // Partial success notification via progress and pipeline monitor if sources missing
+    const missing: string[] = [];
+    if (!process.env.SERPAPI_KEY && !process.env.BRAVE_API_KEY) missing.push('Search APIs');
+    if (externalResearch.github_issues.length === 0) missing.push('GitHub issues');
+    const hasSources = (externalResearch.total_sources || 0) > 0;
+    if (sessionId) {
+      const totalSources = externalResearch.total_sources || 0;
+      const youtubeCount = externalResearch.youtube_videos?.length || 0;
+      const desc = totalSources === 0
+        ? 'External research unavailable (API limits) – proceeding with site content only'
+        : `Research complete: ${totalSources} sources${youtubeCount > 0 ? ` (${youtubeCount} YouTube videos)` : ''}${missing.length ? ` – missing ${missing.join(', ')}` : ''}`;
+      progressTracker.emitProgress(sessionId, {
+        stage: 3,
+        stageName: 'Research & Analysis',
+        description: desc,
+        progress: totalSources === 0 ? 55 : 58,
+        status: 'progress'
+      } as any);
+    }
+    pipelineMonitor.updateStage(pmId, 3, { 
+      status: hasSources ? 'completed' : 'partial', 
+      progress: hasSources ? 100 : 70,
+      details: { itemsProcessed: externalResearch.total_sources, itemsTotal: 1, warnings: missing.length ? [`Missing: ${missing.join(', ')}`] : [] }
     });
   }
-  // Enforce tier limits for YouTube access
-  const smartScaling = calculateSmartScaling(extractedContent.length);
-  const tierLimits = enforceTierLimits(userPlan, smartScaling);
   
-  const externalResearch = await performExternalResearch(
-    siteStructure.productName, 
-    url, 
-    extractedContent.length,
-    tierLimits.youtubeApiAccess,
-    tierLimits.youtubeTranscripts,
-    sessionId
-  );
-  // Partial success notification via progress and pipeline monitor if sources missing
-  const missing: string[] = [];
-  if (!process.env.SERPAPI_KEY && !process.env.BRAVE_API_KEY) missing.push('Search APIs');
-  if (externalResearch.github_issues.length === 0) missing.push('GitHub issues');
-  const hasSources = (externalResearch.total_sources || 0) > 0;
-  if (sessionId) {
-    const totalSources = externalResearch.total_sources || 0;
-    const youtubeCount = externalResearch.youtube_videos?.length || 0;
-    const desc = totalSources === 0
-      ? 'External research unavailable (API limits) – proceeding with site content only'
-      : `Research complete: ${totalSources} sources${youtubeCount > 0 ? ` (${youtubeCount} YouTube videos)` : ''}${missing.length ? ` – missing ${missing.join(', ')}` : ''}`;
-    progressTracker.emitProgress(sessionId, {
-      stage: 3,
-      stageName: 'Research & Analysis',
-      description: desc,
-      progress: totalSources === 0 ? 55 : 58,
-      status: 'progress'
-    } as any);
-  }
-  pipelineMonitor.updateStage(pmId, 3, { 
-    status: hasSources ? 'completed' : 'partial', 
-    progress: hasSources ? 100 : 70,
-    details: { itemsProcessed: externalResearch.total_sources, itemsTotal: 1, warnings: missing.length ? [`Missing: ${missing.join(', ')}`] : [] }
-  });
+  // ============================================================================
+  // END: Conditional 3-Agent System / Linear Pipeline
+  // ============================================================================
   
   console.log('Stage 4: Synthesizing comprehensive data...');
   pipelineMonitor.updateStage(pmId, 4, { status: 'in_progress', progress: 70 });

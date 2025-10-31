@@ -75,7 +75,7 @@ export class ResearchAgent extends BaseAgent<ResearchResult> {
         })),
         ...research.redditPosts.slice(0, 8).map(rd => ({
           scenario: rd.title,
-          description: rd.snippet.substring(0, 300),
+          description: rd.content.substring(0, 300),
           source: 'Reddit',
           url: rd.url
         }))

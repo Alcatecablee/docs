@@ -137,6 +137,25 @@ export interface CombinedAgentResults {
   failedAgents?: string[];
 }
 
+// Critic Agent Types
+export interface QualityIssue {
+  severity: 'high' | 'medium' | 'low';
+  category: 'completeness' | 'accuracy' | 'clarity' | 'depth';
+  description: string;
+  affectedSection: string;
+}
+
+export interface CriticResult extends AgentResult {
+  data: {
+    qualityScore: number; // 0-100
+    issues: QualityIssue[];
+    suggestions: string[];
+    missingContent: string[];
+    strengths: string[];
+    needsRefinement: boolean;
+  };
+}
+
 // LLM call options
 export interface LLMOptions {
   model?: string;
