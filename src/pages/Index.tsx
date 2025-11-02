@@ -49,7 +49,6 @@ import {
 } from '@/components/ui/accordion';
 import { TypewriterText } from '@/components/TypewriterText';
 import PipelineVisualization from '@/components/PipelineVisualization';
-import AnimatedProjectFlow from '@/components/AnimatedProjectFlow';
 
 function convertToViewerTheme(theme: Theme) {
   return {
@@ -358,36 +357,6 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Project Workflow (Animated) */}
-        <section
-          aria-labelledby="project-workflow"
-          className="relative overflow-hidden bg-gradient-to-br from-[rgb(14,19,23)] via-[rgb(24,29,37)] to-[rgb(34,38,46)] py-12 md:py-16"
-        >
-          <div className="absolute inset-0 bg-grid-white/[0.02] opacity-30" />
-          <div className="relative container mx-auto px-6 max-w-6xl">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-4">
-                <Square3Stack3DIcon className="h-4 w-4 text-[rgb(102,255,228)]" />
-                <span className="text-sm font-semibold text-white/90 uppercase tracking-wide">
-                  Project Workflow
-                </span>
-              </div>
-              <h2
-                id="project-workflow"
-                className="text-3xl md:text-5xl font-bold text-white leading-tight"
-              >
-                How We Execute Projects
-              </h2>
-              <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto mt-2">
-                A concise view of our delivery stages from planning to release
-              </p>
-            </div>
-            <div className="mt-4">
-              <AnimatedProjectFlow labels={['Backlog', 'In Progress', 'Review', 'Release']} />
             </div>
           </div>
         </section>
