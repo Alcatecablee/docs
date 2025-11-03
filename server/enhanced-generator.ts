@@ -713,8 +713,11 @@ export async function parseJSONWithRetry(aiProvider: ReturnType<typeof createAIP
   }
 }
 
-// Feature flag for Agent System (3-agent parallel architecture)
+// Feature flags for Agent System (3-agent parallel architecture with refinement)
 const ENABLE_AGENT_SYSTEM = process.env.ENABLE_AGENT_SYSTEM === 'true' || true;
+const ENABLE_REFINEMENT = process.env.ENABLE_REFINEMENT !== 'false'; // Enabled by default
+const REFINEMENT_QUALITY_THRESHOLD = parseInt(process.env.REFINEMENT_QUALITY_THRESHOLD || '85', 10);
+const MAX_REFINEMENT_ATTEMPTS = parseInt(process.env.MAX_REFINEMENT_ATTEMPTS || '2', 10);
 
 // Enhanced documentation generation pipeline
 export async function generateEnhancedDocumentation(
@@ -807,10 +810,14 @@ export async function generateEnhancedDocumentation(
   let externalResearch: any;
   
   if (ENABLE_AGENT_SYSTEM) {
-    // 🚀 NEW: 3-Agent Parallel Architecture
-    console.log('🤖 Launching 3-Agent Parallel System...');
+    // 🚀 NEW: 3-Agent Parallel Architecture with Auto-Refinement
+    console.log('🤖 Launching 3-Agent Parallel System with Auto-Refinement...');
     const { AgentOrchestrator } = await import('./agents/orchestrator');
-    const orchestrator = new AgentOrchestrator();
+    const orchestrator = new AgentOrchestrator({
+      enableRefinement: true,
+      qualityThreshold: 85,
+      maxRefinementAttempts: 2
+    });
     
     // Update progress to show parallel execution
     pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
@@ -837,11 +844,14 @@ export async function generateEnhancedDocumentation(
     
     const agentStartTime = Date.now();
     
-    // Execute 3 agents in parallel (Research, Code, Structure)
-    const agentResults = await orchestrator.executeParallel(agentContext);
+    // Execute 3 agents in parallel with auto-refinement (Research, Code, Structure + Critic)
+    const agentResults = await orchestrator.executeWithRefinement(agentContext);
     
     const agentTime = Date.now() - agentStartTime;
-    console.log(`✅ 3-Agent System completed in ${agentTime}ms (${agentResults.status})`);
+    console.log(`✅ 3-Agent System with Refinement completed in ${agentTime}ms (${agentResults.status})`);
+    if (agentResults.critic) {
+      console.log(`   📊 Final Quality Score: ${agentResults.critic.data.qualityScore}/100`);
+    }
     
     // Transform agent results to match expected externalResearch format
     externalResearch = {

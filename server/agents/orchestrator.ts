@@ -3,7 +3,7 @@
  * Coordinates parallel execution of specialist agents
  */
 
-import { AgentContext, AgentResult, CombinedAgentResults, ResearchResult, CodeResult, StructureResult, CriticResult } from './types';
+import { AgentContext, AgentResult, CombinedAgentResults, ResearchResult, CodeResult, StructureResult, CriticResult, RefinementContext } from './types';
 import { ResearchAgent } from './research-agent';
 import { CodeAgent } from './code-agent';
 import { StructureAgent } from './structure-agent';
@@ -15,14 +15,25 @@ export class AgentOrchestrator {
   private codeAgent: CodeAgent;
   private structureAgent: StructureAgent;
   private criticAgent: CriticAgent;
+  private enableRefinement: boolean;
+  private qualityThreshold: number;
+  private maxRefinementAttempts: number;
 
-  constructor() {
+  constructor(config?: {
+    enableRefinement?: boolean;
+    qualityThreshold?: number;
+    maxRefinementAttempts?: number;
+  }) {
     this.researchAgent = new ResearchAgent();
     this.codeAgent = new CodeAgent();
     this.structureAgent = new StructureAgent();
     this.criticAgent = new CriticAgent();
     
-    console.log('🎭 Agent Orchestrator initialized (with Critic Agent)');
+    this.enableRefinement = config?.enableRefinement ?? true;
+    this.qualityThreshold = config?.qualityThreshold ?? 85;
+    this.maxRefinementAttempts = config?.maxRefinementAttempts ?? 2;
+    
+    console.log(`🎭 Agent Orchestrator initialized (Refinement: ${this.enableRefinement ? 'ON' : 'OFF'}, Threshold: ${this.qualityThreshold}/100)`);
   }
 
   /**
@@ -112,6 +123,96 @@ export class AgentOrchestrator {
         failedAgents: ['Research', 'Code', 'Structure']
       };
     }
+  }
+
+  /**
+   * Execute agents with automatic quality-based refinement
+   * This is the main entry point that includes the refinement loop
+   */
+  async executeWithRefinement(context: AgentContext): Promise<CombinedAgentResults> {
+    if (!this.enableRefinement) {
+      console.log('🔄 Refinement disabled, executing agents once');
+      return this.executeParallel(context);
+    }
+
+    const overallStartTime = Date.now();
+    let attempt = 0;
+    let bestResults: CombinedAgentResults | null = null;
+    let bestQualityScore = 0;
+
+    console.log(`🔄 Starting refinement loop (max ${this.maxRefinementAttempts} attempts, threshold ${this.qualityThreshold}/100)`);
+
+    while (attempt < this.maxRefinementAttempts) {
+      attempt++;
+      console.log(`\n${'='.repeat(80)}`);
+      console.log(`🔄 Refinement Attempt ${attempt}/${this.maxRefinementAttempts}`);
+      console.log(`${'='.repeat(80)}\n`);
+
+      // Execute agents
+      const results = await this.executeParallel(context);
+
+      // Track best results
+      const currentScore = results.critic?.data.qualityScore || 0;
+      if (currentScore > bestQualityScore) {
+        bestQualityScore = currentScore;
+        bestResults = results;
+      }
+
+      // Check if quality meets threshold
+      if (currentScore >= this.qualityThreshold) {
+        const totalTime = Date.now() - overallStartTime;
+        console.log(`\n✅ Quality threshold met! Score: ${currentScore}/100 (after ${attempt} attempt(s), ${totalTime}ms)`);
+        return results;
+      }
+
+      // If this was the last attempt, return best results
+      if (attempt >= this.maxRefinementAttempts) {
+        const totalTime = Date.now() - overallStartTime;
+        console.log(`\n⚠️  Max refinement attempts reached. Best score: ${bestQualityScore}/100 (${totalTime}ms)`);
+        return bestResults || results;
+      }
+
+      // Prepare refinement context for next iteration
+      if (results.critic) {
+        const refinementContext: RefinementContext = {
+          attempt,
+          previousQualityScore: currentScore,
+          suggestions: results.critic.data.suggestions,
+          missingContent: results.critic.data.missingContent,
+          focusAreas: results.critic.data.issues
+            .filter(i => i.severity === 'high')
+            .map(i => i.description)
+        };
+
+        context.refinementContext = refinementContext;
+
+        console.log(`\n📋 Refinement needed (Score: ${currentScore}/${this.qualityThreshold})`);
+        console.log(`   Issues found: ${results.critic.data.issues.length}`);
+        console.log(`   Missing content: ${results.critic.data.missingContent.length}`);
+        console.log(`   Focus areas: ${refinementContext.focusAreas.slice(0, 3).join(', ')}${refinementContext.focusAreas.length > 3 ? '...' : ''}`);
+        console.log(`\n🔁 Retrying with refinement guidance...\n`);
+      } else {
+        console.log(`\n⚠️  No critic feedback available, cannot refine further`);
+        return results;
+      }
+    }
+
+    // Should never reach here, but TypeScript needs it
+    return bestResults || this.getEmptyAgentResults(context);
+  }
+
+  /**
+   * Get completely empty agent results (fallback)
+   */
+  private getEmptyAgentResults(context: AgentContext): CombinedAgentResults {
+    return {
+      research: this.getEmptyResearchResult(),
+      code: this.getEmptyCodeResult(),
+      structure: this.getEmptyStructureResult(context),
+      executionTime: 0,
+      status: 'failed',
+      failedAgents: ['Research', 'Code', 'Structure']
+    };
   }
 
   /**

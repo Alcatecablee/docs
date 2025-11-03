@@ -13,6 +13,16 @@ export interface AgentContext {
   language?: string;
   sessionId: string;
   userPlan: string;
+  refinementContext?: RefinementContext;
+}
+
+// Refinement context for iterative improvement
+export interface RefinementContext {
+  attempt: number;
+  previousQualityScore: number;
+  suggestions: string[];
+  missingContent: string[];
+  focusAreas: string[];
 }
 
 // Base result structure all agents must return
