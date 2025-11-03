@@ -101,43 +101,33 @@
 
 ---
 
-## ⚠️ PARTIALLY IMPLEMENTED / IN PROGRESS
+## ✅ COMPLETED (Phase 3.2) - November 3, 2025
 
-### Phase 3.2: Auto-Refinement Loop - ❌ NOT IMPLEMENTED
+### Phase 3.2: Auto-Refinement Loop - ✅ IMPLEMENTED
 
-**Status**: Critic agent exists but refinement loop not integrated into pipeline
+**Status**: Fully implemented with architect-reviewed improvements
 
-**What's Missing**:
-- [ ] Refinement loop in `enhanced-generator.ts`
-- [ ] Circuit breaker (max 2 attempts)
-- [ ] Critic agent integration into main pipeline
-- [ ] Refinement context passing to agents
-- [ ] Metrics tracking for refinements
+**Implemented Features**:
+- ✅ `executeWithRefinement()` method in orchestrator
+- ✅ Circuit breaker with configurable max attempts (default: 2, clamped to 1-3)
+- ✅ Quality threshold checking (default: 85/100, clamped to 0-100)
+- ✅ Refinement context passed to agents (suggestions, missing content, focus areas)
+- ✅ Tracks best results across attempts
+- ✅ Resilience for transient critic failures (allows retry even without feedback)
+- ✅ Environment variable configuration with guardrails
+- ✅ Comprehensive logging of refinement progress
 
-**Estimated Effort**: 2-3 hours
-
-**Code Required**:
-```typescript
-// In server/enhanced-generator.ts
-async function generateWithRefinement(url: string): Promise<Documentation> {
-  let attempt = 0;
-  const maxAttempts = 2;
-  
-  while (attempt < maxAttempts) {
-    const agentResults = await orchestrator.executeParallel({ url });
-    const documentation = await synthesize(agentResults);
-    const critique = await criticAgent.execute(documentation, agentResults);
-    
-    if (critique.data.qualityScore >= 85 || attempt === maxAttempts - 1) {
-      return documentation;
-    }
-    
-    // Refine using critic suggestions
-    agentResults.refinementContext = critique.data.suggestions;
-    attempt++;
-  }
-}
+**Environment Variables**:
+```bash
+ENABLE_REFINEMENT=true           # Enable/disable refinement (default: true)
+REFINEMENT_QUALITY_THRESHOLD=85  # Quality score threshold (default: 85, clamped to 0-100)
+MAX_REFINEMENT_ATTEMPTS=2        # Max refinement attempts (default: 2, clamped to 1-3)
 ```
+
+**Architect Review**: Passed with improvements implemented
+- Added guardrails for configuration (clamped values)
+- Added resilience for transient critic failures
+- Returns best results if threshold not met
 
 ---
 

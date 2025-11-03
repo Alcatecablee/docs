@@ -716,8 +716,9 @@ export async function parseJSONWithRetry(aiProvider: ReturnType<typeof createAIP
 // Feature flags for Agent System (3-agent parallel architecture with refinement)
 const ENABLE_AGENT_SYSTEM = process.env.ENABLE_AGENT_SYSTEM === 'true' || true;
 const ENABLE_REFINEMENT = process.env.ENABLE_REFINEMENT !== 'false'; // Enabled by default
-const REFINEMENT_QUALITY_THRESHOLD = parseInt(process.env.REFINEMENT_QUALITY_THRESHOLD || '85', 10);
-const MAX_REFINEMENT_ATTEMPTS = parseInt(process.env.MAX_REFINEMENT_ATTEMPTS || '2', 10);
+// Guardrails: Clamp quality threshold to 0-100 and attempts to 1-3
+const REFINEMENT_QUALITY_THRESHOLD = Math.max(0, Math.min(100, parseInt(process.env.REFINEMENT_QUALITY_THRESHOLD || '85', 10)));
+const MAX_REFINEMENT_ATTEMPTS = Math.max(1, Math.min(3, parseInt(process.env.MAX_REFINEMENT_ATTEMPTS || '2', 10)));
 
 // Enhanced documentation generation pipeline
 export async function generateEnhancedDocumentation(
@@ -814,9 +815,9 @@ export async function generateEnhancedDocumentation(
     console.log('🤖 Launching 3-Agent Parallel System with Auto-Refinement...');
     const { AgentOrchestrator } = await import('./agents/orchestrator');
     const orchestrator = new AgentOrchestrator({
-      enableRefinement: true,
-      qualityThreshold: 85,
-      maxRefinementAttempts: 2
+      enableRefinement: ENABLE_REFINEMENT,
+      qualityThreshold: REFINEMENT_QUALITY_THRESHOLD,
+      maxRefinementAttempts: MAX_REFINEMENT_ATTEMPTS
     });
     
     // Update progress to show parallel execution

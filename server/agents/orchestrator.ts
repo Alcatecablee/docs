@@ -192,8 +192,14 @@ export class AgentOrchestrator {
         console.log(`   Focus areas: ${refinementContext.focusAreas.slice(0, 3).join(', ')}${refinementContext.focusAreas.length > 3 ? '...' : ''}`);
         console.log(`\n🔁 Retrying with refinement guidance...\n`);
       } else {
-        console.log(`\n⚠️  No critic feedback available, cannot refine further`);
-        return results;
+        // Allow one more retry even without critic feedback (resilience for transient failures)
+        console.log(`\n⚠️  No critic feedback available (attempt ${attempt}/${this.maxRefinementAttempts})`);
+        if (attempt < this.maxRefinementAttempts) {
+          console.log(`   🔁 Retrying once more to handle transient failures...\n`);
+        } else {
+          console.log(`   ⛔ Cannot refine further without critic feedback`);
+          return bestResults || results;
+        }
       }
     }
 
