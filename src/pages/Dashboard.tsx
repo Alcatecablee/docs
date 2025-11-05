@@ -5,7 +5,6 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, apiRequestBlob } from '@/lib/queryClient';
 import { DocumentationViewer } from '@/components/DocumentationViewer';
 import { BrandKitExtractor } from '@/components/BrandKitExtractor';
-import SubscriptionStatus from '@/components/SubscriptionStatus';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, FileText, ExternalLink, Trash2, ArrowLeft, Home, Plus, FileCheck, Clock, Globe } from 'lucide-react';
@@ -201,10 +200,6 @@ export default function Dashboard() {
               </div>
             </CardHeader>
           </Card>
-          
-          <div className="mb-8">
-            <SubscriptionStatus userEmail={user.email} />
-          </div>
         </>
       )}
 

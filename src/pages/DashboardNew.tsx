@@ -5,7 +5,6 @@ import { useDashboardOverview, useDocumentAnalytics } from '@/hooks/use-dashboar
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ChartContainer } from '@/components/dashboard/ChartContainer';
-import { UpgradePrompt } from '@/components/dashboard/UpgradePrompt';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -258,23 +257,6 @@ export default function DashboardNew() {
           />
         </div>
 
-        {/* Usage Limit Warning */}
-        {isNearQuota && overview.user.plan === 'free' && (
-          <UpgradePrompt
-            title={isAtQuota ? "You've reached your generation limit" : "You're running low on generations"}
-            description={isAtQuota 
-              ? "Upgrade to Pro or Enterprise to generate unlimited documentation"
-              : `You've used ${generationQuota.used} of ${generationQuota.limit} free generations. Upgrade for unlimited access.`}
-            features={[
-              'Unlimited documentation generation',
-              'Advanced analytics and insights',
-              'Priority support',
-              'API access (Enterprise only)'
-            ]}
-            variant="compact"
-          />
-        )}
-
         {/* Usage Trend Chart */}
         {overview.usageTrend.length > 0 && (
           <ChartContainer
@@ -438,21 +420,6 @@ export default function DashboardNew() {
             )}
           </CardContent>
         </Card>
-
-        {/* Upgrade Prompt for Free Users */}
-        {overview.user.plan === 'free' && overview.stats.totalDocs >= 2 && (
-          <UpgradePrompt
-            title="You're building momentum! 🚀"
-            description="Unlock unlimited potential with Pro or Enterprise"
-            features={[
-              'Generate unlimited documentation',
-              'Advanced analytics and insights',
-              'Team collaboration features',
-              'Priority support and faster generation',
-              'API access (Enterprise only)'
-            ]}
-          />
-        )}
       </div>
     </DashboardLayout>
   );

@@ -16,7 +16,6 @@ import { seoService } from './seo-service';
 import { schemaService } from './schema-service';
 import { sitemapService } from './sitemap-service';
 import { contentRefreshService } from './content-refresh-service';
-import { calculateSmartScaling, enforceTierLimits } from './tier-config';
 import { qualityScoringService } from './quality-scoring-service';
 import {
   shouldSkipImage,
@@ -933,16 +932,16 @@ export async function generateEnhancedDocumentation(
         progress: 50,
       });
     }
-    // Enforce tier limits for YouTube access
-    const smartScaling = calculateSmartScaling(extractedContent.length);
-    const tierLimits = enforceTierLimits(userPlan, smartScaling);
+    // All users have access to YouTube API and transcripts
+    const youtubeApiAccess = true;
+    const youtubeTranscripts = true;
     
     externalResearch = await performExternalResearch(
       siteStructure.productName, 
       url, 
       extractedContent.length,
-      tierLimits.youtubeApiAccess,
-      tierLimits.youtubeTranscripts,
+      youtubeApiAccess,
+      youtubeTranscripts,
       sessionId
     );
     // Partial success notification via progress and pipeline monitor if sources missing
