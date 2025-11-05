@@ -1,0 +1,143 @@
+Transparent Pricing
+Custom Documentation for
+DevRel Teams
+Pay only for what you need. Instant quotes based on your community footprint.
+No subscriptions. No hidden fees. Just transparent, fair pricing.
+
+Get Your Instant Quote
+How It Works
+Simple, Transparent Formula
+We count your community resources and calculate a fair price
+
+$300 + (Resources × $5) × Complexity
+Capped at $5,000 maximum
+Base Minimum
+$300
+Covers basic research & generation
+Per Resource
+$5
+Stack Overflow, GitHub, YouTube, etc.
+Complexity Multiplier
+1.0-2.0×
+Low, Medium, or High complexity
+Projects under 20 resources are FREE
+Perfect for small libraries and early-stage products
+Example Pricing
+Real-World Examples
+See what documentation would cost for different project sizes
+
+FREE
+Starter Project
+Small library or early-stage product
+
+Resources
+15
+Complexity
+Low
+Multiplier
+1×
+Calculation:
+$300 + (15 × $5) × 1.0 = $375
+Waived (under 20 resources)
+Examples:
+New OSS library
+Beta product
+Small tool
+$675
+Growing Product
+Active community, solid documentation needs
+
+Resources
+50
+Complexity
+Medium
+Multiplier
+1.5×
+Calculation:
+$300 + (50 × $5) × 1.5
+Examples:
+SaaS platform
+Developer tool
+Framework
+Most Common
+$1,800
+Established Ecosystem
+Vibrant community across multiple platforms
+
+Resources
+150
+Complexity
+High
+Multiplier
+2×
+Calculation:
+$300 + (150 × $5) × 2.0
+Examples:
+Auth provider
+Payment API
+Cloud platform
+$5,000
+Major Platform
+Enterprise-scale with massive community
+
+Resources
+500
+Complexity
+High
+Multiplier
+2×
+Calculation:
+$300 + (500 × $5) × 2.0 = $5,300
+Capped at maximum
+Examples:
+Stripe-level
+AWS service
+Major framework
+Premium Add-ons
+Enhance Your Documentation
+Optional features to supercharge your docs
+
+Extended Research
++$500
+Deep dive into 50+ YouTube tutorials, 200+ Stack Overflow questions
+
+Code Snippets & Validation
++$700
+Extract and test 50-200 code samples with multi-language support
+
+Migration Guides
++$850
+Getting Started guides and competitor migration paths
+
+API Reference Documentation
++$1400
+Auto-generate endpoint docs, authentication guides, rate limits
+
+White-Label Branding
++$350
+Custom themes, logo integration, subdomain hosting
+
+Rush Delivery (24-48h)
++$500
+Priority processing and expedited delivery
+
+ROI Comparison
+Save 70% vs Manual Research
+Manual DevRel Research
+$8,000-$15,000
+Technical writer: $75-125/hour
+40-80 hours manual research
+3-4 weeks timeline
+One-time snapshot only
+Viberdoc Automated
+$500-$5,000
+Fully automated AI research
+Analyzes 100+ sources instantly
+24-48 hour delivery
+Can refresh quarterly
+Save $5,000-$10,000 (70% cost reduction)
+Ready to See Your Quote?
+Paste your URL and get an instant, no-commitment quote in seconds
+
+Get Your Instant Quote (Free)
+No credit card required • Free analysis • Instant results
