@@ -1,7 +1,19 @@
 # Viberdoc - AI-Powered Documentation Generator
 
 ## Overview
-Viberdoc is an AI-powered documentation intelligence platform designed for Developer Relations teams at established companies with vibrant ecosystems (Stripe, Supabase, Next.js, etc.). The platform aggregates scattered community knowledge from 10+ sources (Stack Overflow, GitHub, YouTube, Reddit, DEV.to, etc.) and generates professional, Apple-style documentation. The system employs a 3-stage AI pipeline to analyze websites, research community sources, and produce enterprise-quality documentation in various formats (PDF, DOCX, web).
+Viberdoc is an AI-powered documentation intelligence platform designed for Developer Relations teams at established companies with vibrant ecosystems (Stripe, Supabase, Next.js, etc.). The platform aggregates scattered community knowledge from 10+ sources (Stack Overflow, GitHub, YouTube, Reddit, DEV.to, etc.) and generates professional, Apple-style documentation. The system uses an intelligent agent-based architecture that analyzes websites, researches community sources, and produces enterprise-quality documentation in various formats (PDF, DOCX, web).
+
+## Recent Changes (November 05, 2025)
+**Agent-Based Architecture - Production Ready**: Completed Phase 4 of agent system implementation, making the intelligent multi-agent architecture the default and only pipeline:
+- ✅ **Old Pipeline Removed**: Deleted legacy 4-stage sequential pipeline and all fallback code
+- ✅ **Feature Flags Eliminated**: Removed ENABLE_AGENT_SYSTEM flag, agent system now default
+- ✅ **Performance Monitoring**: Implemented comprehensive agent-specific metrics tracking with AgentMetricsService
+- ✅ **Refinement Metrics**: Track quality scores, issues found, and fixes applied across refinement cycles
+- ✅ **System Health Dashboard**: Real-time health status with per-agent breakdowns and quality tracking
+- ✅ **3-Agent Architecture**: Research, Code, and Structure agents run in parallel with Critic validation
+- ✅ **Auto-Refinement**: Quality-based refinement loop (threshold: 85/100, max 2 attempts)
+- ✅ **Production Optimized**: Simplified progress messages, removed debug language, clean user experience
+- See AGENT_ARCHITECTURE_ROADMAP.md for complete architecture details
 
 ## Recent Changes (October 28, 2025)
 **Block-Level Editing System - Phase 2 Complete**: Implemented real-time inline editing capabilities for generated documentation with professional rich text and code editing:

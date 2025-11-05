@@ -570,129 +570,6 @@ export async function extractMultiPageContent(urls: string[], sessionId?: string
   return extracted;
 }
 
-// External research using real search APIs with dynamic limits
-export async function performExternalResearch(
-  productName: string, 
-  baseUrl: string, 
-  crawledPageCount: number = 0,
-  youtubeApiAccess: boolean = false,
-  youtubeTranscripts: boolean = false,
-  sessionId?: string
-) {
-  console.log(`🔬 Performing comprehensive external research for: ${productName}`);
-  
-  if (sessionId) {
-    progressTracker.emitActivity(sessionId, {
-      message: `🔬 Starting comprehensive research for ${productName}...`,
-      type: 'info'
-    }, 3, 'Research & Analysis');
-  }
-  
-  try {
-    const research = await searchService.performComprehensiveResearch(
-      productName, 
-      baseUrl, 
-      'medium', // Will be auto-estimated based on crawledPageCount
-      crawledPageCount,
-      youtubeApiAccess,
-      youtubeTranscripts
-    );
-    
-    console.log(`✅ Research complete (${research.productComplexity} product):
-    - Search results: ${research.searchResults.length}
-    - Stack Overflow answers: ${research.stackOverflowAnswers.length}
-    - GitHub issues: ${research.gitHubIssues.length}
-    - YouTube videos: ${research.youtubeVideos.length}
-    - Total sources: ${research.totalSources}`);
-    
-    console.log(`📊 Research quality score: ${(research.qualityScore * 100).toFixed(1)}%`);
-    
-    if (sessionId) {
-      if (research.searchResults.length > 0) {
-        progressTracker.emitActivity(sessionId, {
-          message: `🔍 Analyzed ${research.searchResults.length} search results from Google...`,
-          type: 'success'
-        }, 3, 'Research & Analysis');
-      }
-      
-      if (research.stackOverflowAnswers.length > 0) {
-        progressTracker.emitActivity(sessionId, {
-          message: `💡 Found ${research.stackOverflowAnswers.length} Stack Overflow ${research.stackOverflowAnswers.length === 1 ? 'answer' : 'answers'} with solutions`,
-          type: 'success',
-          data: { sourcesFound: research.stackOverflowAnswers.length }
-        }, 3, 'Research & Analysis');
-      }
-      
-      if (research.gitHubIssues.length > 0) {
-        progressTracker.emitActivity(sessionId, {
-          message: `🐛 Reading GitHub issues... ${research.gitHubIssues.length} common ${research.gitHubIssues.length === 1 ? 'problem' : 'problems'} identified`,
-          type: 'success'
-        }, 3, 'Research & Analysis');
-      }
-      
-      if (research.youtubeVideos.length > 0) {
-        progressTracker.emitActivity(sessionId, {
-          message: `📹 Watching YouTube tutorials... ${research.youtubeVideos.length} ${research.youtubeVideos.length === 1 ? 'video' : 'videos'} analyzed`,
-          type: 'success'
-        }, 3, 'Research & Analysis');
-      }
-      
-      if (research.redditPosts && research.redditPosts.length > 0) {
-        progressTracker.emitActivity(sessionId, {
-          message: `💬 Analyzed ${research.redditPosts.length} Reddit discussions`,
-          type: 'success'
-        }, 3, 'Research & Analysis');
-      }
-      
-      if (research.devToArticles && research.devToArticles.length > 0) {
-        progressTracker.emitActivity(sessionId, {
-          message: `📝 Found ${research.devToArticles.length} DEV.to articles`,
-          type: 'success'
-        }, 3, 'Research & Analysis');
-      }
-      
-      progressTracker.emitActivity(sessionId, {
-        message: `✨ Synthesizing ${research.totalSources} sources with AI...`,
-        type: 'info',
-        data: { sourcesFound: research.totalSources }
-      }, 3, 'Research & Analysis');
-    }
-    
-    return {
-      search_results: research.searchResults,
-      stackoverflow_answers: research.stackOverflowAnswers,
-      github_issues: research.gitHubIssues,
-      youtube_videos: research.youtubeVideos,
-      reddit_posts: research.redditPosts || [],
-      devto_articles: research.devToArticles || [],
-      codeproject_articles: research.codeProjectArticles || [],
-      stackexchange_questions: research.stackExchangeQuestions || [],
-      quora_answers: research.quoraAnswers || [],
-      forum_posts: research.forumPosts || [],
-      quality_score: research.qualityScore,
-      total_sources: research.totalSources,
-      product_complexity: research.productComplexity
-    };
-  } catch (error) {
-    console.error('❌ External research failed:', error.message);
-    return {
-      search_results: [],
-      stackoverflow_answers: [],
-      github_issues: [],
-      youtube_videos: [],
-      reddit_posts: [],
-      devto_articles: [],
-      codeproject_articles: [],
-      stackexchange_questions: [],
-      quora_answers: [],
-      forum_posts: [],
-      quality_score: 0,
-      total_sources: 0,
-      product_complexity: 'small' as const
-    };
-  }
-}
-
 // Enhanced JSON parsing with retry using AI provider
 export async function parseJSONWithRetry(aiProvider: ReturnType<typeof createAIProvider>, content: string, retryPrompt: string, maxRetries = 2): Promise<Record<string, unknown>> {
   try {
@@ -712,8 +589,7 @@ export async function parseJSONWithRetry(aiProvider: ReturnType<typeof createAIP
   }
 }
 
-// Feature flags for Agent System (3-agent parallel architecture with refinement)
-const ENABLE_AGENT_SYSTEM = process.env.ENABLE_AGENT_SYSTEM === 'true' || true;
+// Agent system configuration (auto-refinement enabled by default)
 const ENABLE_REFINEMENT = process.env.ENABLE_REFINEMENT !== 'false'; // Enabled by default
 // Guardrails: Clamp quality threshold to 0-100 and attempts to 1-3
 const REFINEMENT_QUALITY_THRESHOLD = Math.max(0, Math.min(100, parseInt(process.env.REFINEMENT_QUALITY_THRESHOLD || '85', 10)));
@@ -731,13 +607,6 @@ export async function generateEnhancedDocumentation(
   // Initialize Delivery Routing Service
   const { DeliveryRoutingService } = await import('./services/delivery-routing-service');
   const freeProvider = createAIProvider(['deepseek', 'google', 'together', 'openrouter', 'groq', 'hyperbolic']);
-  
-  // Initialize Agent System if enabled
-  if (ENABLE_AGENT_SYSTEM) {
-    console.log('🤖 3-Agent Parallel Architecture ENABLED');
-  } else {
-    console.log('📝 Using standard linear pipeline');
-  }
   const openaiProvider = createAIProvider(['openai']);
   const deliveryRouter = new DeliveryRoutingService(freeProvider, openaiProvider);
   
@@ -804,57 +673,50 @@ export async function generateEnhancedDocumentation(
   }
   pipelineMonitor.updateStage(pmId, 2, { status: 'completed', progress: 100, details: { itemsProcessed: extractedContent.length, itemsTotal: candidateUrls.length } });
   
-  // ============================================================================
-  // CONDITIONAL: 3-Agent Parallel System OR Linear Pipeline
-  // ============================================================================
-  let externalResearch: any;
+  // Stage 3: AI-powered research and analysis
+  console.log('Stage 3: Performing comprehensive research and analysis...');
+  const { AgentOrchestrator } = await import('./agents/orchestrator');
+  const orchestrator = new AgentOrchestrator({
+    enableRefinement: ENABLE_REFINEMENT,
+    qualityThreshold: REFINEMENT_QUALITY_THRESHOLD,
+    maxRefinementAttempts: MAX_REFINEMENT_ATTEMPTS
+  });
   
-  if (ENABLE_AGENT_SYSTEM) {
-    // 🚀 NEW: 3-Agent Parallel Architecture with Auto-Refinement
-    console.log('🤖 Launching 3-Agent Parallel System with Auto-Refinement...');
-    const { AgentOrchestrator } = await import('./agents/orchestrator');
-    const orchestrator = new AgentOrchestrator({
-      enableRefinement: ENABLE_REFINEMENT,
-      qualityThreshold: REFINEMENT_QUALITY_THRESHOLD,
-      maxRefinementAttempts: MAX_REFINEMENT_ATTEMPTS
+  pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
+  if (sessionId) {
+    progressTracker.emitProgress(sessionId, {
+      stage: 3,
+      stageName: 'Research & Analysis',
+      description: 'Gathering insights from community sources and analyzing code...',
+      progress: 50,
     });
-    
-    // Update progress to show parallel execution
-    pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
-    if (sessionId) {
-      progressTracker.emitProgress(sessionId, {
-        stage: 3,
-        stageName: '3-Agent Parallel System',
-        description: 'Research, Code, and Structure agents running in parallel...',
-        progress: 50,
-      });
-    }
-    
-    // Prepare agent context
-    const siteMetadata = (siteStructure as any).metadata || {};
-    const agentContext = {
-      url,
-      product: siteStructure.productName || new URL(url).hostname,
-      productType: siteMetadata.type || 'SaaS',
-      repoUrl: siteMetadata.repository,
-      language: 'JavaScript', // Could be detected from site
-      sessionId: pmId,
-      userPlan
-    };
-    
-    const agentStartTime = Date.now();
-    
-    // Execute 3 agents in parallel with auto-refinement (Research, Code, Structure + Critic)
-    const agentResults = await orchestrator.executeWithRefinement(agentContext);
-    
-    const agentTime = Date.now() - agentStartTime;
-    console.log(`✅ 3-Agent System with Refinement completed in ${agentTime}ms (${agentResults.status})`);
-    if (agentResults.critic) {
-      console.log(`   📊 Final Quality Score: ${agentResults.critic.data.qualityScore}/100`);
-    }
-    
-    // Transform agent results to match expected externalResearch format
-    externalResearch = {
+  }
+  
+  // Prepare agent context
+  const siteMetadata = (siteStructure as any).metadata || {};
+  const agentContext = {
+    url,
+    product: siteStructure.productName || new URL(url).hostname,
+    productType: siteMetadata.type || 'SaaS',
+    repoUrl: siteMetadata.repository,
+    language: 'JavaScript', // Could be detected from site
+    sessionId: pmId,
+    userPlan
+  };
+  
+  const agentStartTime = Date.now();
+  
+  // Execute intelligent research and analysis with auto-refinement
+  const agentResults = await orchestrator.executeWithRefinement(agentContext);
+  
+  const agentTime = Date.now() - agentStartTime;
+  console.log(`✅ Research and analysis completed in ${agentTime}ms (${agentResults.status})`);
+  if (agentResults.critic) {
+    console.log(`   📊 Final Quality Score: ${agentResults.critic.data.qualityScore}/100`);
+  }
+  
+  // Transform agent results to expected format
+  const externalResearch = {
       // Research Agent data
       stack_overflow_answers: agentResults.research.data.issues
         .filter(i => i.source === 'stackoverflow')
@@ -916,63 +778,9 @@ export async function generateEnhancedDocumentation(
                           agentResults.structure.data.pageCount > 5 ? 'medium' : 'small',
       agent_execution_time: agentTime,
       agent_status: agentResults.status
-    };
-    
-    console.log(`📊 Agent Results: ${agentResults.research.data.issues.length} issues, ${agentResults.code.data.quickStart.length} code examples, ${agentResults.structure.data.outline.length} sections`);
-    
-  } else {
-    // 📝 EXISTING: Linear Pipeline (Fallback)
-    console.log('Stage 3: Performing external research...');
-    pipelineMonitor.updateStage(pmId, 3, { status: 'in_progress', progress: 50 });
-    if (sessionId) {
-      progressTracker.emitProgress(sessionId, {
-        stage: 3,
-        stageName: 'Research & Analysis',
-        description: 'Gathering external insights and community knowledge',
-        progress: 50,
-      });
-    }
-    // All users have access to YouTube API and transcripts
-    const youtubeApiAccess = true;
-    const youtubeTranscripts = true;
-    
-    externalResearch = await performExternalResearch(
-      siteStructure.productName, 
-      url, 
-      extractedContent.length,
-      youtubeApiAccess,
-      youtubeTranscripts,
-      sessionId
-    );
-    // Partial success notification via progress and pipeline monitor if sources missing
-    const missing: string[] = [];
-    if (!process.env.SERPAPI_KEY && !process.env.BRAVE_API_KEY) missing.push('Search APIs');
-    if (externalResearch.github_issues.length === 0) missing.push('GitHub issues');
-    const hasSources = (externalResearch.total_sources || 0) > 0;
-    if (sessionId) {
-      const totalSources = externalResearch.total_sources || 0;
-      const youtubeCount = externalResearch.youtube_videos?.length || 0;
-      const desc = totalSources === 0
-        ? 'External research unavailable (API limits) – proceeding with site content only'
-        : `Research complete: ${totalSources} sources${youtubeCount > 0 ? ` (${youtubeCount} YouTube videos)` : ''}${missing.length ? ` – missing ${missing.join(', ')}` : ''}`;
-      progressTracker.emitProgress(sessionId, {
-        stage: 3,
-        stageName: 'Research & Analysis',
-        description: desc,
-        progress: totalSources === 0 ? 55 : 58,
-        status: 'progress'
-      } as any);
-    }
-    pipelineMonitor.updateStage(pmId, 3, { 
-      status: hasSources ? 'completed' : 'partial', 
-      progress: hasSources ? 100 : 70,
-      details: { itemsProcessed: externalResearch.total_sources, itemsTotal: 1, warnings: missing.length ? [`Missing: ${missing.join(', ')}`] : [] }
-    });
-  }
+  };
   
-  // ============================================================================
-  // END: Conditional 3-Agent System / Linear Pipeline
-  // ============================================================================
+  console.log(`📊 Research Results: ${agentResults.research.data.issues.length} issues, ${agentResults.code.data.quickStart.length} code examples, ${agentResults.structure.data.outline.length} sections`);
   
   console.log('Stage 4: Synthesizing comprehensive data...');
   pipelineMonitor.updateStage(pmId, 4, { status: 'in_progress', progress: 70 });

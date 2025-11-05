@@ -9,6 +9,7 @@ import { CodeAgent } from './code-agent';
 import { StructureAgent } from './structure-agent';
 import { CriticAgent } from './critic-agent';
 import { BaseAgent } from './base-agent';
+import { agentMetrics } from './agent-metrics';
 
 export class AgentOrchestrator {
   private researchAgent: ResearchAgent;
@@ -186,6 +187,16 @@ export class AgentOrchestrator {
 
         context.refinementContext = refinementContext;
 
+        // Record refinement metrics
+        agentMetrics.recordRefinement({
+          attempt,
+          qualityScore: currentScore,
+          issuesFound: results.critic.data.issues.map(i => i.description),
+          fixesApplied: results.critic.data.suggestions,
+          duration: results.executionTime,
+          timestamp: new Date()
+        });
+
         console.log(`\n📋 Refinement needed (Score: ${currentScore}/${this.qualityThreshold})`);
         console.log(`   Issues found: ${results.critic.data.issues.length}`);
         console.log(`   Missing content: ${results.critic.data.missingContent.length}`);
@@ -229,13 +240,47 @@ export class AgentOrchestrator {
     context: AgentContext,
     agentName: string
   ): Promise<T> {
+    const startTime = Date.now();
     try {
       console.log(`  ⏳ ${agentName} Agent starting...`);
       const result = await agent.executeWithTimeout(context);
       console.log(`  ✅ ${agentName} Agent completed (${result.executionTime}ms)`);
+      
+      // Record metrics
+      agentMetrics.recordAgentExecution({
+        agentName: agentName.toLowerCase(),
+        executionTime: result.executionTime,
+        success: result.success,
+        timestamp: new Date(),
+        context: {
+          product: context.product,
+          url: context.url,
+          complexity: (result as any).data?.pageCount ? 'large' : 'medium'
+        },
+        results: {
+          itemsProcessed: (result as any).data?.issues?.length || (result as any).data?.quickStart?.length || (result as any).data?.outline?.length || 0,
+          sourcesFound: (result as any).data?.sources?.length || 0
+        }
+      });
+      
       return result;
     } catch (error: any) {
+      const executionTime = Date.now() - startTime;
       console.error(`  ❌ ${agentName} Agent failed:`, error.message);
+      
+      // Record failure metrics
+      agentMetrics.recordAgentExecution({
+        agentName: agentName.toLowerCase(),
+        executionTime,
+        success: false,
+        error: error.message,
+        timestamp: new Date(),
+        context: {
+          product: context.product,
+          url: context.url
+        }
+      });
+      
       throw error;
     }
   }
