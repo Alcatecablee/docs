@@ -10,21 +10,17 @@ export interface AIMessage {
 
 export interface AIResponse {
   content: string;
-  provider: 'google' | 'together' | 'openrouter' | 'hyperbolic' | 'groq' | 'openai' | 'deepseek' | 'ollama';
+  provider: 'google' | 'groq' | 'hyperbolic' | 'openrouter' | 'openai';
   model: string;
 }
 
 interface AIProviderConfig {
   googleApiKey?: string;
-  togetherApiKey?: string;
   openrouterApiKey?: string;
   hyperbolicApiKey?: string;
-  deepseekApiKey?: string;
   openaiApiKey?: string;
   groqApiKey?: string;
-  ollamaBaseUrl?: string;
-  ollamaModel?: string;
-  providerOrder?: string[]; // e.g. ['google','together','openrouter','groq','hyperbolic','deepseek','openai','ollama']
+  providerOrder?: string[]; // e.g. ['google','groq','hyperbolic','openrouter','openai']
 }
 
 export class AIProvider {
@@ -63,7 +59,7 @@ export class AIProvider {
     // Build provider order from config with free-first priority
     const order = (this.config.providerOrder && this.config.providerOrder.length > 0)
       ? this.config.providerOrder
-      : ['google', 'together', 'openrouter', 'groq', 'hyperbolic', 'deepseek', 'openai', 'ollama'];
+      : ['google', 'groq', 'hyperbolic', 'openrouter', 'openai'];
 
     const providers: Array<() => Promise<AIResponse>> = [];
 
@@ -78,22 +74,12 @@ export class AIProvider {
           )
         );
       }
-      if (p === 'together' && this.config.togetherApiKey) {
+      if (p === 'groq' && this.config.groqApiKey) {
         providers.push(() => 
-          this.withRateLimit('together', estimatedTokens, () =>
+          this.withRateLimit('groq', estimatedTokens, () =>
             withCircuitBreaker(
-              'ai-provider-together',
-              () => withTimeout(this.callTogether(messages, jsonMode), timeoutMs, 'together timed out')
-            )
-          )
-        );
-      }
-      if (p === 'openrouter' && this.config.openrouterApiKey) {
-        providers.push(() => 
-          this.withRateLimit('openrouter', estimatedTokens, () =>
-            withCircuitBreaker(
-              'ai-provider-openrouter',
-              () => withTimeout(this.callOpenRouter(messages, jsonMode), timeoutMs, 'openrouter timed out')
+              'ai-provider-groq',
+              () => withTimeout(this.callGroq(messages, jsonMode), timeoutMs, 'groq timed out')
             )
           )
         );
@@ -108,12 +94,12 @@ export class AIProvider {
           )
         );
       }
-      if (p === 'groq' && this.config.groqApiKey) {
+      if (p === 'openrouter' && this.config.openrouterApiKey) {
         providers.push(() => 
-          this.withRateLimit('groq', estimatedTokens, () =>
+          this.withRateLimit('openrouter', estimatedTokens, () =>
             withCircuitBreaker(
-              'ai-provider-groq',
-              () => withTimeout(this.callGroq(messages, jsonMode), timeoutMs, 'groq timed out')
+              'ai-provider-openrouter',
+              () => withTimeout(this.callOpenRouter(messages, jsonMode), timeoutMs, 'openrouter timed out')
             )
           )
         );
@@ -128,28 +114,10 @@ export class AIProvider {
           )
         );
       }
-      if (p === 'deepseek' && this.config.deepseekApiKey) {
-        providers.push(() => 
-          this.withRateLimit('deepseek', estimatedTokens, () =>
-            withCircuitBreaker(
-              'ai-provider-deepseek',
-              () => withTimeout(this.callDeepSeek(messages, jsonMode), timeoutMs, 'deepseek timed out')
-            )
-          )
-        );
-      }
-      if (p === 'ollama' && (this.config.ollamaBaseUrl || process.env.OLLAMA_BASE_URL)) {
-        providers.push(() => 
-          withCircuitBreaker(
-            'ai-provider-ollama',
-            () => withTimeout(this.callOllama(messages, jsonMode), timeoutMs, 'ollama timed out')
-          )
-        );
-      }
     }
 
     if (providers.length === 0) {
-      throw new Error('No AI providers configured. Set at least one API key: GOOGLE_API_KEY, TOGETHER_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY, HYPERBOLIC_API_KEY, OPENAI_API_KEY, or DEEPSEEK_API_KEY');
+      throw new Error('No AI providers configured. Set at least one API key: GOOGLE_API_KEY, GROQ_API_KEY, HYPERBOLIC_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY');
     }
 
     const result = await retryWithFallback<AIResponse>(providers, {
@@ -187,35 +155,6 @@ export class AIProvider {
       content,
       provider: 'google',
       model: 'gemini-2.0-flash-exp',
-    };
-  }
-
-  private async callTogether(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
-    const response = await fetch('https://api.together.xyz/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.config.togetherApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
-        messages,
-        ...(jsonMode && { response_format: { type: 'json_object' } }),
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Together AI API error (${response.status}): ${errorText}`);
-    }
-
-    const data = await response.json() as any;
-    const content = data.choices?.[0]?.message?.content || '';
-
-    return {
-      content,
-      provider: 'together',
-      model: 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
     };
   }
 
@@ -279,35 +218,6 @@ export class AIProvider {
     };
   }
 
-  private async callDeepSeek(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.config.deepseekApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages,
-        ...(jsonMode && { response_format: { type: 'json_object' } }),
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`DeepSeek API error (${response.status}): ${errorText}`);
-    }
-
-    const data = await response.json() as any;
-    const content = data.choices?.[0]?.message?.content || '';
-
-    return {
-      content,
-      provider: 'deepseek',
-      model: 'deepseek-chat',
-    };
-  }
-
   private async callOpenAI(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -366,38 +276,6 @@ export class AIProvider {
     };
   }
 
-  private async callOllama(messages: AIMessage[], jsonMode: boolean): Promise<AIResponse> {
-    const baseUrl = (this.config.ollamaBaseUrl || process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/$/, '');
-    const model = this.config.ollamaModel || process.env.OLLAMA_MODEL || 'llama3.1:8b-instruct';
-
-    const response = await fetch(`${baseUrl}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        // Ollama is OpenAI-compatible; send response_format only when needed
-        ...(jsonMode && { response_format: { type: 'json_object' } }),
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Ollama API error (${response.status}): ${errorText}`);
-    }
-
-    const data = await response.json() as any;
-    const content = data.choices?.[0]?.message?.content || '';
-
-    return {
-      content,
-      provider: 'ollama',
-      model,
-    };
-  }
-
   async parseJSONWithRetry(content: string, retryPrompt: string, maxRetries: number = 3): Promise<any> {
     let lastError: Error | null = null;
 
@@ -429,14 +307,10 @@ export function createAIProvider(customProviderOrder?: string[]): AIProvider {
   
   return new AIProvider({
     googleApiKey: process.env.GOOGLE_API_KEY,
-    togetherApiKey: process.env.TOGETHER_API_KEY,
     openrouterApiKey: process.env.OPENROUTER_API_KEY,
     hyperbolicApiKey: process.env.HYPERBOLIC_API_KEY,
-    deepseekApiKey: process.env.DEEPSEEK_API_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
     groqApiKey: process.env.GROQ_API_KEY,
-    ollamaBaseUrl: process.env.OLLAMA_BASE_URL,
-    ollamaModel: process.env.OLLAMA_MODEL,
     providerOrder: customProviderOrder || envProviderOrder,
   });
 }
