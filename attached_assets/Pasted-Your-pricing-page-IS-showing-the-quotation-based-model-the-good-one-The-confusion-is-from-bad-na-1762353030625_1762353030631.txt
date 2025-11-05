@@ -1,0 +1,58 @@
+Your /pricing page IS showing the quotation-based model (the good one). The confusion is from bad naming and leftover dead code.
+
+Let me show you exactly what to delete:
+
+What You're ACTUALLY Using (Keep This)
+✅ /pricing page → Shows quotation model ($300 + resources × $5 × complexity)
+
+File: SubscriptionPricing.tsx (badly named, but correct content)
+Shows: FREE starter, $675, $1,800, $5,000 tiers with add-ons
+CTA: Goes to homepage hero
+✅ /quotation page → User pastes URL, gets instant quote
+
+This is your main flow
+✅ customOrders table → Stores the actual orders
+
+Dead Code To DELETE (Not Being Used)
+1. Old Subscription Tier System ❌
+
+Show 3 more
+
+Decided on code cleanup strategy
+Perfect. Here's exactly what's DEAD CODE that needs deleting:
+
+Files To DELETE (100% Dead, Not Used)
+❌ src/pages/SubscriptionSuccess.tsx  (PayPal subscription activation - you don't use subscriptions)
+❌ src/pages/SubscriptionCancel.tsx   (Subscription cancel page - not needed)
+❌ server/paypal-subscriptions.ts     (Entire subscription backend)
+❌ server/tier-validation-middleware.ts (Validates old Free/Pro/Enterprise tiers)
+❌ src/components/UpgradePrompt.tsx   (Prompts users to upgrade tiers)
+
+Routes To DELETE from App.tsx
+❌ <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+❌ <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
+
+Database Tables To KEEP (But Ignore)
+DON'T delete these tables yet (might have legacy data):
+
+users table → Keep (has plan column, but you're not using it)
+paymentHistory → Keep for now
+subscriptionEvents → Keep for now
+Just IGNORE the subscription fields. Focus on customOrders table.
+
+The ONE Config Change Needed
+server/tier-config.ts - This is tricky. You're using it in enhanced-generator.ts BUT only for the source limits (Reddit, DevTo, etc.).
+
+Option 1: Keep it, but treat all users as "enterprise" tier
+Option 2: Delete it and hardcode source limits directly in search-service.ts
+
+I recommend Option 1 for now.
+
+Want me to delete all the dead code right now?
+I can:
+
+Delete the 5 files listed above
+Remove the 2 routes from App.tsx
+Rename SubscriptionPricing.tsx → Pricing.tsx (better naming)
+Update the progress tracker
+This will clean up ~2,000 lines of dead code.
