@@ -12,14 +12,11 @@ import DashboardNew from "./pages/DashboardNew";
 import TeamDashboard from "./pages/TeamDashboard";
 import EnterpriseDashboard from "./pages/EnterpriseDashboard";
 import EnterpriseSettings from "./pages/EnterpriseSettings";
-import SubscriptionPricing from "./pages/SubscriptionPricing";
+import Quotation from "./pages/Quotation";
 import TeamManagement from "./pages/TeamManagement";
 import Billing from "./pages/Billing";
 import Activity from "./pages/Activity";
-import SubscriptionSuccess from "./pages/SubscriptionSuccess";
-import SubscriptionCancel from "./pages/SubscriptionCancel";
 import GenerationProgress from "./pages/GenerationProgress";
-import Quotation from "./pages/Quotation";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -38,13 +35,10 @@ const App = () => (
           <Route path="/dashboard/team" element={<TeamDashboard />} />
           <Route path="/dashboard/enterprise" element={<EnterpriseDashboard />} />
           <Route path="/settings" element={<EnterpriseSettings />} />
-          <Route path="/pricing" element={<SubscriptionPricing />} />
+          <Route path="/pricing" element={<Quotation />} />
           <Route path="/team" element={<TeamManagement />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/activity" element={<Activity />} />
-          <Route path="/subscription/success" element={<SubscriptionSuccess />} />
-          <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
-          <Route path="/quotation" element={<Quotation />} />
           <Route path="/generate/:sessionId" element={<GenerationProgress />} />
           <Route path="/generation/:sessionId" element={<GenerationProgress />} />
           <Route path="/admin" element={<AdminDashboard />} />
