@@ -8,7 +8,6 @@ import { progressTracker } from './progress-tracker';
 import { v4 as uuidv4 } from 'uuid';
 import themesRouter from './routes/themes';
 import extractThemeRouter from './routes/extract-theme';
-import subscriptionsRouter from './routes/subscriptions';
 import apiKeysRouter from './routes/api-keys';
 import webhooksRouter from './routes/webhooks';
 import supportRouter from './routes/support';
@@ -30,7 +29,6 @@ import draftsRouter from './routes/drafts';
 import { fetchImagesForExport, limitImagesForExport } from './image-utils';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
-import { canGenerateDocumentation, calculateSmartScaling, enforceTierLimits } from './tier-config';
 import { idempotencyMiddleware, generateIdempotencyKey } from './middleware/idempotency';
 import { validate } from './middleware/validation';
 import { generateDocsSchema } from './validation/schemas';
@@ -86,14 +84,6 @@ async function legacyVerifyApiKey(req: any, res: any, next: any) {
         error: 'Forbidden: API access requires Enterprise plan',
         message: 'Please upgrade to Enterprise to use the API',
         upgradeUrl: '/pricing'
-      });
-    }
-
-    // Check subscription status
-    if (user.subscription_status !== 'active') {
-      return res.status(403).json({ 
-        error: 'Forbidden: inactive subscription',
-        message: `Your subscription is ${user.subscription_status}. Please reactivate to use the API.`
       });
     }
 
@@ -246,10 +236,8 @@ router.post("/api/generate-docs",
       const userId = req.user?.databaseId || null;
       const userEmail = req.user?.email || null;
 
-      // Tier enforcement: Check user's plan and limits
+      // Set user plan (all users can generate documentation)
       let userPlan = 'free';
-      let generationCount = 0;
-      let upgradeSuggestion: string | undefined;
 
       if (userEmail) {
         const database = ensureDb();
@@ -258,7 +246,6 @@ router.post("/api/generate-docs",
         if (existingUsers.length > 0) {
           const user = existingUsers[0];
           userPlan = user.plan || 'free';
-          generationCount = user.generation_count || 0;
         } else {
           // Create new free user
           await database.insert(users).values({
@@ -267,26 +254,7 @@ router.post("/api/generate-docs",
             generation_count: 0
           });
         }
-
-        // Check if user can generate documentation based on tier limits
-        const canGenerate = canGenerateDocumentation(userPlan, generationCount);
-        if (!canGenerate.allowed) {
-          progressTracker.endSession(sessionId, 'error');
-          return res.status(403).json({ 
-            error: canGenerate.reason,
-            plan: userPlan,
-            generationCount,
-            upgradeUrl: '/pricing'
-          });
-        }
       }
-
-      // Calculate smart scaling recommendation (will be applied in pipeline)
-      // For now, we'll pass tier info to the pipeline
-      const tierInfo = {
-        plan: userPlan,
-        userEmail
-      };
 
       // Prefer enhanced research-driven pipeline; fallback to legacy flow only if it fails
       try {
@@ -2074,9 +2042,6 @@ router.use('/api/themes', themesRouter);
 
 // Mount extract-theme router
 router.use('/api/extract-theme', extractThemeRouter);
-
-// Mount subscriptions router
-router.use('/api/subscriptions', subscriptionsRouter);
 
 // Mount enterprise feature routers
 router.use(apiKeysRouter);
