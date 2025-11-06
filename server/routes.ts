@@ -2059,6 +2059,3 @@ const analyzeComplexityRouter = (await import('./routes/analyze-complexity')).de
 router.use('/api/analyze-complexity', analyzeComplexityRouter);
 
 export default router;
-  try {
-
-export default router;
