@@ -11,32 +11,32 @@ const RESEARCH_SOURCES: ResearchSource[] = [
   {
     id: 'stackoverflow',
     label: 'Stack Overflow',
-    image: '/attached_assets/images/Stack-Overflow-Logo-emblem-of-the-programming-community-transparent-png-image.png',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F8b7f4b5c9a0e4d3d8c7b6a5f4e3d2c1b?format=webp&width=100',
   },
   {
     id: 'github',
     label: 'GitHub Issues',
-    image: '/attached_assets/images/toppng.com-github-logo-524x512.png',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F5c9a0e4d3d8c7b6a5f4e3d2c1b8b7f4b?format=webp&width=100',
   },
   {
     id: 'youtube',
     label: 'YouTube',
-    image: '/attached_assets/images/toppng.com-youtube-icon-1024x1024.png',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F4d3d8c7b6a5f4e3d2c1b8b7f4b5c9a0e?format=webp&width=100',
   },
   {
     id: 'reddit',
     label: 'Reddit',
-    image: '/attached_assets/images/toppng.com-reddit-logo-reddit-icon-698x698.png',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F3d8c7b6a5f4e3d2c1b8b7f4b5c9a0e4d?format=webp&width=100',
   },
   {
     id: 'devto',
     label: 'DEV.to',
-    image: '/attached_assets/images/dev-rainbow.png',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F8c7b6a5f4e3d2c1b8b7f4b5c9a0e4d3d?format=webp&width=100',
   },
   {
     id: 'codeproject',
     label: 'CodeProject',
-    image: '/attached_assets/images/toppng.com-custom-software-development-web-application-development-451x333.png',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2Fc524d11d3a984ad6ba413cc77a150641%2F7b6a5f4e3d2c1b8b7f4b5c9a0e4d3d8c?format=webp&width=100',
   },
   {
     id: 'stackexchange',
