@@ -1184,6 +1184,8 @@ export default function GenerationProgress() {
                     className="w-full h-full border-0"
                     title="Website Preview"
                     sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#0E1317] to-[#12171D]">
