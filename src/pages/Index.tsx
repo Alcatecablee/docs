@@ -181,9 +181,17 @@ const Index = () => {
       return;
     }
 
-    // Navigate to quotation page for instant quote
+    // Generate a unique session ID and navigate to generation progress page
+    const sessionId = crypto.randomUUID();
     const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
-    navigate(`/quotation?url=${encodeURIComponent(normalizedUrl)}`);
+    
+    // Navigate to the generation progress page with URL and subdomain in state
+    navigate(`/generate/${sessionId}`, {
+      state: {
+        url: normalizedUrl,
+        subdomain: subdomain || undefined,
+      }
+    });
   };
 
   const downloadBlob = async (path: string, filename: string) => {
