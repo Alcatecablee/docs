@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --watch server --ignore \"**/*.timestamp-*.mjs\" --ext ts,tsx,js,json --exec \"tsx server/index.ts\"",
-    "build": "tsc --project tsconfig.server.json --outDir dist/server && vite build",
-    "build:server": "tsc --project tsconfig.server.json --outDir dist/server",
+    "build": "npm run build:server && vite build",
+    "build:server": "esbuild server/app.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/server/app.js --external:@neondatabase/serverless --external:express --external:bullmq --external:ioredis --external:sharp --external:pdfkit --external:docx --external:archiver --external:@supabase/supabase-js --external:pino --external:pino-http --external:drizzle-orm --external:postgres --external:cheerio --external:@opentelemetry/* --packages=external",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -99,6 +99,7 @@
     "drizzle-orm": "^0.44.6",
     "drizzle-zod": "^0.8.3",
     "embla-carousel-react": "^8.6.0",
+    "esbuild": "^0.27.0",
     "express": "^5.1.0",
     "image-size": "^2.0.2",
     "input-otp": "^1.4.2",
