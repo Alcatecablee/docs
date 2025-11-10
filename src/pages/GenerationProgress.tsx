@@ -435,15 +435,50 @@ export default function GenerationProgress() {
       const startGeneration = async () => {
         try {
           addActivityLog("⚙️ Initializing AI generation pipeline...", 'info');
-          const result = await apiRequest("/api/generate-docs", {
+          
+          // Step 1: Enqueue the job (returns immediately, no timeout!)
+          const enqueueResult = await apiRequest("/api/generate-docs-enqueue", {
             method: "POST",
             body: JSON.stringify({ url, sessionId, subdomain }),
           });
           
-          console.log("Generation completed:", result);
-          if (result.id) {
-            setDocumentationId(result.id);
-          }
+          const jobId = enqueueResult.jobId;
+          console.log("Job enqueued:", jobId);
+          addActivityLog(`🚀 Job queued: ${jobId}`, 'success');
+          
+          // Step 2: Poll for job status
+          const pollInterval = setInterval(async () => {
+            try {
+              const jobStatus = await apiRequest(`/api/jobs/${jobId}`, {
+                method: "GET",
+              });
+              
+              console.log("Job status:", jobStatus);
+              
+              if (jobStatus.job.status === 'completed') {
+                clearInterval(pollInterval);
+                console.log("Generation completed:", jobStatus.job.result);
+                
+                if (jobStatus.job.result?.documentationId) {
+                  setDocumentationId(jobStatus.job.result.documentationId);
+                  addActivityLog("✅ Documentation generated successfully!", 'success');
+                } else {
+                  console.error("No documentationId in result:", jobStatus.job.result);
+                }
+              } else if (jobStatus.job.status === 'failed') {
+                clearInterval(pollInterval);
+                throw new Error(jobStatus.job.error || "Job failed");
+              }
+              // If status is 'queued' or 'running', keep polling
+            } catch (pollError: any) {
+              console.error("Polling error:", pollError);
+              // Don't clear interval on polling errors, keep trying
+            }
+          }, 2000); // Poll every 2 seconds
+          
+          // Cleanup polling on unmount
+          return () => clearInterval(pollInterval);
+          
         } catch (error: any) {
           console.error("Generation failed:", error);
           if (!runFinishedRef.current) {
