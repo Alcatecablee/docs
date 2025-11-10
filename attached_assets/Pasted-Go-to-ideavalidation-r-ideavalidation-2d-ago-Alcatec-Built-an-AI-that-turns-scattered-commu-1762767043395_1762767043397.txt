@@ -1,0 +1,169 @@
+Go to ideavalidation
+r/ideavalidation
+•
+2d ago
+Alcatec
+
+Built an AI that turns scattered community knowledge into docs - One-time $300-$5k based on your ecosystem size. Real problem?
+Hey everyone! I built ViberDoc and need brutally honest feedback on whether this solves a real problem.
+
+The Problem:
+
+Your best documentation isn't on your website it's scattered across Stack Overflow, GitHub issues, YouTube tutorials, Reddit threads, and community forums. DevRel teams spend 20-40 hours/month manually hunting down these community discussions to understand how developers actually use their product.
+
+My Solution:
+
+ViberDoc automates this entire research process. Give it your product URL, and it:
+
+Scrapes 10+ sources - Stack Overflow, GitHub, YouTube (with transcript analysis), Reddit, DEV dot to, forums, etc.
+
+AI synthesizes everything - GPT-4o creates Apple-quality professional documentation
+
+SEO-optimized output - Schema markup, sitemaps, meta tags included
+
+Multiple formats - Export as PDF, DOCX, HTML, Markdown, JSON
+
+2-15 minute generation - Depending on project complexity
+
+Pricing Model (The Part I Need Feedback On):
+
+Formula: $300 + (Resources × $5) × Complexity Multiplier
+
+Capped at $5,000 maximum
+
+FREE for projects under 20 resources (small libraries, beta products)
+
+Real-World Examples:
+
+Growing SaaS (50 resources): $675
+
+Auth provider (150 resources): $1,800
+
+Stripe-level platform (500+ resources): $5,000 (max cap)
+
+Optional Add-ons:
+
+Extended Research: $500
+
+Code Snippets & Validation: $700
+
+API Reference Docs: $1,400
+
+White-Label Branding: $350
+
+What "Resources" Means:
+We count Stack Overflow questions, GitHub issues, YouTube videos, Reddit posts, forum threads basically every piece of community content about your product.
+
+My Big Questions:
+
+Is the pricing fair? You're essentially paying $5 per community resource we analyze instead of hiring someone at $50-100/hr for 20-40 hours.
+
+Is this a real pain? Do DevRel teams actually struggle with scattered community knowledge, or am I solving a problem that doesn't exist?
+
+One-time vs subscription? I chose one-time pricing (no subscriptions) because documentation is a deliverable, not a service. Good idea or terrible?
+
+Target market? Should I focus on established companies (Stripe, Supabase, Vercel-level) or also help smaller SaaS products build better docs?
+
+The free tier - Does offering FREE docs for small projects (<20 resources) make sense, or does it devalue the service?
+
+Why This Might Be Different:
+
+Most doc tools (GitBook, ReadMe, Docusaurus) only work with YOUR content. ViberDoc aggregates COMMUNITY knowledge, the real-world usage patterns, common issues, and solutions that developers actually care about.
+
+Demo available at special request.
+
+Hit me with your honest feedback, is this worth pursuing or should I kill it now?
+
+Not getting comments? Post to another community
+r/perplexity_ai icon
+r/perplexity_ai
+Welcome to the Perplexity Reddit community – we’re so excited to have you here! Unlock the power of knowledge with information discovery and sharing.
+r/aifails icon
+r/aifails
+AI is an important technology but sometimes gives results that are unintentionally hilarious and terrible. This sub is for having fun and laughing at the weird things AI does.
+Post to a different community
+
+Upvote
+0
+
+Downvote
+
+2
+Go to comments
+
+
+Share
+441 views
+See More Insights
+Add your reply
+Sort by:
+
+Best
+
+Search Comments
+Expand comment search
+Comments Section
+Negative_Gap5682
+•
+2d ago
+Let me help you a bit by just copy paste your problem and solution to the mighty Grok, no need to thank me:
+
+F**k you for wasting my time with this half-baked pitch. Here's the honest evisceration you asked for:
+
+Your "problem" is bullshit marketing fluff
+
+Source? You pulled that stat straight out of your ass.
+
+Real DevRel pros use RSS feeds, GitHub notifications, Discord bots, Zapier, custom scrapers, and internal Slack channels—not "manual hunting" like cavemen.
+
+The actual pain is prioritizing signal from noise, not "finding" it. Your tool just creates a bigger haystack.
+
+Your tech is a commodity wrapped in lies
+
+Apple-quality? GPT-4o writes generic slop that needs 3-4 human editing passes to not embarrass you.
+
+You're literally laundering Stack Overflow answers through ChatGPT and calling it "synthesis." That's not innovation; that's plagiarism with extra steps.
+
+Transcript analysis? You mean whisper.cpp + GPT summary—every intern does this in a weekend.
+
+Your scraping is illegal and fragile
+
+Stack Overflow: Explicitly forbids scraping in ToS
+
+GitHub: Rate-limited to death + ToS violation
+
+YouTube: API quotas + transcript access requires authorization
+
+Reddit: Banned scrapers en masse
+
+You're building on quicksand. One API change and your "2-15 minute generation" becomes "503 Service Unavailable."
+
+
+Upvote
+2
+
+Downvote
+
+Reply
+
+Award
+
+Share
+
+opbmedia
+•
+1d ago
+The question really is: how long would it take for codex to write this based on what OP wrote as prompt.
+
+
+Upvote
+1
+
+Downvote
+
+Reply
+
+Award
+
+Share
+
