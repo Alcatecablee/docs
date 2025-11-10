@@ -181,6 +181,27 @@ const Index = () => {
       return;
     }
 
+    // Check authentication - Supabase auth is required
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        setShowSignIn(true);
+        toast({
+          title: 'Sign in required',
+          description: 'Please sign in to generate documentation',
+        });
+        return;
+      }
+    } catch (e) {
+      console.warn('Auth check failed', e);
+      setShowSignIn(true);
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to continue',
+      });
+      return;
+    }
+
     // Generate a unique session ID and navigate to generation progress page
     const sessionId = crypto.randomUUID();
     const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
