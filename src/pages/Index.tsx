@@ -127,7 +127,6 @@ const Index = () => {
   ];
 
   const handleGenerate = async () => {
-    setIsGenerating(true);
     if (!url) {
       toast({
         title: 'URL Required',
@@ -169,6 +168,9 @@ const Index = () => {
       });
       return;
     }
+
+    // Set generating state only after all validation passes
+    setIsGenerating(true);
 
     // Generate a unique session ID and navigate to generation progress page
     const sessionId = crypto.randomUUID();
