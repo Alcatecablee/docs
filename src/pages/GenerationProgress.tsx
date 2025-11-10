@@ -175,6 +175,7 @@ export default function GenerationProgress() {
   const retryCountRef = useRef<number>(0);
   const generationStartedRef = useRef<boolean>(false);
   const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const addActivityLog = useCallback((message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info', data?: ActivityLog['data']) => {
     setActivityLogs(prev => [...prev, {
@@ -376,6 +377,10 @@ export default function GenerationProgress() {
           if (heartbeatIntervalRef.current) {
             clearInterval(heartbeatIntervalRef.current);
           }
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
           addActivityLog('🎉 Documentation generation completed successfully! Your professional docs are ready.', 'success');
         }
         
@@ -387,6 +392,10 @@ export default function GenerationProgress() {
           eventSource.close();
           if (heartbeatIntervalRef.current) {
             clearInterval(heartbeatIntervalRef.current);
+          }
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
           }
           addActivityLog(`❌ Error: ${progressData.error || 'An error occurred'}`, 'error');
         }
@@ -423,6 +432,10 @@ export default function GenerationProgress() {
         setErrorMessage("Connection lost after 5 retries. Please try again.");
         runFinishedRef.current = true;
         localStorage.removeItem(`generation_${sessionId}`);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
         addActivityLog("❌ Connection lost after 5 retries. Please try again.", 'error');
       }
       
@@ -446,8 +459,23 @@ export default function GenerationProgress() {
           console.log("Job enqueued:", jobId);
           addActivityLog(`🚀 Job queued: ${jobId}`, 'success');
           
+          // Clear any existing polling interval to prevent duplicates
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          
           // Step 2: Poll for job status
-          const pollInterval = setInterval(async () => {
+          pollingIntervalRef.current = setInterval(async () => {
+            // Defensive guard: bail out if run is already finished
+            if (runFinishedRef.current) {
+              if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
+              }
+              return;
+            }
+            
             try {
               const jobStatus = await apiRequest(`/api/jobs/${jobId}`, {
                 method: "GET",
@@ -456,7 +484,12 @@ export default function GenerationProgress() {
               console.log("Job status:", jobStatus);
               
               if (jobStatus.job.status === 'completed') {
-                clearInterval(pollInterval);
+                // Clear polling interval on completion
+                if (pollingIntervalRef.current) {
+                  clearInterval(pollingIntervalRef.current);
+                  pollingIntervalRef.current = null;
+                }
+                
                 console.log("Generation completed:", jobStatus.job.result);
                 
                 if (jobStatus.job.result?.documentationId) {
@@ -466,21 +499,44 @@ export default function GenerationProgress() {
                   console.error("No documentationId in result:", jobStatus.job.result);
                 }
               } else if (jobStatus.job.status === 'failed') {
-                clearInterval(pollInterval);
-                throw new Error(jobStatus.job.error || "Job failed");
+                // Clear polling interval on failure
+                if (pollingIntervalRef.current) {
+                  clearInterval(pollingIntervalRef.current);
+                  pollingIntervalRef.current = null;
+                }
+                
+                if (!runFinishedRef.current) {
+                  runFinishedRef.current = true;
+                  setHasError(true);
+                  setErrorMessage(jobStatus.job.error || "Job failed");
+                  addActivityLog(`❌ Generation failed: ${jobStatus.job.error || "Unknown error"}`, 'error');
+                  
+                  if (eventSourceRef.current) {
+                    eventSourceRef.current.close();
+                  }
+                  if (heartbeatIntervalRef.current) {
+                    clearInterval(heartbeatIntervalRef.current);
+                  }
+                  localStorage.removeItem(`generation_${sessionId}`);
+                }
               }
               // If status is 'queued' or 'running', keep polling
             } catch (pollError: any) {
               console.error("Polling error:", pollError);
-              // Don't clear interval on polling errors, keep trying
+              // Don't clear interval on polling errors unless it's critical
+              // The interval will be cleared on component unmount
             }
           }, 2000); // Poll every 2 seconds
           
-          // Cleanup polling on unmount
-          return () => clearInterval(pollInterval);
-          
         } catch (error: any) {
           console.error("Generation failed:", error);
+          
+          // Clear polling interval on error
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          
           if (!runFinishedRef.current) {
             setHasError(true);
             setErrorMessage(error.message || "Failed to generate documentation");
@@ -552,6 +608,10 @@ export default function GenerationProgress() {
       }
       if (elapsedTimerRef.current) {
         clearInterval(elapsedTimerRef.current);
+      }
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
       if (runFinishedRef.current) {
         localStorage.removeItem(`generation_${sessionId}`);
