@@ -30,8 +30,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest, apiRequestBlob } from '@/lib/queryClient';
+import { apiRequestBlob } from '@/lib/queryClient';
 import Header from '@/components/Header';
 import SignInDialog from '@/components/SignInDialog';
 import { supabase } from '@/lib/supabaseClient';
@@ -98,6 +97,7 @@ const Index = () => {
   const [selectedTheme, setSelectedTheme] = useState<Theme>(getDefaultTheme());
   const { toast } = useToast();
   const [showSignIn, setShowSignIn] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const stages = [
     {
@@ -126,40 +126,8 @@ const Index = () => {
     },
   ];
 
-  const generateMutation = useMutation({
-    mutationFn: async ({
-      url,
-      sessionId,
-      subdomain,
-    }: {
-      url: string;
-      sessionId: string;
-      subdomain?: string;
-    }) => {
-      return apiRequest('/api/generate-docs', {
-        method: 'POST',
-        body: JSON.stringify({ url, sessionId, subdomain }),
-      });
-    },
-    onSuccess: (data) => {
-      setProgress(100);
-      setGeneratedDoc(data);
-      toast({
-        title: 'Documentation Generated!',
-        description: 'Your professional documentation is ready',
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Error generating documentation:', error);
-      toast({
-        title: 'Generation Failed',
-        description: error.message || 'Failed to generate documentation. Please try again.',
-        variant: 'destructive',
-      });
-    },
-  });
-
   const handleGenerate = async () => {
+    setIsGenerating(true);
     if (!url) {
       toast({
         title: 'URL Required',
@@ -213,6 +181,9 @@ const Index = () => {
         subdomain: subdomain || undefined,
       }
     });
+    
+    // Reset generating state after navigation
+    setIsGenerating(false);
   };
 
   const downloadBlob = async (path: string, filename: string) => {
@@ -367,13 +338,13 @@ const Index = () => {
                       {/* Generate Button */}
                       <Button
                         onClick={handleGenerate}
-                        disabled={!url || generateMutation.isPending}
+                        disabled={!url || isGenerating}
                         className="h-14 px-8 mr-1 bg-[rgb(102,255,228)] hover:bg-white text-[rgb(14,19,23)] font-bold text-base rounded-full uppercase tracking-wider transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {generateMutation.isPending ? (
+                        {isGenerating ? (
                           <span className="flex items-center gap-2">
                             <ArrowPathIcon className="h-5 w-5 animate-spin" />
-                            Generating...
+                            Starting...
                           </span>
                         ) : (
                           <span className="flex items-center gap-2">
