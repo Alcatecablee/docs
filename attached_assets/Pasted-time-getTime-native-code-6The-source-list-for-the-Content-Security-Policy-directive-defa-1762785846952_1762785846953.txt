@@ -1,0 +1,39 @@
+time: ƒ getTime() { [native code] }
+6The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+6The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+6The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509640700461056/security/?sentry_key=74a33d973a69190986eba8f4bca540d2'. The query component, including the '?', will be ignored.Understand this error
+main-64e33043eec5f547.js:5 Replit.com version e606f262
+/api/progress/a892f240-f580-4910-aeb0-418647b54821:1  Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-B5A35zds.js:688 SSE error: Event
+Me.onerror @ index-B5A35zds.js:688Understand this error
+/api/generate-docs:1  Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-B5A35zds.js:688 Generation failed: Error: Network request failed: Request failed (500): A server error has occurred
+
+FUNCTION_INVOCATION_FAILED
+
+cpt1::lhmvw-1762785745976-43cc9adbd0cd
+
+    at Rr (index-B5A35zds.js:337:37167)
+    at async index-B5A35zds.js:688:4195
+(anonymous) @ index-B5A35zds.js:688Understand this error
+main-64e33043eec5f547.js:5 [Coframe] Failed to set cookie coframe.user.token for domain: replit.com Object
+(anonymous) @ main-64e33043eec5f547.js:5Understand this error
+main-64e33043eec5f547.js:5 [Coframe] Failed to set cookie coframe.cvc for domain: replit.com Object
+(anonymous) @ main-64e33043eec5f547.js:5Understand this error
+main-64e33043eec5f547.js:5 [Coframe] Failed to set cookie coframe.lastVisitTime for domain: replit.com Object
+(anonymous) @ main-64e33043eec5f547.js:5Understand this error
+static.ads-twitter.com/uwt.js:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+/api/progress/a892f240-f580-4910-aeb0-418647b54821:1  Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-B5A35zds.js:688 SSE error: Event
+Me.onerror @ index-B5A35zds.js:688Understand this error
+px.ads.linkedin.com/attribution_trigger?pid=6858996&time=1762785747071&url=https%3A%2F%2Freplit.com%2F:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/attribution_trigger?pid=6858996&time=1762785747071&url=https%3A%2F%2Freplit.com%2F:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/wa/?medium=fetch&fmt=g:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/insight_tag_errors.gif?v=2&pid=6858996&error=version%3A%20275%20%7C%20WebsiteActions-275-TypeError%3A%20Failed%20to%20fetch%20(px.ads.linkedin.com)%3B%20ErrorData%3A%20%7B%22domain%22%3A%22replit.com%22%2C%22requestFetcher%22%3A%22fetch-keepalive%22%2C%22body%22%3A%22H4sIAAAAAAAACkWPQUrDQBiFrxLeemLTNGmS2VXQEnAhbelGRKaZv%2B2Pk%2BmYmVCkFLyDF%2FAsHsWTSFrQ5XsffLx3gmPtIZ%2BmZV5W1fRZwDcdu7CmzvPBQqZFLhC4JchxMU2LMi%2ByoioSAX1oFVtIdOQMh5vm0EKg7wwk9iE4L0ejfzSCgFM7WnEwBInFhUQ%2FH5%2FfX7c9Gx0p53ykrI48B%2FLRkcM%2BmtUQONJmqJa8s8os6K0nH2oNiTwv1WZcFbFO80mcqWQcN5RmsWqIisk2UZM8gQD7VaesNyqQhtwq40nA8L26WjCEOSsbrqFl30Ce4PxmGVQgyDg7D5YHtq%2Bkaztz7k%2BzpxbS9sYI%2BMu%2B1bsb7j3O5ncv63pZr3D%2BBWX4GyNlAQAA%22%7D&href=https%3A%2F%2Freplit.com%2F:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/wa/?medium=beacon&fmt=g:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/wa/?medium=fetch&fmt=g:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+insight_tag_errors.gif?v=2&pid=6858996&error=version%3A%20275%20%7C%20WebsiteActions-275-TypeError%…:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/wa/?medium=beacon&fmt=g:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/wa/?medium=fetch&fmt=g:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+insight_tag_errors.gif?v=2&pid=6858996&error=version%3A%20275%20%7C%20WebsiteActions-275-TypeError%…:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+px.ads.linkedin.com/wa/?medium=beacon&fmt=g:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
