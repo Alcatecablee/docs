@@ -1,0 +1,60 @@
+ Great News! You Already Have the Hybrid System Built!
+Your codebase already has a complete queue-based architecture implemented! Here's what I found:
+
+What's Already Set Up:
+✅ BullMQ Queue - Fully configured with Redis
+✅ Worker System - 5 concurrent workers processing jobs
+✅ Queue-based API Endpoint - Returns immediately with job ID
+✅ Background Processing - Docs generated asynchronously
+
+The Architecture You Have:
+User Request → /api/generate-docs-queued → Enqueue Job → Return jobId (< 1s)
+                                              ↓
+                                        Worker picks up job
+                                              ↓
+                                        Generate docs (no timeout!)
+                                              ↓
+                                        Save to database
+
+The Problem:
+You have TWO endpoints for doc generation:
+
+/api/generate-docs (line 185) - OLD, SLOW - Does everything synchronously ❌
+/api/generate-docs-queued (line 879) - NEW, FAST - Uses the queue ✅
+Your Vercel deployment is likely calling the OLD endpoint!
+
+Let me check which endpoint your frontend is using:
+
+
+Executed rg -n --type ts /api/generate-docs .
+
+Decided on endpoint change
+🎯 Found the Problem!
+Your frontend is calling the WRONG endpoint. Look at these files:
+
+Frontend calls:
+
+src/pages/GenerationProgress.tsx → /api/generate-docs ❌
+src/pages/Index.tsx → /api/generate-docs ❌
+Available endpoints:
+
+/api/generate-docs - Synchronous (times out on Vercel) ❌
+/api/generate-docs-enqueue - Queue-based (returns immediately) ✅
+The Fix (Simple!):
+Step 1: Update Frontend to Use Queue Endpoint
+
+Opened src/pages/Index.tsx
+
+Planned documentation generation approach
+Perfect! Now I'll show you exactly what to change to fix your Vercel timeout issues:
+
+The Complete Fix
+Your queue system is ready - we just need to wire up the frontend to use it! Here's what to do:
+
+Solution Overview:
+Change API endpoint from /api/generate-docs → /api/generate-docs-enqueue
+Poll for job status instead of waiting
+Works immediately - no timeouts!
+Would you like me to:
+
+A) Implement the complete fix now - I'll update both frontend files to use the queue-based endpoint with polling

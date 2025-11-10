@@ -16,7 +16,8 @@
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "dist/server/**"
     }
   },
   "rewrites": [
