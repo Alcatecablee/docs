@@ -1,0 +1,53 @@
+# Development files
+node_modules
+*.log
+npm-debug.log*
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage
+tests
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+playwright.config.ts
+.playwright
+
+# Build artifacts (frontend is built by Vercel)
+dist
+.vite
+*.timestamp-*.mjs
+
+# Development tools
+.husky
+.git
+.gitignore
+
+# Documentation and config not needed in production
+README.md
+DEPLOYMENT_FIXES.md
+EDGE_DEPLOYMENT_GUIDE.md
+PRODUCTION_HARDENING_*.md
+MULTI_PROVIDER_LLM_ROADMAP.md
+ENTERPRISE_FEATURES_ANALYSIS.md
+COMPLIANCE.md
+OBSERVABILITY_SETUP.md
+
+# Local development config
+wrangler.toml
+.local
+
+# IDE
+.vscode
+.idea
+
+# Database migrations (schema is in code)
+migrations
+
+# Temporary files
+tmp
+temp
+attached_assets

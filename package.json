@@ -84,6 +84,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/prismjs": "^1.26.5",
     "@types/ws": "^8.18.1",
+    "@vercel/node": "^5.5.5",
     "archiver": "^7.0.1",
     "bullmq": "^5.61.2",
     "cheerio": "^1.1.2",
