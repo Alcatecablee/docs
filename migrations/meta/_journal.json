@@ -15,6 +15,13 @@
       "when": 1761128876300,
       "tag": "0001_cynical_masked_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763127824100,
+      "tag": "0002_far_raza",
+      "breakpoints": true
     }
   ]
 }
