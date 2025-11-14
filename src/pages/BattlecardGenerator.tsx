@@ -178,18 +178,17 @@ const BattlecardGenerator = () => {
 
       eventSource.onerror = () => {
         eventSource.close();
-        if (isGenerating) {
-          setIsGenerating(false);
-          toast({
-            title: 'Connection Lost',
-            description: 'Lost connection to progress updates. Please check dashboard for results.',
-            variant: 'destructive',
-          });
-        }
+        setIsGenerating(false);
+        toast({
+          title: 'Connection Lost',
+          description: 'Lost connection to progress updates. Please check dashboard for results.',
+          variant: 'destructive',
+        });
       };
 
     } catch (error: any) {
       console.error('Generation failed:', error);
+      setIsGenerating(false);
       toast({
         title: 'Generation Failed',
         description: error.message || 'Failed to generate battlecard',
@@ -197,8 +196,6 @@ const BattlecardGenerator = () => {
       });
       setCurrentStage('Failed');
       setCurrentMessage(error.message || 'An error occurred');
-    } finally {
-      setIsGenerating(false);
     }
   };
 
