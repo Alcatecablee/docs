@@ -16,8 +16,8 @@ tests
 playwright.config.ts
 .playwright
 
-# Build artifacts (frontend is built by Vercel)
-dist
+# Build artifacts (frontend is built by Vercel, but keep server build)
+dist/client
 .vite
 *.timestamp-*.mjs
 
