@@ -1,0 +1,113 @@
+client:495 [vite] connecting...
+client:618 [vite] connected.
+chunk-FJ2A54M7.js?v=465b53f5:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+react-router-dom.js?v=465b53f5:4393 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ react-router-dom.js?v=465b53f5:4393
+logDeprecation @ react-router-dom.js?v=465b53f5:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=465b53f5:4399
+(anonymous) @ react-router-dom.js?v=465b53f5:5271
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=465b53f5:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=465b53f5:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=465b53f5:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=465b53f5:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=465b53f5:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=465b53f5:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=465b53f5:19447
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=465b53f5:18868
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=465b53f5:9119
+commitRootImpl @ chunk-FJ2A54M7.js?v=465b53f5:19432
+commitRoot @ chunk-FJ2A54M7.js?v=465b53f5:19277
+finishConcurrentRender @ chunk-FJ2A54M7.js?v=465b53f5:18805
+performConcurrentWorkOnRoot @ chunk-FJ2A54M7.js?v=465b53f5:18718
+workLoop @ chunk-FJ2A54M7.js?v=465b53f5:197
+flushWork @ chunk-FJ2A54M7.js?v=465b53f5:176
+performWorkUntilDeadline @ chunk-FJ2A54M7.js?v=465b53f5:384
+react-router-dom.js?v=465b53f5:4393 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ react-router-dom.js?v=465b53f5:4393
+logDeprecation @ react-router-dom.js?v=465b53f5:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=465b53f5:4402
+(anonymous) @ react-router-dom.js?v=465b53f5:5271
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=465b53f5:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=465b53f5:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=465b53f5:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=465b53f5:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=465b53f5:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=465b53f5:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=465b53f5:19447
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=465b53f5:18868
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=465b53f5:9119
+commitRootImpl @ chunk-FJ2A54M7.js?v=465b53f5:19432
+commitRoot @ chunk-FJ2A54M7.js?v=465b53f5:19277
+finishConcurrentRender @ chunk-FJ2A54M7.js?v=465b53f5:18805
+performConcurrentWorkOnRoot @ chunk-FJ2A54M7.js?v=465b53f5:18718
+workLoop @ chunk-FJ2A54M7.js?v=465b53f5:197
+flushWork @ chunk-FJ2A54M7.js?v=465b53f5:176
+performWorkUntilDeadline @ chunk-FJ2A54M7.js?v=465b53f5:384
+content.js:3 time: ƒ getTime() { [native code] }
+chunk-VBZ6NX6V.js?v=465b53f5:340 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-VBZ6NX6V.js?v=465b53f5:340
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=465b53f5:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=465b53f5:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=465b53f5:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=465b53f5:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=465b53f5:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=465b53f5:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=465b53f5:19447
+commitRootImpl @ chunk-FJ2A54M7.js?v=465b53f5:19416
+commitRoot @ chunk-FJ2A54M7.js?v=465b53f5:19277
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=465b53f5:18895
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=465b53f5:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=465b53f5:18627
+battlecard:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) <input data-lov-id=​"src/​components/​SignInDialog.tsx:​118:​16" data-lov-name=​"Input" data-component-path=​"src/​components/​SignInDialog.tsx" data-component-line=​"118" data-component-file=​"SignInDialog.tsx" data-component-name=​"Input" data-component-content=​"%7B%22placeholder%22%3A%22Your%20password%22%2C%22className%22%3A%22h-12%20bg-white%2F10%20border-white%2F20%20text-white%20placeholder-white%2F50%20rounded-xl%20focus%3Aborder-%5Brgb(102%2C255%2C228)​%5D%20focus%3Aring-2%20focus%3Aring-%5Brgb(102%2C255%2C228)​%5D%2F20%20transition-all%22%7D" type=​"password" class=​"flex w-full border px-3 py-2 text-base ring-offset-background duration-200 file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-primary focus-visible:​ring-offset-2 focus-visible:​border-primary disabled:​cursor-not-allowed disabled:​opacity-50 hover:​border-accent md:​text-sm min-h-[44px]​ h-12 bg-white/​10 border-white/​20 text-white placeholder-white/​50 rounded-xl focus:​border-[rgb(102,255,228)​]​ focus:​ring-2 focus:​ring-[rgb(102,255,228)​]​/​20 transition-all" placeholder=​"Your password" value=​"Shacli1991">​flex
+SignInDialog.tsx:58  POST https://rublroiqnafhpufphijp.supabase.co/auth/v1/token?grant_type=password net::ERR_NAME_NOT_RESOLVED
+(anonymous) @ @supabase_supabase-js.js?v=465b53f5:4866
+_handleRequest2 @ @supabase_supabase-js.js?v=465b53f5:5147
+_request @ @supabase_supabase-js.js?v=465b53f5:5137
+signInWithPassword @ @supabase_supabase-js.js?v=465b53f5:6831
+signInWithEmailPassword @ SignInDialog.tsx:58
+callCallback2 @ chunk-FJ2A54M7.js?v=465b53f5:3674
+invokeGuardedCallbackDev @ chunk-FJ2A54M7.js?v=465b53f5:3699
+invokeGuardedCallback @ chunk-FJ2A54M7.js?v=465b53f5:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-FJ2A54M7.js?v=465b53f5:3736
+executeDispatch @ chunk-FJ2A54M7.js?v=465b53f5:7014
+processDispatchQueueItemsInOrder @ chunk-FJ2A54M7.js?v=465b53f5:7034
+processDispatchQueue @ chunk-FJ2A54M7.js?v=465b53f5:7043
+dispatchEventsForPlugins @ chunk-FJ2A54M7.js?v=465b53f5:7051
+(anonymous) @ chunk-FJ2A54M7.js?v=465b53f5:7174
+batchedUpdates$1 @ chunk-FJ2A54M7.js?v=465b53f5:18913
+batchedUpdates @ chunk-FJ2A54M7.js?v=465b53f5:3579
+dispatchEventForPluginEventSystem @ chunk-FJ2A54M7.js?v=465b53f5:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-FJ2A54M7.js?v=465b53f5:5478
+dispatchEvent @ chunk-FJ2A54M7.js?v=465b53f5:5472
+dispatchDiscreteEvent @ chunk-FJ2A54M7.js?v=465b53f5:5449
+SignInDialog.tsx:58 TypeError: Failed to fetch
+    at @supabase_supabase-js.js?v=465b53f5:4866:23
+    at _handleRequest2 (@supabase_supabase-js.js?v=465b53f5:5147:20)
+    at _request (@supabase_supabase-js.js?v=465b53f5:5137:22)
+    at SupabaseAuthClient.signInWithPassword (@supabase_supabase-js.js?v=465b53f5:6831:21)
+    at signInWithEmailPassword (SignInDialog.tsx:58:49)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=465b53f5:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=465b53f5:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=465b53f5:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=465b53f5:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=465b53f5:7014:11)
+_handleRequest2 @ @supabase_supabase-js.js?v=465b53f5:5149
+await in _handleRequest2
+_request @ @supabase_supabase-js.js?v=465b53f5:5137
+signInWithPassword @ @supabase_supabase-js.js?v=465b53f5:6831
+signInWithEmailPassword @ SignInDialog.tsx:58
+callCallback2 @ chunk-FJ2A54M7.js?v=465b53f5:3674
+invokeGuardedCallbackDev @ chunk-FJ2A54M7.js?v=465b53f5:3699
+invokeGuardedCallback @ chunk-FJ2A54M7.js?v=465b53f5:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-FJ2A54M7.js?v=465b53f5:3736
+executeDispatch @ chunk-FJ2A54M7.js?v=465b53f5:7014
+processDispatchQueueItemsInOrder @ chunk-FJ2A54M7.js?v=465b53f5:7034
+processDispatchQueue @ chunk-FJ2A54M7.js?v=465b53f5:7043
+dispatchEventsForPlugins @ chunk-FJ2A54M7.js?v=465b53f5:7051
+(anonymous) @ chunk-FJ2A54M7.js?v=465b53f5:7174
+batchedUpdates$1 @ chunk-FJ2A54M7.js?v=465b53f5:18913
+batchedUpdates @ chunk-FJ2A54M7.js?v=465b53f5:3579
+dispatchEventForPluginEventSystem @ chunk-FJ2A54M7.js?v=465b53f5:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-FJ2A54M7.js?v=465b53f5:5478
+dispatchEvent @ chunk-FJ2A54M7.js?v=465b53f5:5472
+dispatchDiscreteEvent @ chunk-FJ2A54M7.js?v=465b53f5:5449
