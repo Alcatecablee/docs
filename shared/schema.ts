@@ -135,6 +135,39 @@ export const discountCodes = pgTable("discount_codes", {
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Competitive intelligence battlecards
+export const battlecards = pgTable("battlecards", {
+  id: serial("id").primaryKey(),
+  competitor_name: text("competitor_name").notNull(),
+  competitor_url: text("competitor_url"),
+  user_id: integer("user_id"), // References users(id)
+  request_hash: text("request_hash").unique(), // Hash of competitor_name for deduplication
+  
+  // Structured intelligence data (JSON)
+  payload: jsonb("payload").notNull(), // Full BattlecardData structure
+  
+  // Generated assets
+  pdf_url: text("pdf_url"), // S3/storage URL for PDF
+  pdf_size_bytes: integer("pdf_size_bytes"),
+  
+  // Quality metrics
+  quality_score: decimal("quality_score", { precision: 5, scale: 2 }), // 0-100
+  total_sources: integer("total_sources").notNull().default(0),
+  reddit_sources: integer("reddit_sources").notNull().default(0),
+  stackoverflow_sources: integer("stackoverflow_sources").notNull().default(0),
+  github_sources: integer("github_sources").notNull().default(0),
+  youtube_sources: integer("youtube_sources").notNull().default(0),
+  
+  // Status tracking
+  status: text("status").notNull().default("processing"), // 'processing', 'completed', 'failed'
+  error_message: text("error_message"),
+  
+  // Timestamps
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow(),
+  completed_at: timestamp("completed_at"),
+});
+
 export const documentations = pgTable("documentations", {
   id: serial("id").primaryKey(),
   url: text("url").notNull(),

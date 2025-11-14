@@ -32,6 +32,8 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { TemplateRenderer } from './utils/template-renderer';
 import { DocumentationParser } from './utils/documentation-parser';
+import { battlecardOrchestrator } from './battlecard-orchestrator';
+import { battlecardGenerator } from './battlecard-generator';
 
 // Guard against undefined db
 function ensureDb() {
@@ -180,6 +182,166 @@ router.get("/api/progress/:sessionId", (req, res) => {
     progressTracker.endSession(sessionId);
   });
 });
+
+// ============================================================================
+// COMPETITIVE INTELLIGENCE - BATTLECARD ENDPOINTS
+// ============================================================================
+
+// Generate competitive intelligence battlecard
+const battlecardSchema = z.object({
+  competitorName: z.string().min(1, 'Competitor name is required'),
+  competitorUrl: z.string().url().optional(),
+});
+
+router.post("/api/competitive-intelligence", async (req, res) => {
+  try {
+    const { competitorName, competitorUrl } = battlecardSchema.parse(req.body);
+    const sessionId = `ci_${uuidv4()}`;
+    
+    console.log(`🎯 Starting battlecard generation for ${competitorName}`);
+
+    // Start generation (this runs async)
+    battlecardOrchestrator.generateBattlecard({
+      competitorName,
+      competitorUrl,
+      userId: null // TODO: Add auth when ready
+    }, sessionId)
+      .then((result) => {
+        console.log(`✅ Battlecard completed for ${competitorName}: ${result.pdfUrl}`);
+        progressTracker.emitActivity(sessionId, {
+          message: `Battlecard generated! Quality score: ${result.qualityScore}/100`,
+          type: 'success',
+          data: { battlecardId: result.battlecardId, pdfUrl: result.pdfUrl }
+        });
+        progressTracker.endSession(sessionId, 'success');
+      })
+      .catch((error) => {
+        console.error(`❌ Battlecard generation failed for ${competitorName}:`, error);
+        progressTracker.emitActivity(sessionId, {
+          message: `Generation failed: ${error.message}`,
+          type: 'error'
+        });
+        progressTracker.endSession(sessionId, 'error');
+      });
+
+    // Return session ID immediately for progress tracking
+    res.json({
+      sessionId,
+      message: `Researching ${competitorName}... Connect to /api/progress/${sessionId} for real-time updates`
+    });
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
+    console.error('Battlecard generation error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to generate battlecard'
+    });
+  }
+});
+
+// Get battlecard PDF by ID
+router.get("/api/battlecards/:id/pdf", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid battlecard ID' });
+    }
+
+    const battlecard = await battlecardOrchestrator.getBattlecard(id);
+    
+    if (battlecard.status !== 'completed') {
+      return res.status(202).json({
+        status: battlecard.status,
+        message: battlecard.status === 'processing' 
+          ? 'Battlecard is still being generated' 
+          : 'Battlecard generation failed'
+      });
+    }
+
+    // Generate PDF on the fly from stored data
+    const pdfBuffer = await battlecardGenerator.generatePDF(battlecard.payload as any);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${battlecard.competitor_name.replace(/[^a-z0-9]/gi, '_')}_Battlecard.pdf"`);
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('PDF download error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to generate PDF'
+    });
+  }
+});
+
+// Get battlecard data by ID (JSON)
+router.get("/api/battlecards/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid battlecard ID' });
+    }
+
+    const battlecard = await battlecardOrchestrator.getBattlecard(id);
+    
+    res.json({
+      id: battlecard.id,
+      competitorName: battlecard.competitor_name,
+      competitorUrl: battlecard.competitor_url,
+      status: battlecard.status,
+      qualityScore: battlecard.quality_score,
+      totalSources: battlecard.total_sources,
+      sources: {
+        reddit: battlecard.reddit_sources,
+        stackOverflow: battlecard.stackoverflow_sources,
+        github: battlecard.github_sources,
+        youtube: battlecard.youtube_sources
+      },
+      pdfUrl: battlecard.pdf_url,
+      createdAt: battlecard.created_at,
+      completedAt: battlecard.completed_at,
+      data: battlecard.payload
+    });
+
+  } catch (error) {
+    console.error('Battlecard fetch error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to fetch battlecard'
+    });
+  }
+});
+
+// List all battlecards
+router.get("/api/battlecards", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 20;
+    const battlecards = await battlecardOrchestrator.listBattlecards(null, limit);
+    
+    res.json({
+      battlecards: battlecards.map(bc => ({
+        id: bc.id,
+        competitorName: bc.competitor_name,
+        status: bc.status,
+        qualityScore: bc.quality_score,
+        totalSources: bc.total_sources,
+        pdfUrl: bc.pdf_url,
+        createdAt: bc.created_at,
+        completedAt: bc.completed_at
+      }))
+    });
+
+  } catch (error) {
+    console.error('Battlecards list error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to list battlecards'
+    });
+  }
+});
+
+// ============================================================================
+// END COMPETITIVE INTELLIGENCE ENDPOINTS
+// ============================================================================
 
 // Generate documentation endpoint
 router.post("/api/generate-docs", 
