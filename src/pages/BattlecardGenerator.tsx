@@ -107,10 +107,6 @@ const BattlecardGenerator = () => {
     }
 
     setIsGenerating(true);
-    setProgress(0);
-    setCurrentStage('Starting...');
-    setCurrentMessage('');
-    setGeneratedBattlecard(null);
 
     try {
       const response = await apiRequest('/api/competitive-intelligence', {
@@ -123,68 +119,12 @@ const BattlecardGenerator = () => {
 
       const sessionId = response.sessionId;
       
-      const eventSource = new EventSource(`/api/progress/${sessionId}`);
-      
-      eventSource.onmessage = (event) => {
-        try {
-          const update: ProgressUpdate = JSON.parse(event.data);
-          
-          if (update.stageName) {
-            setCurrentStage(update.stageName);
-          }
-          
-          setCurrentMessage(update.message);
-          
-          if (update.stage) {
-            const progressPercent = (update.stage / 4) * 100;
-            setProgress(progressPercent);
-          }
-
-          if (update.type === 'success' && update.data?.battlecardId) {
-            eventSource.close();
-            setTimeout(async () => {
-              try {
-                const battlecardData = await apiRequest(`/api/battlecards/${update.data.battlecardId}`);
-                setGeneratedBattlecard({
-                  id: battlecardData.id,
-                  competitor_name: battlecardData.competitorName,
-                  pdf_url: battlecardData.pdfUrl,
-                  status: battlecardData.status,
-                  quality_score: battlecardData.qualityScore || '0',
-                  total_sources: battlecardData.totalSources || 0,
-                  created_at: battlecardData.createdAt,
-                });
-                setProgress(100);
-                setCurrentStage('Complete');
-                setCurrentMessage('Battlecard generated successfully!');
-                setIsGenerating(false);
-                
-                toast({
-                  title: 'Success!',
-                  description: `Battlecard for ${competitorInput} generated successfully`,
-                });
-
-                loadRecentBattlecards();
-              } catch (error) {
-                console.error('Failed to fetch battlecard:', error);
-                setIsGenerating(false);
-              }
-            }, 1000);
-          }
-        } catch (e) {
-          console.error('Failed to parse progress update', e);
+      // Navigate to Mission Control progress page
+      navigate(`/battlecard/${sessionId}`, {
+        state: {
+          competitorName: competitorInput.trim(),
         }
-      };
-
-      eventSource.onerror = () => {
-        eventSource.close();
-        setIsGenerating(false);
-        toast({
-          title: 'Connection Lost',
-          description: 'Lost connection to progress updates. Please check dashboard for results.',
-          variant: 'destructive',
-        });
-      };
+      });
 
     } catch (error: any) {
       console.error('Generation failed:', error);
@@ -194,8 +134,6 @@ const BattlecardGenerator = () => {
         description: error.message || 'Failed to generate battlecard',
         variant: 'destructive',
       });
-      setCurrentStage('Failed');
-      setCurrentMessage(error.message || 'An error occurred');
     }
   };
 
