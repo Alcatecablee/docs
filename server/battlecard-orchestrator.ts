@@ -74,51 +74,105 @@ export class BattlecardOrchestrator {
         total_sources: 0
       }).returning();
 
-      progressTracker.emitActivity(effectiveSessionId, {
-        message: `Researching ${request.competitorName} across Reddit, GitHub, Stack Overflow, YouTube...`,
-        type: 'info'
-      }, 1, 'Research');
+      // Stage 1: Competitive Research
+      progressTracker.emit(`progress:${effectiveSessionId}`, {
+        stage: 1,
+        progress: 10,
+        stageName: 'Competitive Research',
+        description: 'Gathering comprehensive intelligence from multiple sources across the web',
+        activity: {
+          message: `🔍 Scanning Reddit, GitHub, Stack Overflow, and YouTube for ${request.competitorName}...`,
+          type: 'info'
+        }
+      });
 
-      // Step 1: Multi-source research
       const researchData = await this.performResearch(request.competitorName, effectiveSessionId);
+      const totalSources = this.getTotalSources(researchData);
 
-      progressTracker.emitActivity(effectiveSessionId, {
-        message: `Found ${this.getTotalSources(researchData)} sources. Analyzing competitive intelligence...`,
-        type: 'success'
-      }, 2, 'Analysis');
+      // Stage 2: Intelligence Extraction
+      progressTracker.emit(`progress:${effectiveSessionId}`, {
+        stage: 2,
+        progress: 40,
+        stageName: 'Intelligence Extraction',
+        description: 'AI-powered analysis extracting key insights, pricing, strengths, and weaknesses',
+        activity: {
+          message: `✅ Found ${totalSources} sources across ${this.getSourceDiversity(researchData)} platforms. Extracting insights...`,
+          type: 'success',
+          data: { sourcesFound: totalSources }
+        },
+        metrics: {
+          sourcesAnalyzed: totalSources,
+          reddit: researchData.redditPosts.length,
+          stackOverflow: researchData.stackOverflowAnswers.length,
+          github: researchData.gitHubIssues.length,
+          youtube: researchData.youtubeVideos.length
+        }
+      });
 
-      // Step 2: Extract competitive intelligence insights
       const battlecardData = await ciInsightExtractor.extractInsights(
         request.competitorName,
         researchData
       );
 
-      progressTracker.emitActivity(effectiveSessionId, {
-        message: `Extracted pricing, strengths, weaknesses, and sentiment. Generating PDF...`,
-        type: 'success'
-      }, 3, 'PDF Generation');
+      const insightsCount = battlecardData.strengths.length + battlecardData.weaknesses.length + 
+                           battlecardData.pricing.tiers.length;
 
-      // Step 3: Generate PDF
+      // Stage 3: Battlecard Generation
+      progressTracker.emit(`progress:${effectiveSessionId}`, {
+        stage: 3,
+        progress: 70,
+        stageName: 'Battlecard Generation',
+        description: 'Creating professional PDF battlecard with comprehensive competitive intelligence',
+        activity: {
+          message: `💡 Extracted ${insightsCount} key insights. Generating professional PDF battlecard...`,
+          type: 'success',
+          data: { insightsExtracted: insightsCount }
+        },
+        metrics: {
+          sourcesAnalyzed: totalSources,
+          insightsExtracted: insightsCount
+        }
+      });
+
       const pdfBuffer = await battlecardGenerator.generatePDF(battlecardData);
+      const pdfSizeKB = Math.round(pdfBuffer.length / 1024);
 
-      progressTracker.emitActivity(effectiveSessionId, {
-        message: `PDF generated (${Math.round(pdfBuffer.length / 1024)}KB). Uploading...`,
-        type: 'success'
-      }, 4, 'Upload');
+      progressTracker.emit(`progress:${effectiveSessionId}`, {
+        stage: 3,
+        progress: 85,
+        stageName: 'Battlecard Generation',
+        description: 'Creating professional PDF battlecard with comprehensive competitive intelligence',
+        activity: {
+          message: `📄 Generated ${pdfSizeKB}KB PDF with pricing, strengths, weaknesses, and sentiment analysis`,
+          type: 'success',
+          data: { pagesGenerated: 1 }
+        },
+        metrics: {
+          sourcesAnalyzed: totalSources,
+          insightsExtracted: insightsCount,
+          pdfPages: 1
+        }
+      });
 
-      // Step 4: Store PDF (for now, we'll store as base64 in the database or serve directly)
-      // TODO: Implement proper S3/storage upload in production
+      // Store PDF
       const pdfUrl = `/api/battlecards/${battlecard.id}/pdf`;
 
-      progressTracker.emitActivity(effectiveSessionId, {
-        message: `Battlecard complete! Calculating quality score...`,
-        type: 'success'
-      }, 5, 'Finalization');
+      // Stage 4: Quality Scoring
+      progressTracker.emit(`progress:${effectiveSessionId}`, {
+        stage: 4,
+        progress: 95,
+        stageName: 'Quality Scoring',
+        description: 'Evaluating completeness, source quality, and actionable insights',
+        activity: {
+          message: `⚖️ Calculating quality score based on ${totalSources} sources and ${insightsCount} insights...`,
+          type: 'info'
+        }
+      });
 
-      // Step 5: Calculate quality score
+      // Calculate quality score
       const qualityScore = this.calculateQualityScore(researchData, battlecardData);
 
-      // Step 6: Update database record
+      // Update database record
       if (!db) throw new Error('Database not initialized');
       
       await db.update(battlecards)
@@ -137,6 +191,27 @@ export class BattlecardOrchestrator {
           updated_at: new Date()
         })
         .where(eq(battlecards.id, battlecard.id));
+
+      // Final completion message
+      progressTracker.emit(`progress:${effectiveSessionId}`, {
+        stage: 4,
+        progress: 100,
+        stageName: 'Quality Scoring',
+        description: 'Evaluating completeness, source quality, and actionable insights',
+        complete: true,
+        battlecardId: battlecard.id,
+        pdfUrl,
+        activity: {
+          message: `🎉 Battlecard complete! Quality score: ${qualityScore}/100 from ${totalSources} sources`,
+          type: 'success'
+        },
+        metrics: {
+          sourcesAnalyzed: totalSources,
+          insightsExtracted: insightsCount,
+          pdfPages: 1,
+          qualityScore
+        }
+      });
 
       console.log(`✅ Battlecard generated successfully with quality score ${qualityScore}`);
 
@@ -282,6 +357,20 @@ export class BattlecardOrchestrator {
       data.devToArticles.length +
       data.forumPosts.length
     );
+  }
+
+  /**
+   * Get source diversity count (number of different platforms with content)
+   */
+  private getSourceDiversity(data: CIResearchData): number {
+    let count = 0;
+    if (data.redditPosts.length > 0) count++;
+    if (data.stackOverflowAnswers.length > 0) count++;
+    if (data.gitHubIssues.length > 0) count++;
+    if (data.youtubeVideos.length > 0) count++;
+    if (data.devToArticles.length > 0) count++;
+    if (data.forumPosts.length > 0) count++;
+    return count;
   }
 
   /**
