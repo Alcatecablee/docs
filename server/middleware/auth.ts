@@ -21,9 +21,24 @@ export async function verifySupabaseAuth(req: any, res: any, next: any) {
     const auth = req.headers.authorization || req.headers.Authorization;
     const token = auth && typeof auth === 'string' ? auth.split(' ')[1] : null;
     
+    // DEVELOPMENT ONLY: Allow bypassing auth for local testing
+    const isProduction = process.env.NODE_ENV === 'production';
+    const allowDevBypass = process.env.ALLOW_DEV_AUTH_BYPASS === 'true';
+    
+    if (!isProduction && allowDevBypass) {
+      console.warn('⚠️ DEV AUTH BYPASS ENABLED - Development mode only!');
+      // Create a stub user for development testing
+      req.user = {
+        id: 'dev-user',
+        email: 'dev@test.local',
+        databaseId: 1,
+        plan: 'pro'
+      };
+      return next();
+    }
+    
     // SECURITY: Require Supabase configuration in production
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      const isProduction = process.env.NODE_ENV === 'production';
       if (isProduction) {
         console.error('CRITICAL: Supabase credentials missing in production!');
         return res.status(500).json({ 
