@@ -12,7 +12,7 @@ const Header = () => {
 
   // Navigation links based on actual site sections and pages
   const navLinks = [
-    { name: "Demo", href: "#demo" },
+    { name: "Generate Battlecard", href: "/battlecard" },
     { name: "How It Works", href: "#how-it-works" },
     { name: "Features", href: "#features" },
     { name: "Pricing", href: "/pricing" },
