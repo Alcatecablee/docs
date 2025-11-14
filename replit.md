@@ -1,29 +1,55 @@
-# ViberDoc - Enterprise Intelligence Platform
+# ViberDoc - Competitive Intelligence Platform
 
 ## Strategic Direction (Updated November 14, 2025)
 
-**PIVOT IN PROGRESS:** Transitioning from "DevRel documentation generator" to "Enterprise Intelligence Platform" serving two high-value markets with proven demand and willingness to pay.
+**PIVOT COMPLETE:** Transitioning from "DevRel documentation generator" to **"Competitive Intelligence Engine that tracks what competitors' CUSTOMERS say."**
 
-### New Product Vision
-ViberDoc is an AI-powered competitive intelligence and RFP automation platform that aggregates scattered information from 10+ sources (Reddit, YouTube, GitHub, StackOverflow, forums, documentation sites) and synthesizes it into actionable business intelligence. The platform serves enterprise sales and product teams with automated competitive battlecards, RFP response generation, and real-time market intelligence.
+### Product Vision
+ViberDoc is an AI-powered competitive intelligence platform that auto-generates battlecards by analyzing what customers say about your competitors across Reddit, GitHub, StackOverflow, YouTube, forums, and 10+ community sources. We provide real-time intelligence on competitor pricing, weaknesses, and migration patterns—without manual research.
 
-**Target Markets:**
-1. **Competitive Intelligence:** Product/Strategy teams at B2B SaaS ($50k-200k/year contracts)
-2. **RFP Automation:** Sales teams at enterprise companies ($200/user/month)
+**Target Market:**
+- **Primary:** Product/Sales teams at B2B SaaS companies ($10M-$100M revenue)
+- **Buyers:** VP Product, VP Sales, Head of Strategy
+- **Budget:** $50k-$200k/year (competing with Klue, Crayon, AlphaSense)
 
-**Path to $1M ARR:** 10-20 customers at $50k-100k/year (vs. 50-100 customers in old DevRel positioning)
+**Path to $1M ARR:** 10-20 customers at $50k-100k/year
+
+**Current Focus:** Competitive Intelligence ONLY (RFP automation delayed until $30k MRR)
 
 ---
 
-## Core Asset: Multi-Source Intelligence Engine
+## Our Unfair Advantage
+
+**Positioning:**
+> "Klue is a $200k/year tool that only tracks what companies SAY.  
+> We track what their CUSTOMERS say."
 
 **What Makes Us Different:**
-Our engine doesn't just scrape - it intelligently synthesizes community knowledge with AI validation:
-- ✅ Multi-source aggregation (10+ platforms)
-- ✅ AI synthesis with quality validation (85%+ accuracy)
-- ✅ Trust scoring and cross-verification
-- ✅ Multi-agent architecture (Research → Analysis → Validation)
-- ✅ Export to multiple formats (PDF, DOCX, JSON, HTML)
+- ✅ Community intelligence (Reddit, GitHub, StackOverflow, forums)
+- ✅ Automated AI synthesis with 85%+ accuracy validation
+- ✅ 2-minute battlecard generation (vs. 20 hours manual research)
+- ✅ Real customer complaints, not sanitized marketing
+- ✅ 75% cheaper than Klue/Crayon
+
+---
+
+## The MVP (30-Day Focus)
+
+**One-Click Competitor Battlecard Generator**
+
+**Input:** Competitor name or URL  
+**Output:** Professional PDF battlecard with:
+- Pricing (from community discussions)
+- Top 5 strengths (positive reviews, case studies)
+- Top 5 weaknesses (Reddit complaints, GitHub issues)
+- Migration patterns ("switching from X to Y")
+- GitHub issues summary (bugs, feature requests)
+- Sentiment analysis (trending up/down)
+- 7-day trends (recent mentions, complaints)
+- What customers secretly hate
+- Why customers switch away
+
+**That's it. Nothing more for first 30 days.**
 
 ---
 
@@ -36,7 +62,13 @@ Design preferences: Clean cyan-blue color scheme like Replit using rgb(102,255,2
 ## System Architecture
 
 ### UI/UX & Design
-The frontend uses React with TypeScript and Vite, styled with Tailwind CSS and Shadcn/ui components (built on Radix UI). The design emphasizes a modern, elegant aesthetic inspired by Replit, featuring a cyan-blue color scheme, dark theme, Inter font, and glassmorphism effects. The UI is being refactored from "documentation generation" to "intelligence extraction" with dashboards for competitive analysis and RFP management.
+The frontend uses React with TypeScript and Vite, styled with Tailwind CSS and Shadcn/ui components (built on Radix UI). The design emphasizes a modern, elegant aesthetic inspired by Replit, featuring a cyan-blue color scheme, dark theme, Inter font, and glassmorphism effects. 
+
+**Current MVP UI:**
+- Simple competitor input form (one text box)
+- Loading screen with research progress
+- PDF battlecard preview and download
+- Clean, professional design
 
 ### Technical Implementation
 The backend is built with Node.js and Express, utilizing a RESTful API structure. Key architectural decisions include:
@@ -61,8 +93,8 @@ The backend is built with Node.js and Express, utilizing a RESTful API structure
 - Cross-verification and auto-refinement loops
 - Comprehensive quality scoring system (0-100 scale)
 
-**Current Features (Reusable for Pivot):**
-- ✅ Multi-source scraping with official APIs (not web scraping)
+**Current Features (Reusable for CI Pivot):**
+- ✅ Multi-source scraping with official APIs (Reddit, GitHub, YouTube, StackOverflow, forums)
 - ✅ AI synthesis pipeline with multi-agent validation
 - ✅ Export system (PDF, DOCX, Markdown, JSON, HTML)
 - ✅ Subscription system (PayPal integration)
@@ -71,16 +103,22 @@ The backend is built with Node.js and Express, utilizing a RESTful API structure
 - ✅ Enterprise API access with authentication
 - ✅ Audit trails and security features
 
-**New Features (In Development - See ROADMAP.md):**
-- [ ] Competitive battlecard generator
-- [ ] RFP requirement parser and response generator
-- [ ] Content library management with semantic search
-- [ ] Real-time competitive monitoring and alerts
-- [ ] Salesforce, Slack, Google Drive, SharePoint integrations
-- [ ] Confidence scoring for AI-generated content
+**New Features (30-Day MVP - See ROADMAP.md):**
+- [ ] Competitor battlecard generator (PDF template)
+- [ ] Pricing extraction from community discussions
+- [ ] Migration pattern detection ("switching from X to Y")
+- [ ] Sentiment trend analysis
+- [ ] Competitor input form (simple, one-field)
+
+**Delayed Features (After $30k MRR):**
+- RFP automation
+- Real-time monitoring dashboard
+- Slack/Salesforce integrations
+- Competitive alerts
+- Content library
 
 ### Data Storage
-The project uses PostgreSQL via Supabase, managed with Drizzle ORM for type-safe operations. The data model includes 20 tables covering users, intelligence reports, payments, subscriptions, organizations, webhooks, and analytics. Schema will be extended for competitive intelligence and RFP content libraries.
+The project uses PostgreSQL via Supabase, managed with Drizzle ORM for type-safe operations. The data model includes 20 tables covering users, intelligence reports, payments, subscriptions, organizations, webhooks, and analytics. Schema will be extended for competitive battlecards and monitoring data.
 
 ---
 
@@ -107,7 +145,7 @@ The project uses PostgreSQL via Supabase, managed with Drizzle ORM for type-safe
 *   **Stack Exchange API 2.3**: Developer Q&A, error patterns, solutions
 *   **YouTube Data API v3**: Tutorial content, product walkthroughs, competitor demos
 *   **Reddit JSON API**: Community sentiment, pain points, product comparisons
-*   **GitHub REST API**: Issue tracking, feature requests, code discussions
+*   **GitHub REST API**: Issue tracking, feature requests, code discussions, bug patterns
 *   **Dev.to API**: Technical articles and tutorials
 *   **Quora API**: User questions and expert answers
 
@@ -124,38 +162,39 @@ The project uses PostgreSQL via Supabase, managed with Drizzle ORM for type-safe
 ## Recent Changes & Migration Status
 
 **November 14, 2025:**
-- ✅ Strategic pivot approved: Enterprise Intelligence Platform
+- ✅ Strategic pivot approved: Competitive Intelligence Platform (CI-only, RFP delayed)
 - ✅ Cleaned up outdated DevRel-focused documentation
-- ✅ Created comprehensive ROADMAP.md with 90-day execution plan
+- ✅ Created lean ROADMAP.md with 30-day execution plan
 - ✅ Updated replit.md with new vision
-- ⏳ In progress: Rebrand UI from documentation to intelligence
-- ⏳ In progress: Build competitive intelligence MVP
-- 📋 Next: Fix LSP errors, set up development workflow
+- ✅ Positioning finalized: "Track what customers say, not what companies say"
+- ⏳ In progress: Build one-click battlecard generator MVP
+- 📋 Next: Generate 3 demo battlecards, launch outbound campaign
 
 **Technical Debt:**
 - LSP type errors in youtube-service.ts and reddit-service.ts (non-critical, packages are installed)
-- Remove unused DevRel-specific features from UI
-- Optimize caching for intelligence queries vs. documentation generation
+- Database setup needed for fresh environment
+- Remove unused DevRel-specific UI components
 
 **Key Learnings:**
-- Our multi-source intelligence engine is the core asset (80% ready for pivot)
+- Our multi-source intelligence engine is the core asset (90% ready for CI pivot)
 - Documentation was output format, not the product
-- Market demand is 10x higher for competitive intelligence than DevRel docs
-- Enterprise buyers pay $50k-200k/year vs. $300-5k one-time for DevRel teams
+- Competitive intelligence has 10x higher willingness to pay than DevRel
+- Community intelligence (Reddit, GitHub, forums) is our unique moat vs. Klue/Crayon
+- Dual-track strategy (CI + RFP) was too ambitious - focus = survival
 
 ---
 
 ## Development Notes
 
-**Current Focus:** See ROADMAP.md for detailed execution plan
-**Target:** Ship competitive intelligence MVP in 4 weeks, RFP automation MVP in 8 weeks
-**Goal:** First paying customer by end of Q1 2026
+**Current Focus:** See ROADMAP.md for 30-day execution plan
+**Target:** First paying customer by December 2025 ($5k/month)
+**Goal:** $10k-15k MRR in 30 days → $30k MRR in 90 days
 
 **Architecture Decisions:**
-- Keep 80% of existing codebase (intelligence engine, AI pipeline, export system)
-- Build new 20% (battlecard templates, RFP parser, content library, integrations)
-- Maintain backward compatibility during transition
-- Run dual-track development: Competitive Intelligence + RFP Automation
+- Keep 90% of existing codebase (intelligence engine, AI pipeline, export system)
+- Build new 10% (battlecard template, competitor input form, pricing/migration extractors)
+- No feature creep - MVP only for first 30 days
+- RFP automation moved to Phase 2 (after CI hits $30k MRR)
 
 ---
 
@@ -175,4 +214,27 @@ npm run dev
 # Access at http://localhost:5000
 ```
 
-**Next Steps:** See ROADMAP.md for detailed implementation plan and priorities.
+**Next Steps:** 
+1. See ROADMAP.md for detailed 30-day implementation plan
+2. Focus on battlecard generator MVP this week
+3. Generate 3 demo battlecards by end of Week 2
+4. Launch outbound campaign Week 3
+
+---
+
+## Success Criteria (30 Days)
+
+**Technical:**
+- ✅ Battlecard generation time: <5 minutes
+- ✅ Quality score: >85/100
+- ✅ Source diversity: 10+ sources per competitor
+
+**Business:**
+- 🎯 3 pilot customers (free)
+- 🎯 2 paid conversions at $5k/month = $10k MRR
+- 🎯 $120k ARR run rate
+
+**Product:**
+- 🎯 3 killer demo battlecards (Stripe, Auth0, Twilio competitors)
+- 🎯 Landing page live with demo video
+- 🎯 50 outbound emails sent to target buyers
