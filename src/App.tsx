@@ -15,6 +15,7 @@ import GenerationProgress from "./pages/GenerationProgress";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import BattlecardGenerator from "./pages/BattlecardGenerator";
+import BattlecardProgress from "./pages/BattlecardProgress";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -26,6 +27,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/battlecard" element={<BattlecardGenerator />} />
+          <Route path="/battlecard/:sessionId" element={<BattlecardProgress />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<DashboardNew />} />
           <Route path="/dashboard/old" element={<Dashboard />} />
