@@ -193,18 +193,19 @@ const battlecardSchema = z.object({
   competitorUrl: z.string().url().optional(),
 });
 
-router.post("/api/competitive-intelligence", async (req, res) => {
+router.post("/api/competitive-intelligence", verifySupabaseAuth, async (req, res) => {
   try {
     const { competitorName, competitorUrl } = battlecardSchema.parse(req.body);
     const sessionId = `ci_${uuidv4()}`;
+    const userId = req.user?.databaseId || null;
     
-    console.log(`🎯 Starting battlecard generation for ${competitorName}`);
+    console.log(`🎯 Starting battlecard generation for ${competitorName} (user: ${userId})`);
 
     // Start generation (this runs async)
     battlecardOrchestrator.generateBattlecard({
       competitorName,
       competitorUrl,
-      userId: null // TODO: Add auth when ready
+      userId
     }, sessionId)
       .then((result) => {
         console.log(`✅ Battlecard completed for ${competitorName}: ${result.pdfUrl}`);
@@ -242,7 +243,7 @@ router.post("/api/competitive-intelligence", async (req, res) => {
 });
 
 // Get battlecard PDF by ID
-router.get("/api/battlecards/:id/pdf", async (req, res) => {
+router.get("/api/battlecards/:id/pdf", verifySupabaseAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
@@ -276,7 +277,7 @@ router.get("/api/battlecards/:id/pdf", async (req, res) => {
 });
 
 // Get battlecard data by ID (JSON)
-router.get("/api/battlecards/:id", async (req, res) => {
+router.get("/api/battlecards/:id", verifySupabaseAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
@@ -313,10 +314,11 @@ router.get("/api/battlecards/:id", async (req, res) => {
 });
 
 // List all battlecards
-router.get("/api/battlecards", async (req, res) => {
+router.get("/api/battlecards", verifySupabaseAuth, async (req, res) => {
   try {
+    const userId = req.user?.databaseId || null;
     const limit = parseInt(req.query.limit as string) || 20;
-    const battlecards = await battlecardOrchestrator.listBattlecards(null, limit);
+    const battlecards = await battlecardOrchestrator.listBattlecards(userId, limit);
     
     res.json({
       battlecards: battlecards.map(bc => ({

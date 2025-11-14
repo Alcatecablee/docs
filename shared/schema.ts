@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, jsonb, integer, decimal, boolean, customType } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, jsonb, integer, decimal, boolean, customType, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -166,7 +166,13 @@ export const battlecards = pgTable("battlecards", {
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),
   completed_at: timestamp("completed_at"),
-});
+}, (table) => [
+  // Indexes for performance
+  index("battlecards_competitor_name_idx").on(table.competitor_name),
+  index("battlecards_status_idx").on(table.status),
+  index("battlecards_user_id_idx").on(table.user_id),
+  index("battlecards_created_at_idx").on(table.created_at),
+]);
 
 export const documentations = pgTable("documentations", {
   id: serial("id").primaryKey(),
@@ -217,6 +223,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   paymentHistory: many(paymentHistory),
   subscriptionEvents: many(subscriptionEvents),
   customOrders: many(customOrders),
+  battlecards: many(battlecards),
 }));
 
 export const paymentHistoryRelations = relations(paymentHistory, ({ one }) => ({
@@ -236,6 +243,13 @@ export const subscriptionEventsRelations = relations(subscriptionEvents, ({ one 
 export const customOrdersRelations = relations(customOrders, ({ one }) => ({
   user: one(users, {
     fields: [customOrders.user_id],
+    references: [users.id],
+  }),
+}));
+
+export const battlecardsRelations = relations(battlecards, ({ one }) => ({
+  user: one(users, {
+    fields: [battlecards.user_id],
     references: [users.id],
   }),
 }));
