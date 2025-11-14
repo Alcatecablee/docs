@@ -219,15 +219,15 @@ const BattlecardGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-[rgb(14,19,23)]">
       <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} />
       <Header />
       
       <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6">
-            <Target className="h-4 w-4 text-purple-400" />
-            <span className="text-sm font-medium text-purple-300">Competitive Intelligence</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgb(102,255,228)]/10 border border-[rgb(102,255,228)]/20 mb-6">
+            <Target className="h-4 w-4 text-[rgb(102,255,228)]" />
+            <span className="text-sm font-medium text-[rgb(102,255,228)]">Competitive Intelligence</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
@@ -258,7 +258,7 @@ const BattlecardGenerator = () => {
                 <Button
                   onClick={generateBattlecard}
                   disabled={isGenerating || !competitorInput.trim()}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                  className="bg-[rgb(102,255,228)] hover:bg-[rgb(102,255,228)]/90 text-[rgb(14,19,23)] font-bold px-8"
                 >
                   {isGenerating ? (
                     <>
@@ -279,7 +279,7 @@ const BattlecardGenerator = () => {
               <div className="space-y-4 pt-4 border-t border-slate-700">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-300">{currentStage}</span>
-                  <span className="text-purple-400 font-medium">{Math.round(progress)}%</span>
+                  <span className="text-[rgb(102,255,228)] font-medium">{Math.round(progress)}%</span>
                 </div>
                 <Progress value={progress} className="h-2" />
                 <p className="text-sm text-gray-400">{currentMessage}</p>
@@ -345,7 +345,7 @@ const BattlecardGenerator = () => {
           </Card>
           
           <Card className="p-6 bg-slate-800/30 border-slate-700">
-            <TrendingUp className="h-8 w-8 text-purple-400 mb-3" />
+            <TrendingUp className="h-8 w-8 text-[rgb(102,255,228)] mb-3" />
             <h3 className="text-lg font-semibold text-white mb-2">Migration Patterns</h3>
             <p className="text-sm text-gray-400">
               Detect when customers are switching from competitors
@@ -360,7 +360,7 @@ const BattlecardGenerator = () => {
               {recentBattlecards.slice(0, 6).map((bc) => (
                 <Card
                   key={bc.id}
-                  className="p-6 bg-slate-800/50 border-slate-700 hover:border-purple-500/50 transition-colors cursor-pointer"
+                  className="p-6 bg-slate-800/50 border-slate-700 hover:border-[rgb(102,255,228)]/50 transition-colors cursor-pointer"
                   onClick={() => downloadPDF(bc)}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -382,7 +382,7 @@ const BattlecardGenerator = () => {
                     <span className="text-sm text-gray-400">
                       {bc.totalSources || bc.total_sources || 0} sources
                     </span>
-                    <Button size="sm" variant="ghost" className="text-purple-400 hover:text-purple-300">
+                    <Button size="sm" variant="ghost" className="text-[rgb(102,255,228)] hover:text-[rgb(102,255,228)]/80">
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>
