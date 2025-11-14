@@ -183,6 +183,28 @@ router.get("/api/progress/:sessionId", (req, res) => {
   });
 });
 
+// SSE endpoint for battlecard progress updates
+router.get("/api/battlecard-progress/:sessionId", (req, res) => {
+  const { sessionId } = req.params;
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  });
+
+  const onProgress = (event: any) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  };
+
+  progressTracker.on(`progress:${sessionId}`, onProgress);
+
+  req.on('close', () => {
+    progressTracker.off(`progress:${sessionId}`, onProgress);
+    progressTracker.endSession(sessionId);
+  });
+});
+
 // ============================================================================
 // COMPETITIVE INTELLIGENCE - BATTLECARD ENDPOINTS
 // ============================================================================
