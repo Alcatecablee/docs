@@ -91,10 +91,11 @@ const BattlecardGenerator = () => {
   };
 
   const generateBattlecard = async () => {
-    if (!user) {
-      setShowSignIn(true);
-      return;
-    }
+    // Temporarily bypassed auth for testing
+    // if (!user) {
+    //   setShowSignIn(true);
+    //   return;
+    // }
 
     if (!competitorInput.trim()) {
       toast({
