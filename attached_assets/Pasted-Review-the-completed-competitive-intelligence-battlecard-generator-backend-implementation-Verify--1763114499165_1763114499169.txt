@@ -1,0 +1,33 @@
+Review the completed competitive intelligence battlecard generator backend implementation. Verify:
+
+Production Quality: No mocks, no lazy patterns, production-ready code throughout
+Error Handling: Proper error handling in all services and API endpoints
+Architecture: Leverages existing 90% infrastructure (multi-source scrapers, AI agents, quality validation) correctly
+Database Design: Battlecards schema is properly designed with indexes and relations
+API Design: REST endpoints follow conventions, proper HTTP status codes, Zod validation
+CI Insight Extraction: AI prompts are well-structured, extraction logic is robust
+PDF Generation: Professional battlecard PDF with proper formatting
+Integration: Orchestrator properly coordinates research→extraction→PDF→storage→DB pipeline
+Key files implemented:
+
+server/battlecard-generator.ts (PDF generation with pdfkit)
+server/agents/ci-prompts.ts (AI prompts for competitive intelligence)
+server/ci-insight-extractor.ts (Multi-source data analysis with AI)
+server/battlecard-orchestrator.ts (Pipeline coordination)
+server/routes.ts (API endpoints with validation)
+shared/schema.ts (Database schema)
+Focus on identifying any lazy patterns, missing error handling, or areas that need improvement before we build the frontend.
+
+Thought for 21 seconds
+Result
+Fail: backend implementation cannot be accepted for production because critical pipeline pieces are missing and error handling/security gaps remain.
+
+Research step is stubbed: performResearch builds static empty arrays instead of invoking existing multi-source scrapers (Reddit, GitHub, StackOverflow, YouTube). This violates the requirement to leverage the established research infrastructure, so downstream insights always operate on empty datasets, producing low-quality/incorrect battlecards.
+battlecardGenerator.generatePDF is imported but the generator instance is never exported in battlecard-generator.ts; routes/orchestrator reference a non-existent singleton (battlecardGenerator), causing runtime crashes once those paths are hit.
+Battlecard DB schema lacks indexes on competitor_name, status, or timestamps and does not enforce foreign key relations for user_id; dedupe uses request_hash but there’s no supporting migration/index creation, so production DB consistency/performance is at risk.
+API endpoints skip auth (TODO left) and rely on global orchestrator errors without request-scoped handling; progress/events fire async but 500-level failures are surfaced only after background job completes, leaving clients without proper failure responses.
+Security: none observed.
+Next actions:
+Wire performResearch to the existing research agents/services (Reddit, GitHub, StackOverflow, YouTube, etc.), return real data, and ensure failures bubble with actionable errors.
+Export instantiated battlecardGenerator (and ciInsightExtractor) as singletons so orchestrator and routes can import functioning instances; add unit smoke tests for PDF generation.
+Extend the schema migration to add necessary indexes/foreign keys and enforce dedup constraints; implement auth middleware and error propagation for CI endpoints before shipping.
