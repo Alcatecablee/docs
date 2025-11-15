@@ -1,0 +1,37 @@
+2025-11-15 05:40:00.615 [error] Battlecard generation error: DrizzleQueryError: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+    at async BattlecardOrchestrator.findExistingBattlecard (file:///var/task/dist/server/app.js:19049:21)
+    at async BattlecardOrchestrator.generateBattlecard (file:///var/task/dist/server/app.js:18810:24) {
+  query: 'select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2',
+  params: [ 'b8dc840fe3423002', 1 ],
+  cause: ErrorEvent {
+    type: 'error',
+    defaultPrevented: false,
+    cancelable: false,
+    timeStamp: 46908.490027
+  }
+}
+2025-11-15 05:40:00.615 [info] [Activity ci_cf577] ERROR: Error: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+2025-11-15 05:40:00.615 [error] ❌ Battlecard generation failed for https://replit.com/: DrizzleQueryError: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+    at async BattlecardOrchestrator.findExistingBattlecard (file:///var/task/dist/server/app.js:19049:21)
+    at async BattlecardOrchestrator.generateBattlecard (file:///var/task/dist/server/app.js:18810:24) {
+  query: 'select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2',
+  params: [ 'b8dc840fe3423002', 1 ],
+  cause: ErrorEvent {
+    type: 'error',
+    defaultPrevented: false,
+    cancelable: false,
+    timeStamp: 46908.490027
+  }
+}
+2025-11-15 05:40:00.615 [info] [Activity ci_cf577] ERROR: Generation failed: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+2025-11-15 05:40:00.625 [info] {"level":50,"time":1763185200623,"pid":4,"hostname":"169.254.49.199","err":{"type":"DrizzleQueryError","message":"Failed query: select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2\nparams: site-to-doc,1: Received network error or non-101 status code.","stack":"Error: Failed query: select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2\nparams: site-to-doc,1\n    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)\n    at async DrizzleStorage.getDocumentationBySubdomain (file:///var/task/dist/server/app.js:847:25)\n    at async file:///var/task/dist/server/app.js:20959:21\ncaused by: Error: Received network error or non-101 status code.\n    at file:///var/task/node_modules/@neondatabase/serverless/index.mjs:1087:33\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:110:14\n    at async NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:39:16)\n    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)\n    at async DrizzleStorage.getDocumentationBySubdomain (file:///var/task/dist/server/app.js:847:25)\n    at async file:///var/task/dist/server/app.js:20959:21","query":"select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2","params":["site-to-doc",1]},"msg":"Subdomain routing error"}
