@@ -3,7 +3,17 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "../shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+// Configure for serverless environment
+const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+if (isServerless) {
+  // Use fetch-based connections for serverless (no WebSocket)
+  neonConfig.fetchConnectionCache = true;
+  neonConfig.useSecureWebSocket = true;
+} else {
+  // Use WebSocket for local development
+  neonConfig.webSocketConstructor = ws;
+}
 
 // Allow running without DATABASE_URL in development by exporting undefined
 // and letting the storage layer provide an in-memory fallback.

@@ -1,0 +1,72 @@
+2025-11-15 05:20:50.370 [info] OpenTelemetry SDK started successfully
+2025-11-15 05:20:50.370 [info] 💾 Idempotency storage initialized: Database (persistent)
+2025-11-15 05:20:50.370 [info] ✅ Rate limiters initialized for all AI providers
+2025-11-15 05:20:50.370 [info] {"level":30,"time":1763184033001,"pid":4,"hostname":"169.254.31.67","msg":"ViberDoc Multi-Provider LLM System"}
+2025-11-15 05:20:50.370 [info] {"level":30,"time":1763184033001,"pid":4,"hostname":"169.254.31.67","providers":["Google AI (Gemini)","Groq","DeepSeek","OpenAI"],"msg":"Configured AI Providers"}
+2025-11-15 05:20:50.370 [info] {"level":30,"time":1763184033001,"pid":4,"hostname":"169.254.31.67","dbConfigured":true,"msg":"Database"}
+2025-11-15 05:20:50.370 [info] {"level":30,"time":1763184033001,"pid":4,"hostname":"169.254.31.67","supabaseConfigured":true,"msg":"Supabase"}
+2025-11-15 05:20:50.370 [info] 🚀 Initializing BullMQ Queue (production mode)...
+2025-11-15 05:20:50.370 [info] 🚀 BullMQ Queue initialized: documentation-generation (5 workers)
+2025-11-15 05:20:50.370 [info] 👷 Worker started with 5 concurrent processors
+2025-11-15 05:20:50.370 [info] ❌ Redis connection error: connect ETIMEDOUT
+2025-11-15 05:20:50.370 [info] Error: connect ETIMEDOUT    at Socket.<anonymous> (/var/task/node_modules/ioredis/built/Redis.js:171:41)    at Object.onceWrapper (node:events:633:28)    at Socket.emit (node:events:519:28)    at Socket._onTimeout (node:net:604:8)    at listOnTimeout (node:internal/timers:588:17)    at process.processTimers (node:internal/timers:523:7) {  errorno: 'ETIMEDOUT',  code: 'ETIMEDOUT',  syscall: 'connect'}
+2025-11-15 05:20:50.370 [info] ❌ Redis connection error: connect ETIMEDOUT
+2025-11-15 05:20:50.370 [info] Error: connect ETIMEDOUT    at Socket.<anonymous> (/var/task/node_modules/ioredis/built/Redis.js:171:41)    at Object.onceWrapper (node:events:633:28)    at Socket.emit (node:events:519:28)    at Socket._onTimeout (node:net:604:8)    at listOnTimeout (node:internal/timers:588:17)    at process.processTimers (node:internal/timers:523:7) {  errorno: 'ETIMEDOUT',  code: 'ETIMEDOUT',  syscall: 'connect'}
+2025-11-15 05:20:50.371 [info] Error: connect ETIMEDOUT    at Socket.<anonymous> (/var/task/node_modules/ioredis/built/Redis.js:171:41)    at Object.onceWrapper (node:events:633:28)    at Socket.emit (node:events:519:28)    at Socket._onTimeout (node:net:604:8)    at listOnTimeout (node:internal/timers:588:17)    at process.processTimers (node:internal/timers:523:7) {  errorno: 'ETIMEDOUT',  code: 'ETIMEDOUT',  syscall: 'connect'}
+2025-11-15 05:20:50.371 [info] ❌ Redis connection error: connect ETIMEDOUT
+2025-11-15 05:20:50.389 [info] Error: connect ETIMEDOUT    at Socket.<anonymous> (/var/task/node_modules/ioredis/built/Redis.js:171:41)    at Object.onceWrapper (node:events:633:28)    at Socket.emit (node:events:519:28)    at Socket._onTimeout (node:net:604:8)    at listOnTimeout (node:internal/timers:588:17)    at process.processTimers (node:internal/timers:523:7) {  errorno: 'ETIMEDOUT',  code: 'ETIMEDOUT',  syscall: 'connect'}
+2025-11-15 05:20:50.475 [info] {"level":50,"time":1763184050473,"pid":4,"hostname":"169.254.31.67","err":{"type":"DrizzleQueryError","message":"Failed query: select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2\nparams: site-to-doc,1: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co","stack":"Error: Failed query: select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2\nparams: site-to-doc,1\n    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)\n    at async DrizzleStorage.getDocumentationBySubdomain (file:///var/task/dist/server/app.js:844:25)\n    at async file:///var/task/dist/server/app.js:20956:21\ncaused by: Error: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co\n    at file:///var/task/node_modules/@neondatabase/serverless/index.mjs:1087:33\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:110:14\n    at async NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:39:16)\n    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)\n    at async DrizzleStorage.getDocumentationBySubdomain (file:///var/task/dist/server/app.js:844:25)\n    at async file:///var/task/dist/server/app.js:20956:21","query":"select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2","params":["site-to-doc",1]},"msg":"Subdomain routing error"}
+2025-11-15 05:20:50.476 [warning] ⚠️ DEV AUTH BYPASS ENABLED - Development mode only!
+2025-11-15 05:20:50.482 [error] Battlecards list error: DrizzleQueryError: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."user_id" = $1 order by "battlecards"."created_at" limit $2
+params: 1,20
+    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+    at async BattlecardOrchestrator.listBattlecards (file:///var/task/dist/server/app.js:19085:14)
+    at async file:///var/task/dist/server/app.js:19298:26 {
+  query: 'select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."user_id" = $1 order by "battlecards"."created_at" limit $2',
+  params: [ 1, 20 ],
+  cause: ErrorEvent {
+    [Symbol(kTarget)]: WebSocket {
+      _events: [Object: null prototype],
+      _eventsCount: 4,
+      _maxListeners: undefined,
+      _binaryType: 'arraybuffer',
+      _closeCode: 1006,
+      _closeFrameReceived: false,
+      _closeFrameSent: false,
+      _closeMessage: <Buffer >,
+      _closeTimer: null,
+      _errorEmitted: true,
+      _extensions: {},
+      _paused: false,
+      _protocol: '',
+      _readyState: 3,
+      _receiver: null,
+      _sender: null,
+      _socket: null,
+      _bufferedAmount: 0,
+      _isServer: false,
+      _redirects: 0,
+      _autoPong: true,
+      _url: 'wss://db.afgjmciwsmhvqeqgnccb.supabase.co/v2',
+      _req: null,
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    [Symbol(kType)]: 'error',
+    [Symbol(kError)]: Error: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+        at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+      errno: -3007,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'db.afgjmciwsmhvqeqgnccb.supabase.co'
+    },
+    [Symbol(kMessage)]: 'getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co'
+  }
+}
+2025-11-15 05:20:50.486 [info] {"level":30,"time":1763184050485,"pid":4,"hostname":"169.254.31.67","req":{"id":1,"method":"GET","url":"/api/battlecards","query":{},"params":{},"headers":{"x-vercel-ip-timezone":"Africa/Johannesburg","x-vercel-forwarded-for":"197.184.108.125","content-type":"application/json","host":"site-to-doc.vercel.app","sec-fetch-mode":"cors","x-vercel-ip-latitude":"-26.2309","x-vercel-internal-ingress-port":"18444","x-vercel-ip-country-region":"GP","permissions-policy":"camera=(), microphone=(), geolocation=()","x-xss-protection":"0","x-vercel-ja4-digest":"t13d1611h2_1711a4c0508c_6d021c4c45cd","x-vercel-ip-continent":"AF","x-vercel-proxied-for":"197.184.108.125","referrer-policy":"no-referrer","x-vercel-id":"cpt1::cnvxt-1763184049947-078cbde4c166","accept":"*/*","x-vercel-internal-bot-check":"skip","content-security-policy":"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https: wss:; frame-src https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'","accept-language":"en-US,en;q=0.9","x-vercel-ip-longitude":"28.0583","x-vercel-ip-city":"Johannesburg","sec-fetch-dest":"empty","x-vercel-ip-as-number":"37105","sec-fetch-site":"same-origin","x-frame-options":"DENY","forwarded":"for=197.184.108.125;host=site-to-doc.vercel.app;proto=https;sig=0QmVhcmVyIGU5ODFjODM3NGJmMTQxYjU5MWU4ZmVjZGU0ZGJjOTdhNzAxOGY0MDY3MTY5ZDVkMzhhNzUzOWFhYjc5MTE4MDY=;exp=1763184349","x-real-ip":"197.184.108.125","x-forwarded-for":"197.184.108.125","x-vercel-ip-postal-code":"2091","x-vercel-ip-country":"ZA","accept-encoding":"gzip, deflate, br","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36","strict-transport-security":"max-age=63072000; includeSubDomains; preload","sec-ch-ua-platform":"\"Windows\"","x-vercel-deployment-url":"site-to-6qowzzg63-alcatecs-projects.vercel.app","x-vercel-function-path":"api","x-vercel-oidc-token":"eyJhbGciOiJSUzI1NiIsImtpZCI6Im1yay00MzAyZWMxYjY3MGY0OGE5OGFkNjFkYWRlNGEyM2JlNyIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczpcL1wvdmVyY2VsLmNvbVwvYWxjYXRlY3MtcHJvamVjdHMiLCJwcm9qZWN0X2lkIjoicHJqXzN6dmp0UUpXZ25UeTBGWkM4TW5EWkUwc25uMm8iLCJvd25lcl9pZCI6InRlYW1fU09rQTJ3UVRrc2Y2V3M0QnhhNTRnTkFOIiwiZW52aXJvbm1lbnQiOiJwcm9kdWN0aW9uIiwiaWF0IjoxNzYzMTgzNzAxLCJwcm9qZWN0Ijoic2l0ZS10by1kb2MiLCJuYmYiOjE3NjMxODM3MDEsInN1YiI6Im93bmVyOmFsY2F0ZWNzLXByb2plY3RzOnByb2plY3Q6c2l0ZS10by1kb2M6ZW52aXJvbm1lbnQ6cHJvZHVjdGlvbiIsInZlcmNlbF9pZCI6ImNwdDE6OnZoOG1oLTE3NjMxODM3MDA3NzQtMDk2ZWZlYjk3ODI1IiwiZXhwIjoxNzYzMTg3MzAxLCJzY29wZSI6Im93bmVyOmFsY2F0ZWNzLXByb2plY3RzOnByb2plY3Q6c2l0ZS10by1kb2M6ZW52aXJvbm1lbnQ6cHJvZHVjdGlvbiIsInBsYW4iOiJob2JieSIsImlzcyI6Imh0dHBzOlwvXC9vaWRjLnZlcmNlbC5jb21cL2FsY2F0ZWNzLXByb2plY3RzIiwib3duZXIiOiJhbGNhdGVjcy1wcm9qZWN0cyJ9.hhXFd74KqaAle1CFP2uo_kvSvRcedIItQKcQakkDRieNmKei8rxnj_PORCxb-mDybGRvfqSXuhF2bwXQsIbVTH1Xe0xjNSoVq0n_Bt1iVs3oIRo4t7Gl0cQpQEB40L2BO4XMVWFJzmYcRek0bHQZ7BXRJ3p95Y8zJA_RDZHtpLEx0UFmqabOV1nD71dnGzhNzAJDJTtXSNV8R1JtjSzX07r6QgnXP0rJUPsOH9h5Lf1DPC2-XnBWaUjpC7XKzvV77FmbdB13h_o1wyQRkdH_EK1NqiAPftHb4SJ0fZ9Dt_P6P-aPqlet4C145JR-yPBS2AxBL-xAC-qRLcrderAGaA","sec-ch-ua":"\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"","authorization":"Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6Indpd2RUWjNnMHJ3UXllM3giLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FmZ2ptY2l3c21odnFlcWduY2NiLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI2YzkwMGJkZS0zYzUxLTRjN2QtOTQ3Yi04YmMxN2Y2ZTIwNjgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzMTg3MzA1LCJpYXQiOjE3NjMxODM3MDUsImVtYWlsIjoiYWxjYXRlY2FibGVAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6ImFsY2F0ZWNhYmxlQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6IjZjOTAwYmRlLTNjNTEtNGM3ZC05NDdiLThiYzE3ZjZlMjA2OCJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzYyNzcwNDYzfV0sInNlc3Npb25faWQiOiJiNzRjNGY3Ny0yMjNkLTQ5NzUtODQ5MC1iY2Y3MGU1ZmEyNGQiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.t1YiE8xXHXCIa9XWFTd-fmNN1Mv0xSkPBePjQkJd-2M","x-forwarded-host":"site-to-doc.vercel.app","x-vercel-internal-ingress-bucket":"bucket018","x-forwarded-proto":"https","priority":"u=1, i","x-vercel-proxy-signature-ts":"1763184349","x-content-type-options":"nosniff","x-vercel-proxy-signature":"Bearer e981c8374bf141b591e8fecde4dbc97a7018f4067169d5d38a7539aab7911806","connection":"close"},"remoteAddress":"127.0.0.1","remotePort":57704},"res":{"statusCode":500,"headers":{"x-powered-by":"Express","content-type":"application/json; charset=utf-8","content-length":"487","etag":"W/\"1e7-VHzTRRok+64m0PwjGihDfiYfp58\"","x-vercel-internal-timing":"bytecode-miss;offset=0,bootstrap;dur=6.45;desc=\"bootstrap_0+6.45\";offset=0,post-init-delay;dur=17412.47;desc=\"post-init-delay_3217.65+17412.47\";offset=3217.65,import-fn;dur=3196.15;desc=\"import-fn_6.45+3196.15\";offset=6.45,bytecode;dur=0.44;desc=\"bytecode_0+0.44\";offset=0,response;dur=47.5;desc=\"response_20630.17+47.5\";offset=20630.17,total-latency;dur=3217.71;desc=\"total-latency_0+3217.71\";offset=0,ttfb;dur=3265.21;desc=\"ttfb_0+3265.21\";offset=0"}},"err":{"type":"Error","message":"failed with status code 500","stack":"Error: failed with status code 500\n    at onResFinished (/var/task/node_modules/pino-http/logger.js:115:39)\n    at ServerResponse.onResponseComplete (/var/task/node_modules/pino-http/logger.js:178:14)\n    at ServerResponse.emit (node:events:531:35)\n    at /opt/rust/nodejs.js:16:2315\n    at AsyncLocalStorage.run (node:internal/async_local_storage/async_hooks:80:14)\n    at /opt/rust/nodejs.js:16:2303\n    at AsyncLocalStorage.run (node:internal/async_local_storage/async_hooks:80:14)\n    at e.emit (/opt/rust/nodejs.js:16:2291)\n    at onFinish (node:_http_outgoing:1082:10)\n    at callback (node:internal/streams/writable:766:21)"},"responseTime":48,"msg":"request errored"}
+2025-11-15 05:20:50.739 [info] ✅ Redis connected successfully
+2025-11-15 05:20:50.741 [info] ✅ Redis connected successfully
+2025-11-15 05:20:50.749 [info] ✅ Redis connected successfully

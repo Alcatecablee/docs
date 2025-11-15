@@ -1,0 +1,103 @@
+2025-11-15 05:20:53.922 [error] Battlecard generation error: DrizzleQueryError: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+    at async BattlecardOrchestrator.findExistingBattlecard (file:///var/task/dist/server/app.js:19046:21)
+    at async BattlecardOrchestrator.generateBattlecard (file:///var/task/dist/server/app.js:18807:24) {
+  query: 'select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2',
+  params: [ 'b8dc840fe3423002', 1 ],
+  cause: ErrorEvent {
+    [Symbol(kTarget)]: WebSocket {
+      _events: [Object: null prototype],
+      _eventsCount: 4,
+      _maxListeners: undefined,
+      _binaryType: 'arraybuffer',
+      _closeCode: 1006,
+      _closeFrameReceived: false,
+      _closeFrameSent: false,
+      _closeMessage: <Buffer >,
+      _closeTimer: null,
+      _errorEmitted: true,
+      _extensions: {},
+      _paused: false,
+      _protocol: '',
+      _readyState: 3,
+      _receiver: null,
+      _sender: null,
+      _socket: null,
+      _bufferedAmount: 0,
+      _isServer: false,
+      _redirects: 0,
+      _autoPong: true,
+      _url: 'wss://db.afgjmciwsmhvqeqgnccb.supabase.co/v2',
+      _req: null,
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    [Symbol(kType)]: 'error',
+    [Symbol(kError)]: Error: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+        at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+      errno: -3007,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'db.afgjmciwsmhvqeqgnccb.supabase.co'
+    },
+    [Symbol(kMessage)]: 'getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co'
+  }
+}
+2025-11-15 05:20:53.922 [info] [Activity ci_5bdb4] ERROR: Error: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+2025-11-15 05:20:53.922 [error] ❌ Battlecard generation failed for https://replit.com/: DrizzleQueryError: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+    at async BattlecardOrchestrator.findExistingBattlecard (file:///var/task/dist/server/app.js:19046:21)
+    at async BattlecardOrchestrator.generateBattlecard (file:///var/task/dist/server/app.js:18807:24) {
+  query: 'select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2',
+  params: [ 'b8dc840fe3423002', 1 ],
+  cause: ErrorEvent {
+    [Symbol(kTarget)]: WebSocket {
+      _events: [Object: null prototype],
+      _eventsCount: 4,
+      _maxListeners: undefined,
+      _binaryType: 'arraybuffer',
+      _closeCode: 1006,
+      _closeFrameReceived: false,
+      _closeFrameSent: false,
+      _closeMessage: <Buffer >,
+      _closeTimer: null,
+      _errorEmitted: true,
+      _extensions: {},
+      _paused: false,
+      _protocol: '',
+      _readyState: 3,
+      _receiver: null,
+      _sender: null,
+      _socket: null,
+      _bufferedAmount: 0,
+      _isServer: false,
+      _redirects: 0,
+      _autoPong: true,
+      _url: 'wss://db.afgjmciwsmhvqeqgnccb.supabase.co/v2',
+      _req: null,
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    [Symbol(kType)]: 'error',
+    [Symbol(kError)]: Error: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)
+        at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+      errno: -3007,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'db.afgjmciwsmhvqeqgnccb.supabase.co'
+    },
+    [Symbol(kMessage)]: 'getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co'
+  }
+}
+2025-11-15 05:20:53.922 [info] [Activity ci_5bdb4] ERROR: Generation failed: Failed query: select "id", "competitor_name", "competitor_url", "user_id", "request_hash", "payload", "pdf_url", "pdf_size_bytes", "quality_score", "total_sources", "reddit_sources", "stackoverflow_sources", "github_sources", "youtube_sources", "status", "error_message", "created_at", "updated_at", "completed_at" from "battlecards" where "battlecards"."request_hash" = $1 limit $2
+params: b8dc840fe3423002,1
+2025-11-15 05:20:53.925 [info] {"level":50,"time":1763184053924,"pid":4,"hostname":"169.254.31.67","err":{"type":"DrizzleQueryError","message":"Failed query: select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2\nparams: site-to-doc,1: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co","stack":"Error: Failed query: select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2\nparams: site-to-doc,1\n    at NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:41:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)\n    at async DrizzleStorage.getDocumentationBySubdomain (file:///var/task/dist/server/app.js:844:25)\n    at async file:///var/task/dist/server/app.js:20956:21\ncaused by: Error: getaddrinfo ENOTFOUND db.afgjmciwsmhvqeqgnccb.supabase.co\n    at file:///var/task/node_modules/@neondatabase/serverless/index.mjs:1087:33\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:110:14\n    at async NeonPreparedQuery.queryWithCache (file:///var/task/node_modules/drizzle-orm/pg-core/session.js:39:16)\n    at async NeonPreparedQuery.execute (file:///var/task/node_modules/drizzle-orm/neon-serverless/session.js:109:20)\n    at async DrizzleStorage.getDocumentationBySubdomain (file:///var/task/dist/server/app.js:844:25)\n    at async file:///var/task/dist/server/app.js:20956:21","query":"select \"id\", \"url\", \"title\", \"content\", \"user_id\", \"subdomain\", \"theme_id\", \"current_version\", \"search_vector\", \"deletion_scheduled_at\", \"generated_at\" from \"documentations\" where \"documentations\".\"subdomain\" = $1 limit $2","params":["site-to-doc",1]},"msg":"Subdomain routing error"}
